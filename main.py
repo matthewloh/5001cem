@@ -22,6 +22,8 @@ class Window(ElementCreator):
     def __init__(self, *args, **kwargs):
         ttk.Window.__init__(self, themename="minty", *args, **kwargs)
         self.widgetsDict = {}
+        self.imageDict = {}
+        self.imagePathDict = {}
         self.frames = {}
         self.subframes = {}
         self.initializeWindow()
@@ -38,7 +40,14 @@ class Window(ElementCreator):
 
         # self.postSelectFrame.tkraise()
         # self.show_frame(HomePage)
+        self.loadSignIn()
         self.bind("<F11>", lambda e: self.togglethewindowbar())
+
+    def loadSignIn(self):
+        self.labelCreator(
+            imagepath=r"assets\HomePage\SignIn.png", xpos=0, ypos=0,
+            classname="homepagebg", root=self
+        )
 
     def updateWidgetsDict(self, root: Frame):
         widgettypes = (Label, Button, Frame, Canvas, Entry,
@@ -107,6 +116,10 @@ class HomePage(Frame):
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 96, 54, LIGHTYELLOW)
+        self.load()
+
+    def load(self):
+        self.CT = self.controller
         # self.controller.maincanvas = self.controller.canvasCreator(
         #     xpos=80, ypos=80, width=1920, height=920, root=self,
         #     classname="maincanvas", bgcolor=WHITE, isTransparent=True, transparentcolor=LIGHTYELLOW
