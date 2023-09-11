@@ -1,0 +1,351 @@
+generator client {
+    provider             = "prisma-client-py"
+    interface            = "sync"
+    recursive_type_depth = "-1"
+}
+
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+// Translating this from a university environment
+// to a Call-a-Doctor consultancy service
+// A user can be a patient, doctor, clinicadmin, or sysadmin
+// A larger organization is known as the Government Registered Doctor system.
+// Clinic entity - Needs to know who is admin, who is doctor
+// Appointment/Consultation entity - Needs to know who is patient, who is doctor, which clinic
+// Prescription - Patient, Doctor, Clinic, Appointment
+model User {
+    id              String              @id @default(cuid())
+    fullName        String
+    email           String              @unique
+    password        String
+    contactNo       String              
+    createdAt       DateTime            @default(now())
+    updatedAt       DateTime            @updatedAt
+    lecturer        Lecturer[]
+    student         Student[]
+    createdPosts    ModulePost[]        @relation("CreatedPosts")
+    favoritePosts   ModulePost[]
+    replies         Reply[]
+    contentAttempt  HubContentAttempt[]
+    helpdeskTickets HelpdeskTicket[]    @relation("TicketAuthor")
+    ticketReplies   TicketReply[]       @relation("TicketReplyAuthor")
+}
+
+model Lecturer {
+    id             String             @id @default(cuid())
+    tenure         Tenure             @default(FULLTIME)
+    userId         String
+    schoolId       String
+    userProfile    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    modules        Module[]
+    school         School             @relation(fields: [schoolId], references: [id])
+    appointments   Appointment[]
+    uploads        ModuleUpload[]
+    apptSettings   LecApptSetting[]
+    createdContent ModuleHubContent[]
+
+    @@index([schoolId])
+    @@index([userId])
+}
+
+model Appointment {
+    id           Int       @id @default(autoincrement())
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+    isCompleted  Boolean   @default(false)
+    title        String
+    description  String?   @db.Text
+    location     String
+    startTime    DateTime
+    endTime      DateTime
+    completedAt  DateTime?
+    editedAt     DateTime? @default(now())
+    lectAccept   Boolean   @default(false)
+    studAccept   Boolean   @default(false)
+    lectAcceptAt DateTime?
+    studAcceptAt DateTime?
+    studentId    String
+    lecturerId   String
+    student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    lecturer     Lecturer  @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+
+    @@index([studentId])
+    @@index([lecturerId])
+}
+
+enum Day {
+    MONDAY
+    TUESDAY
+    WEDNESDAY
+    THURSDAY
+    FRIDAY
+    SATURDAY
+    SUNDAY
+}
+
+// Essentially the consultation hours per lecturer for an academic semester
+// One lecturer can have many LecApptSetting
+// A lecturer will define the day of the week, start time, end time, location
+// Working with DateTime where year, month, day is not important
+model LecApptSetting {
+    id         Int      @id @default(autoincrement())
+    lecturerId String
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+    day        Day      @default(MONDAY)
+    startTime  DateTime
+    endTime    DateTime
+    location   String
+    lecturer   Lecturer @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+
+    @@index([lecturerId])
+}
+
+model Institution {
+    id              String           @id @default(cuid())
+    institutionCode InstitutionCodes @default(IICP)
+    school          School[]
+}
+
+model School {
+    id            String      @id @default(cuid())
+    schoolCode    String      @unique
+    name          String
+    description   String?
+    institutionId String
+    institution   Institution @relation(fields: [institutionId], references: [id])
+    programme     Programme[]
+    students      Student[]
+    lecturer      Lecturer[]
+
+    @@index([institutionId])
+}
+
+model Student {
+    id           String             @id @default(cuid())
+    session      Sessions           @default(APR2023)
+    userId       String
+    schoolId     String?
+    userProfile  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    school       School?            @relation(fields: [schoolId], references: [id])
+    modules      ModuleEnrollment[]
+    appointments Appointment[]
+
+    @@index([schoolId])
+    @@index([userId])
+}
+
+model ModuleEnrollment {
+    createdAt       DateTime @default(now())
+    enrollmentGrade Int?
+    studentId       String
+    moduleId        String
+    student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+    module          Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+    @@id([studentId, moduleId])
+    @@index([studentId])
+    @@index([moduleId])
+}
+
+model Programme {
+    id            String   @id @default(cuid())
+    programmeCode String   @unique
+    programmeName String
+    programmeDesc String?
+    schoolId      String
+    school        School   @relation(fields: [schoolId], references: [id])
+    modules       Module[]
+
+    @@index([schoolId])
+}
+
+model Module {
+    id                String             @id @default(cuid())
+    moduleCode        String             @unique
+    moduleTitle       String
+    moduleDesc        String?            @db.Text
+    programmeId       String
+    lecturerId        String?
+    programme         Programme          @relation(fields: [programmeId], references: [id])
+    lecturer          Lecturer?          @relation(fields: [lecturerId], references: [id])
+    moduleEnrollments ModuleEnrollment[]
+    modulePosts       ModulePost[]
+    moduleUploads     ModuleUpload[]
+    moduleHubContent  ModuleHubContent[]
+
+    @@index([programmeId])
+    @@index([lecturerId])
+}
+
+model ModulePost {
+    id          Int           @id @default(autoincrement())
+    title       String
+    content     String?       @db.Text
+    moduleId    String
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    authorId    String
+    editedAt    DateTime?     @default(now())
+    module      Module        @relation(fields: [moduleId], references: [id])
+    replies     Reply[]
+    author      User   @relation("CreatedPosts", fields: [authorId], references: [id])
+    favoritedBy User[]
+
+    @@index([moduleId])
+    @@index([authorId])
+}
+
+model ModuleUpload {
+    id          Int                     @id @default(autoincrement())
+    objKey      String
+    moduleId    String
+    createdAt   DateTime                @default(now())
+    updatedAt   DateTime                @updatedAt
+    uploaderId  String
+    editedAt    DateTime?               @default(now())
+    uploadType  ModuleUpload_uploadType @default(LINK)
+    description String?
+    title       String
+    module      Module                  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+    uploader    Lecturer                @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+    @@index([moduleId])
+    @@index([uploaderId])
+}
+
+model Reply {
+    content           String?     @db.Text
+    modulePostId      Int
+    createdAt         DateTime    @default(now())
+    updatedAt         DateTime    @updatedAt
+    authorId          String
+    replyId           Int         @id @default(autoincrement())
+    editedAt          DateTime?   @default(now())
+    moduleDiscussions ModulePost  @relation(fields: [modulePostId], references: [id], onDelete: Cascade)
+    author            User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+    @@index([modulePostId])
+    @@index([authorId])
+}
+
+model ModulePostToUserProfile {
+    A Int
+    B String
+
+    @@unique([A, B], map: "_ModulePostToUserProfile_AB_unique")
+    @@index([B], map: "_ModulePostToUserProfile_B_index")
+    @@map("_ModulePostToUserProfile")
+}
+
+enum Tenure {
+    FULLTIME
+    PARTTIME
+}
+
+enum InstitutionCodes {
+    IICP
+    IIUN
+    IICS
+    ICS
+}
+
+enum Sessions {
+    APR2023
+    AUG2023
+    JAN2024
+    APR2024
+}
+
+enum ModuleUpload_uploadType {
+    IMG
+    VIDEO
+    PDF
+    LINK
+}
+
+// A user tries a quiz from the ModuleQuiz table.
+// This attempt goes into the QuizAttempts table.
+// A ModuleQuiz entry has an author lecturer.
+// An attempt has a user attached to it.
+
+model ModuleHubContent {
+    id          Int                 @id @default(autoincrement())
+    moduleId    String
+    title       String              @unique
+    description String?
+    contentType ContentType         @default(GAME)
+    contentInfo Json
+    createdAt   DateTime            @default(now())
+    updatedAt   DateTime            @updatedAt
+    authorId    String
+    editedAt    DateTime?           @default(now())
+    module      Module              @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+    author      Lecturer            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+    attempts    HubContentAttempt[]
+
+    @@index([moduleId])
+    @@index([authorId])
+}
+
+// Many to many relationship between QuizAttempts and User
+// Many users can attempt many quizzes.
+model HubContentAttempt {
+    id           Int              @id @default(autoincrement())
+    userId       String
+    createdAt    DateTime         @default(now())
+    updatedAt    DateTime         @updatedAt
+    contentId    Int
+    contentScore Int
+    content      ModuleHubContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([contentId])
+}
+
+enum ContentType {
+    MULTIPLE_CHOICE
+    FILL_IN_THE_BLANK
+    GAME
+    ACTIVITY
+}
+
+enum TicketStatus {
+    OPEN
+    CLOSED
+}
+
+model HelpdeskTicket {
+    id        Int           @id @default(autoincrement())
+    title     String
+    content   String?       @db.Text
+    status    TicketStatus  @default(OPEN)
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
+    authorId  String
+    image     Bytes?
+    editedAt  DateTime?     @default(now())
+    author    User   @relation("TicketAuthor", fields: [authorId], references: [id])
+    replies   TicketReply[]
+
+    @@index([authorId])
+}
+
+model TicketReply {
+    id             Int            @id @default(autoincrement())
+    content        String?        @db.Text
+    ticketId       Int
+    createdAt      DateTime       @default(now())
+    updatedAt      DateTime       @updatedAt
+    authorId       String
+    editedAt       DateTime?      @default(now())
+    helpdeskTicket HelpdeskTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+    author         User    @relation("TicketReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+    @@index([ticketId])
+    @@index([authorId])
+}
