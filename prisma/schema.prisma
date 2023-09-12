@@ -9,6 +9,7 @@ datasource db {
     url          = env("DATABASE_URL")
     relationMode = "prisma"
 }
+
 // Translating this from a university environment
 // to a Call-a-Doctor consultancy service
 // A user can be a patient, doctor, clinicadmin, or sysadmin
@@ -16,64 +17,165 @@ datasource db {
 // Clinic entity - Needs to know who is admin, who is doctor
 // Appointment/Consultation entity - Needs to know who is patient, who is doctor, which clinic
 // Prescription - Patient, Doctor, Clinic, Appointment
+
 model User {
-    id              String              @id @default(cuid())
-    fullName        String
-    email           String              @unique
-    password        String
-    contactNo       String              
-    createdAt       DateTime            @default(now())
-    updatedAt       DateTime            @updatedAt
-    lecturer        Lecturer[]
-    student         Student[]
-    createdPosts    ModulePost[]        @relation("CreatedPosts")
-    favoritePosts   ModulePost[]
-    replies         Reply[]
-    contentAttempt  HubContentAttempt[]
-    helpdeskTickets HelpdeskTicket[]    @relation("TicketAuthor")
-    ticketReplies   TicketReply[]       @relation("TicketReplyAuthor")
+    id               String             @id @default(cuid())
+    fullName         String
+    email            String             @unique
+    password         String
+    contactNo        String
+    patient          Patient[]
+    clinicAdmin      ClinicAdmin[]
+    doctor           Doctor[]
+    govHealthOfficer GovHealthOfficer[]
 }
 
-model Lecturer {
-    id             String             @id @default(cuid())
-    tenure         Tenure             @default(FULLTIME)
+model Patient {
+    id             String        @id @default(cuid())
+    // Biodata
+    firstName      String
+    lastName       String
+    dateOfBirth    DateTime
+    gender         Gender
+    // Contact
+    patientAddress String?
+    city           String?
+    state          String?
+    zip            String?
     userId         String
-    schoolId       String
-    userProfile    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    modules        Module[]
-    school         School             @relation(fields: [schoolId], references: [id])
+    user           User          @relation(fields: [userId], references: [id])
     appointments   Appointment[]
-    uploads        ModuleUpload[]
-    apptSettings   LecApptSetting[]
-    createdContent ModuleHubContent[]
 
-    @@index([schoolId])
     @@index([userId])
 }
 
-model Appointment {
-    id           Int       @id @default(autoincrement())
-    createdAt    DateTime  @default(now())
-    updatedAt    DateTime  @updatedAt
-    isCompleted  Boolean   @default(false)
-    title        String
-    description  String?   @db.Text
-    location     String
-    startTime    DateTime
-    endTime      DateTime
-    completedAt  DateTime?
-    editedAt     DateTime? @default(now())
-    lectAccept   Boolean   @default(false)
-    studAccept   Boolean   @default(false)
-    lectAcceptAt DateTime?
-    studAcceptAt DateTime?
-    studentId    String
-    lecturerId   String
-    student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-    lecturer     Lecturer  @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+enum Gender {
+    MALE
+    FEMALE
+    OTHER
+}
 
-    @@index([studentId])
-    @@index([lecturerId])
+model ClinicAdmin {
+    id       String @id @default(cuid())
+    user     User   @relation(fields: [userId], references: [id])
+    userId   String
+    Clinic   Clinic @relation(fields: [clinicId], references: [id])
+    clinicId String
+
+    @@index([userId])
+    @@index([clinicId])
+}
+
+model Doctor {
+    id        String @id @default(cuid())
+    // Biodata
+    firstName String
+    lastName  String
+    gender    Gender
+
+    // Doctor details
+    speciality         Speciality?          @default(NONE)
+    // TODO: Add Valid License
+    user               User                 @relation(fields: [userId], references: [id])
+    userId             String
+    appointments       Appointment[]
+    doctorApptSchedule DoctorApptSchedule[]
+
+    clinic   Clinic? @relation(fields: [clinicId], references: [id])
+    clinicId String?
+
+    @@index([userId])
+    @@index([clinicId])
+}
+
+model GovHealthOfficer {
+    id       String @id @default(cuid())
+    user     User   @relation(fields: [userId], references: [id])
+    userId   String
+    govRegId String
+
+    @@index([userId])
+    @@index([govRegId])
+}
+
+enum Speciality {
+    GENERAL_PRACTICE
+    DERMATOLOGY
+    CARDIOLOGY
+    GYNAECOLOGY
+    NEUROLOGY
+    OPHTHALMOLOGY
+    ORTHOPAEDICS
+    PAEDIATRICS
+    UROLOGY
+    OTHER
+    NONE
+}
+
+model Appointment {
+    id        Int      @id @default(autoincrement())
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    // Appt Details
+
+    title           String
+    desc            String
+    startTime       DateTime
+    endTime         DateTime
+    completedAt     DateTime?
+    editedAt        DateTime?  @default(now())
+    status          ApptStatus @default(PENDING)
+    docAccepted     Boolean    @default(false)
+    patientAccepted Boolean    @default(false)
+    docAcceptAt     DateTime?
+    patientAcceptAt DateTime?
+
+    // Details Of Parties Involved  
+    patient   Patient @relation(fields: [patientId], references: [id])
+    patientId String
+
+    doctor   Doctor @relation(fields: [doctorId], references: [id])
+    doctorId String
+
+    // No need for clinic because doctor is already linked to clinic
+    // Many prescriptions per appointment
+    prescription Prescription[]
+
+    @@index([patientId])
+    @@index([doctorId])
+}
+
+enum ApptStatus {
+    PENDING
+    CONFIRMED
+    CANCELLED
+    COMPLETED
+}
+
+// TODO: Maybe a daily prescription update?
+model Prescription {
+    id            Int         @id @default(autoincrement())
+    // Prescription Details
+    title         String
+    desc          String
+    // Patient can update prescription
+    // TODO: Add Valid Prescripition Image
+    appointment   Appointment @relation(fields: [appointmentId], references: [id])
+    appointmentId Int
+
+    @@index([appointmentId])
+}
+
+model DoctorApptSchedule {
+    id        Int      @id @default(autoincrement())
+    day       Day      @default(MONDAY)
+    startTime DateTime
+    endTime   DateTime
+    doctorId  String
+    doctor    Doctor   @relation(fields: [doctorId], references: [id])
+
+    @@index([doctorId])
 }
 
 enum Day {
@@ -86,266 +188,62 @@ enum Day {
     SUNDAY
 }
 
-// Essentially the consultation hours per lecturer for an academic semester
-// One lecturer can have many LecApptSetting
-// A lecturer will define the day of the week, start time, end time, location
-// Working with DateTime where year, month, day is not important
-model LecApptSetting {
-    id         Int      @id @default(autoincrement())
-    lecturerId String
-    createdAt  DateTime @default(now())
-    updatedAt  DateTime @updatedAt
-    day        Day      @default(MONDAY)
-    startTime  DateTime
-    endTime    DateTime
-    location   String
-    lecturer   Lecturer @relation(fields: [lecturerId], references: [id], onDelete: Cascade)
+model Clinic {
+    id                 String            @id @default(cuid())
+    name               String
+    address            String
+    city               String
+    state              String
+    zip                String
+    phoneNum           String
+    govRegId           String
+    govRegDocSystem    GovRegSystem      @relation(fields: [govRegId], references: [id])
+    admin              ClinicAdmin[]
+    doctor             Doctor[]
+    // No need for appointment because it is already linked to doctor
+    clinicRegistration ClinicEnrolment[]
 
-    @@index([lecturerId])
+    @@index([govRegId])
 }
 
-model Institution {
-    id              String           @id @default(cuid())
-    institutionCode InstitutionCodes @default(IICP)
-    school          School[]
+model ClinicEnrolment {
+    id              String          @id @default(cuid())
+    createdAt       DateTime        @default(now())
+    updatedAt       DateTime        @updatedAt
+    status          EnrolmentStatus @default(PENDING)
+    clinicId        String
+    clinic          Clinic          @relation(fields: [clinicId], references: [id])
+    govRegId        String
+    govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id])
+
+    @@index([clinicId])
+    @@index([govRegId])
 }
 
-model School {
-    id            String      @id @default(cuid())
-    schoolCode    String      @unique
-    name          String
-    description   String?
-    institutionId String
-    institution   Institution @relation(fields: [institutionId], references: [id])
-    programme     Programme[]
-    students      Student[]
-    lecturer      Lecturer[]
-
-    @@index([institutionId])
+enum EnrolmentStatus {
+    PENDING
+    APPROVED
+    REJECTED
 }
 
-model Student {
-    id           String             @id @default(cuid())
-    session      Sessions           @default(APR2023)
-    userId       String
-    schoolId     String?
-    userProfile  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    school       School?            @relation(fields: [schoolId], references: [id])
-    modules      ModuleEnrollment[]
-    appointments Appointment[]
+model GovRegSystem {
+    id               String           @id @default(cuid())
+    typeOfSystem     TypeOfSystem
+    healthcareSystem HealthcareSystem
 
-    @@index([schoolId])
-    @@index([userId])
+    clinic                Clinic[]
+    programmeRegistration ClinicEnrolment[]
 }
 
-model ModuleEnrollment {
-    createdAt       DateTime @default(now())
-    enrollmentGrade Int?
-    studentId       String
-    moduleId        String
-    student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-    module          Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-
-    @@id([studentId, moduleId])
-    @@index([studentId])
-    @@index([moduleId])
+enum TypeOfSystem {
+    CLINIC
+    HOSPITAL
+    PHARMACY
+    OTHER
 }
 
-model Programme {
-    id            String   @id @default(cuid())
-    programmeCode String   @unique
-    programmeName String
-    programmeDesc String?
-    schoolId      String
-    school        School   @relation(fields: [schoolId], references: [id])
-    modules       Module[]
-
-    @@index([schoolId])
-}
-
-model Module {
-    id                String             @id @default(cuid())
-    moduleCode        String             @unique
-    moduleTitle       String
-    moduleDesc        String?            @db.Text
-    programmeId       String
-    lecturerId        String?
-    programme         Programme          @relation(fields: [programmeId], references: [id])
-    lecturer          Lecturer?          @relation(fields: [lecturerId], references: [id])
-    moduleEnrollments ModuleEnrollment[]
-    modulePosts       ModulePost[]
-    moduleUploads     ModuleUpload[]
-    moduleHubContent  ModuleHubContent[]
-
-    @@index([programmeId])
-    @@index([lecturerId])
-}
-
-model ModulePost {
-    id          Int           @id @default(autoincrement())
-    title       String
-    content     String?       @db.Text
-    moduleId    String
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-    authorId    String
-    editedAt    DateTime?     @default(now())
-    module      Module        @relation(fields: [moduleId], references: [id])
-    replies     Reply[]
-    author      User   @relation("CreatedPosts", fields: [authorId], references: [id])
-    favoritedBy User[]
-
-    @@index([moduleId])
-    @@index([authorId])
-}
-
-model ModuleUpload {
-    id          Int                     @id @default(autoincrement())
-    objKey      String
-    moduleId    String
-    createdAt   DateTime                @default(now())
-    updatedAt   DateTime                @updatedAt
-    uploaderId  String
-    editedAt    DateTime?               @default(now())
-    uploadType  ModuleUpload_uploadType @default(LINK)
-    description String?
-    title       String
-    module      Module                  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-    uploader    Lecturer                @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
-
-    @@index([moduleId])
-    @@index([uploaderId])
-}
-
-model Reply {
-    content           String?     @db.Text
-    modulePostId      Int
-    createdAt         DateTime    @default(now())
-    updatedAt         DateTime    @updatedAt
-    authorId          String
-    replyId           Int         @id @default(autoincrement())
-    editedAt          DateTime?   @default(now())
-    moduleDiscussions ModulePost  @relation(fields: [modulePostId], references: [id], onDelete: Cascade)
-    author            User @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-    @@index([modulePostId])
-    @@index([authorId])
-}
-
-model ModulePostToUserProfile {
-    A Int
-    B String
-
-    @@unique([A, B], map: "_ModulePostToUserProfile_AB_unique")
-    @@index([B], map: "_ModulePostToUserProfile_B_index")
-    @@map("_ModulePostToUserProfile")
-}
-
-enum Tenure {
-    FULLTIME
-    PARTTIME
-}
-
-enum InstitutionCodes {
-    IICP
-    IIUN
-    IICS
-    ICS
-}
-
-enum Sessions {
-    APR2023
-    AUG2023
-    JAN2024
-    APR2024
-}
-
-enum ModuleUpload_uploadType {
-    IMG
-    VIDEO
-    PDF
-    LINK
-}
-
-// A user tries a quiz from the ModuleQuiz table.
-// This attempt goes into the QuizAttempts table.
-// A ModuleQuiz entry has an author lecturer.
-// An attempt has a user attached to it.
-
-model ModuleHubContent {
-    id          Int                 @id @default(autoincrement())
-    moduleId    String
-    title       String              @unique
-    description String?
-    contentType ContentType         @default(GAME)
-    contentInfo Json
-    createdAt   DateTime            @default(now())
-    updatedAt   DateTime            @updatedAt
-    authorId    String
-    editedAt    DateTime?           @default(now())
-    module      Module              @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-    author      Lecturer            @relation(fields: [authorId], references: [id], onDelete: Cascade)
-    attempts    HubContentAttempt[]
-
-    @@index([moduleId])
-    @@index([authorId])
-}
-
-// Many to many relationship between QuizAttempts and User
-// Many users can attempt many quizzes.
-model HubContentAttempt {
-    id           Int              @id @default(autoincrement())
-    userId       String
-    createdAt    DateTime         @default(now())
-    updatedAt    DateTime         @updatedAt
-    contentId    Int
-    contentScore Int
-    content      ModuleHubContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
-    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@index([userId])
-    @@index([contentId])
-}
-
-enum ContentType {
-    MULTIPLE_CHOICE
-    FILL_IN_THE_BLANK
-    GAME
-    ACTIVITY
-}
-
-enum TicketStatus {
-    OPEN
-    CLOSED
-}
-
-model HelpdeskTicket {
-    id        Int           @id @default(autoincrement())
-    title     String
-    content   String?       @db.Text
-    status    TicketStatus  @default(OPEN)
-    createdAt DateTime      @default(now())
-    updatedAt DateTime      @updatedAt
-    authorId  String
-    image     Bytes?
-    editedAt  DateTime?     @default(now())
-    author    User   @relation("TicketAuthor", fields: [authorId], references: [id])
-    replies   TicketReply[]
-
-    @@index([authorId])
-}
-
-model TicketReply {
-    id             Int            @id @default(autoincrement())
-    content        String?        @db.Text
-    ticketId       Int
-    createdAt      DateTime       @default(now())
-    updatedAt      DateTime       @updatedAt
-    authorId       String
-    editedAt       DateTime?      @default(now())
-    helpdeskTicket HelpdeskTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-    author         User    @relation("TicketReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-
-    @@index([ticketId])
-    @@index([authorId])
+enum HealthcareSystem {
+    GOVERNMENT
+    PRIVATE
+    OTHER
 }

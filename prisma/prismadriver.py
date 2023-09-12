@@ -1,15 +1,21 @@
-from prisma import Prisma
 import json
 from datetime import datetime, timedelta
+
+from dotenv import load_dotenv
 from pendulum import timezone
+
+from prisma import Prisma
+
+load_dotenv()
+
 
 prisma = Prisma(auto_register=True)
 prisma.connect()
 
 
 def prismaShowAll():
-    prisma.userprofile.delete_many()
-    # newUser = prisma.userprofile.create(
+    prisma.user.delete_many()
+    # newUser = prisma.user.create(
     #     data={
     #         "fullName": "John Doe",
     #         "email": "test@gmail.com",
@@ -18,7 +24,7 @@ def prismaShowAll():
     #     }
     # )
     # print(newUser.json(indent=2))
-    # users = prisma.userprofile.find_many()
+    # users = prisma.user.find_many()
     # for u in users:
     #     print(u.json(indent=2))
 
