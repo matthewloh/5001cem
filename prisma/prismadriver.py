@@ -36,17 +36,14 @@ def prismaCreateClinicAdmin():
                     "state": "Kuala Lumpur",
                     "zip": "12345",
                 }
-            }
+            },
         },
-        include={
-            "user": True,
-            "clinic": True  
-        }
+        include={"user": True, "clinic": True},
     )
     # admin = prisma.clinicadmin.find_first()
     print(admin.json(indent=2))
-    print(admin.user.json(indent=2))
-    print(admin.clinic.json(indent=2))
+    print(admin.user.json(indent=4))
+    print(admin.clinic.json(indent=6))
 
 
 """ 
@@ -61,7 +58,7 @@ def prismaCreateClinicAdmin():
 8. Create Patient
 9. Patient browse Doctor
 10. Patient browse Clinic
-11. Patient Make AppointmentZZ
+11. Patient Make Appointment
 12. Doctor Approve Appointment
 13. Patient Get Prescription
 14. Patient Complete Appointment
