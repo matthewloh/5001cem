@@ -9,10 +9,12 @@ from dotenv import load_dotenv
 from prisma import Prisma
 from pendulum import timezone
 from nonstandardimports import *
-""" 
+
+"""
 Views
 """
 from basewindow import ElementCreator, gridGenerator
+
 load_dotenv()
 
 user32 = windll.user32
@@ -33,8 +35,15 @@ class Window(ElementCreator):
             self.frames[F] = frame
             frame.grid(row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW)
             self.maincanvas = self.canvasCreator(
-                xpos=80, ypos=80, width=1920, height=920, root=self,
-                classname="maincanvas", bgcolor=WHITE, isTransparent=True, transparentcolor=LIGHTYELLOW
+                xpos=80,
+                ypos=80,
+                width=1920,
+                height=920,
+                root=self,
+                classname="maincanvas",
+                bgcolor=WHITE,
+                isTransparent=True,
+                transparentcolor=LIGHTYELLOW,
             )
             frame.grid_remove()
 
@@ -45,13 +54,24 @@ class Window(ElementCreator):
 
     def loadSignIn(self):
         self.labelCreator(
-            imagepath=r"assets\HomePage\SignIn.png", xpos=0, ypos=0,
-            classname="homepagebg", root=self
+            imagepath=r"assets\HomePage\SignIn.png",
+            xpos=0,
+            ypos=0,
+            classname="homepagebg",
+            root=self,
         )
 
     def updateWidgetsDict(self, root: Frame):
-        widgettypes = (Label, Button, Frame, Canvas, Entry,
-                       Text, ScrolledFrame, ScrolledText)
+        widgettypes = (
+            Label,
+            Button,
+            Frame,
+            Canvas,
+            Entry,
+            Text,
+            ScrolledFrame,
+            ScrolledText,
+        )
         frames = ()
         for widgetname, widget in self.children.items():
             if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
@@ -103,7 +123,8 @@ class Window(ElementCreator):
         self.resizable(False, False)
         self.bind("<Escape>", lambda e: self.destroy())
         self.parentFrame = Frame(
-            self, bg=ORANGE, width=1, height=1, name="parentframe", autostyle=False)
+            self, bg=ORANGE, width=1, height=1, name="parentframe", autostyle=False
+        )
         self.parentFrame.grid(row=0, column=0, rowspan=96,
                               columnspan=54, sticky=NSEW)
         gridGenerator(self.parentFrame, 96, 54, OTHERPINK)

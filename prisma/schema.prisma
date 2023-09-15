@@ -56,11 +56,11 @@ enum Gender {
 }
 
 model ClinicAdmin {
-    id       String @id @default(cuid())
-    user     User   @relation(fields: [userId], references: [id])
+    id       String  @id @default(cuid())
+    user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId   String
-    Clinic   Clinic @relation(fields: [clinicId], references: [id])
-    clinicId String
+    clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+    clinicId String?
 
     @@index([userId])
     @@index([clinicId])
@@ -76,12 +76,12 @@ model Doctor {
     // Doctor details
     speciality         Speciality?          @default(NONE)
     // TODO: Add Valid License
-    user               User                 @relation(fields: [userId], references: [id])
+    user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId             String
     appointments       Appointment[]
     doctorApptSchedule DoctorApptSchedule[]
 
-    clinic   Clinic? @relation(fields: [clinicId], references: [id])
+    clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
     clinicId String?
 
     @@index([userId])
@@ -90,7 +90,7 @@ model Doctor {
 
 model GovHealthOfficer {
     id       String @id @default(cuid())
-    user     User   @relation(fields: [userId], references: [id])
+    user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId   String
     govRegId String
 
@@ -132,10 +132,10 @@ model Appointment {
     patientAcceptAt DateTime?
 
     // Details Of Parties Involved  
-    patient   Patient @relation(fields: [patientId], references: [id])
+    patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
     patientId String
 
-    doctor   Doctor @relation(fields: [doctorId], references: [id])
+    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
     doctorId String
 
     // No need for clinic because doctor is already linked to clinic
@@ -161,7 +161,7 @@ model Prescription {
     desc          String
     // Patient can update prescription
     // TODO: Add Valid Prescripition Image
-    appointment   Appointment @relation(fields: [appointmentId], references: [id])
+    appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
     appointmentId Int
 
     @@index([appointmentId])
@@ -173,7 +173,7 @@ model DoctorApptSchedule {
     startTime DateTime
     endTime   DateTime
     doctorId  String
-    doctor    Doctor   @relation(fields: [doctorId], references: [id])
+    doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
     @@index([doctorId])
 }
@@ -196,8 +196,8 @@ model Clinic {
     state              String
     zip                String
     phoneNum           String
-    govRegId           String
-    govRegDocSystem    GovRegSystem      @relation(fields: [govRegId], references: [id])
+    govRegId           String?
+    govRegDocSystem    GovRegSystem?     @relation(fields: [govRegId], references: [id], onDelete: SetNull)
     admin              ClinicAdmin[]
     doctor             Doctor[]
     // No need for appointment because it is already linked to doctor
@@ -212,9 +212,9 @@ model ClinicEnrolment {
     updatedAt       DateTime        @updatedAt
     status          EnrolmentStatus @default(PENDING)
     clinicId        String
-    clinic          Clinic          @relation(fields: [clinicId], references: [id])
+    clinic          Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
     govRegId        String
-    govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id])
+    govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id], onDelete: Cascade)
 
     @@index([clinicId])
     @@index([govRegId])
