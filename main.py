@@ -34,31 +34,48 @@ class Window(ElementCreator):
             frame = F(parent=self.parentFrame, controller=self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW)
-            self.maincanvas = self.canvasCreator(
-                xpos=80,
-                ypos=80,
-                width=1920,
-                height=920,
-                root=self,
-                classname="maincanvas",
-                bgcolor=WHITE,
-                isTransparent=True,
-                transparentcolor=LIGHTYELLOW,
-            )
             frame.grid_remove()
 
-        # self.postSelectFrame.tkraise()
-        # self.show_frame(HomePage)
         self.loadSignIn()
+        # self.show_frame(HomePage)
         self.bind("<F11>", lambda e: self.togglethewindowbar())
 
     def loadSignIn(self):
-        self.labelCreator(
-            imagepath=r"assets\HomePage\SignIn.png",
-            xpos=0,
-            ypos=0,
+        self.bg = self.labelCreator(
+            root=self.parentFrame,
+            x=0, y=0,
+            ipath=r"assets\HomePage\SignIn.png",
             classname="homepagebg",
-            root=self,
+        )
+        """
+        self.paramDict = {
+            "emailentry": {
+                "root": self.parentFrame,
+                "x": 1100, "y": 160,
+                "width": 680, "height": 80,
+                "classname":  EMAIL_ENT,
+            },
+            "passwordentry": {
+                "root": self.parentFrame,
+                "x": 1100, "y": 320,
+                "width": 680, "height": 80,
+                "classname": PW_ENT,
+            },
+        }
+        for paramname, param in self.paramDict.items():
+            self.widgetsDict[paramname] = self.ttkEntryCreator(**param)
+        self.widgetsDict[EMAIL_ENT].grid_remove() """
+        self.loginEmailEntry = self.ttkEntryCreator(
+            root=self.parentFrame,
+            x=1100, y=160,
+            width=680, height=80,
+            classname="emailentry"
+        )
+        self.loginPasswordEntry = self.ttkEntryCreator(
+            root=self.parentFrame,
+            x=1100, y=320,
+            width=680, height=80,
+            classname="passwordentry"
         )
 
     def updateWidgetsDict(self, root: Frame):
@@ -123,7 +140,7 @@ class Window(ElementCreator):
         self.resizable(False, False)
         self.bind("<Escape>", lambda e: self.destroy())
         self.parentFrame = Frame(
-            self, bg=ORANGE, width=1, height=1, name="parentframe", autostyle=False
+            self, bg=ORANGE, width=1920, height=1080, name="parentframe", autostyle=False
         )
         self.parentFrame.grid(row=0, column=0, rowspan=96,
                               columnspan=54, sticky=NSEW)
@@ -141,10 +158,10 @@ class HomePage(Frame):
 
     def load(self):
         self.CT = self.controller
-        # self.controller.maincanvas = self.controller.canvasCreator(
-        #     xpos=80, ypos=80, width=1920, height=920, root=self,
-        #     classname="maincanvas", bgcolor=WHITE, isTransparent=True, transparentcolor=LIGHTYELLOW
-        # )
+        self.maincanvas = self.controller.canvasCreator(
+            x=80, y=80, width=1920, height=920, root=self,
+            classname="maincanvas", bgcolor=WHITE, isTransparent=True, transparentcolor=LIGHTYELLOW
+        )
 
 
 def runGui():

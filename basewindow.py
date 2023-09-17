@@ -62,19 +62,19 @@ class ElementCreator(ttk.Window):
         t.daemon = True
         t.start()
 
-    def createImageReference(self, imagepath: str, classname: str):
-        # stores a key value pair of "classname" : "imagepath"
-        self.imagePathDict[classname] = imagepath
+    def createImageReference(self, ipath: str, classname: str):
+        # stores a key value pair of "classname" : "ipath"
+        self.imagePathDict[classname] = ipath
         # creates a Tkinter image object
-        image = ImageTk.PhotoImage(Image.open(imagepath))
+        image = ImageTk.PhotoImage(Image.open(ipath))
         # stores a key value pair of "classname" : "image" to prevent garbage collection
         self.imageDict[classname] = image
         return image
 
     def settingsUnpacker(self, listoftuples, typeoftuple):
         """
-        format for labels: (imagepath, x, y, classname, root)\n
-        format for buttons: (imagepath, x, y, classname, root, buttonFunction)\n
+        format for labels: (ipath, x, y, classname, root)\n
+        format for buttons: (ipath, x, y, classname, root, buttonFunction)\n
         tupletodict creates a dict mapping to the creator functions.
         TODO: enable styling within here
         """
@@ -86,16 +86,16 @@ class ElementCreator(ttk.Window):
 
     def tupleToDict(self, tup):  # TODO: make this multipurpose
         if len(tup) == 5:
-            return dict(zip(("imagepath", "xpos", "ypos", "classname", "root"), tup))
+            return dict(zip(("ipath", "x", "y", "classname", "root"), tup))
         if len(tup) == 6:
-            return dict(zip(("imagepath", "xpos", "ypos", "classname", "root", "buttonFunction"), tup))
+            return dict(zip(("ipath", "x", "y", "classname", "root", "buttonFunction"), tup))
 
-    def buttonCreator(self, imagepath=None, xpos=None, ypos=None, classname=None, buttonFunction=None, root=None, relief=SUNKEN, overrideRelief=FLAT, bg=WHITE, isPlaced=False) -> Button:
+    def buttonCreator(self, ipath=None, x=None, y=None, classname=None, buttonFunction=None, root=None, relief=SUNKEN, overrideRelief=FLAT, bg=WHITE, isPlaced=False) -> Button:
         """
         Args:
-            imagepath (str): path to the image
-            xpos (int): x position of the button
-            ypos (int): y position of the button
+            ipath (str): path to the image
+            x (int): x position of the button
+            y (int): y position of the button
             classname (str): name of the button.
             buttonFunction (function): function to be called when the button is clicked.
             root (Frame): the root frame to place the button in.
@@ -106,20 +106,20 @@ class ElementCreator(ttk.Window):
 
         Usage:
             self.controller.buttonCreator(
-                imagepath=r"\imagepath.png", xpos=0, ypos=0, 
+                ipath=r"\ipath.png", x=0, y=0, 
                 classname="classname", root=validtkinterparent (Frame, Canvas, ttk.ScrolledFrame),
                 buttonFunction=lambda: function()
             )
         """
         classname = classname.replace(" ", "").lower()
-        self.createImageReference(imagepath, classname)
+        self.createImageReference(ipath, classname)
         image = self.imageDict[classname]
         widthspan = int(image.width()/20)
         # just the vertical length of the image divided by 20 to get rowspan
         heightspan = int(image.height()/20)
         # the W value of the image divided by 20 to get the column position
-        columnarg = int(xpos/20)
-        rowarg = int(ypos/20)
+        columnarg = int(x/20)
+        rowarg = int(y/20)
         if isPlaced:
             placedwidth = int(image.width())
             placedheight = int(image.height())
@@ -131,7 +131,7 @@ class ElementCreator(ttk.Window):
             name=classname, autostyle=False
         )
         if isPlaced:
-            button.place(x=xpos, y=ypos, width=placedwidth,
+            button.place(x=x, y=y, width=placedwidth,
                          height=placedheight)
         else:
             button.grid(row=rowarg, column=columnarg,
@@ -140,12 +140,12 @@ class ElementCreator(ttk.Window):
         self.widgetsDict[classname].grid_propagate(False)
         return button
 
-    def labelCreator(self, imagepath, xpos, ypos, classname=None, root=None, overrideRelief=FLAT, isPlaced=False, bg=WHITE) -> Label:
+    def labelCreator(self, ipath, x, y, classname=None, root=None, overrideRelief=FLAT, isPlaced=False, bg=WHITE) -> Label:
         """
         Args:
-            imagepath (str): path to the image
-            xpos (int): x position of the label
-            ypos (int): y position of the label
+            ipath (str): path to the image
+            x (int): x position of the label
+            y (int): y position of the label
             classname (str): name of the label.
             root (Frame): the root frame to place the label in.
             isPlaced (bool): whether or not the label is placed.
@@ -155,19 +155,19 @@ class ElementCreator(ttk.Window):
 
         Usage:
             self.controller.labelCreator(
-                imagepath=r"\imagepath.png", xpos=0, ypos=0, 
+                ipath=r"\ipath.png", x=0, y=0, 
                 classname="classname", root=validtkinterparent (Frame, Canvas, ttk.ScrolledFrame),
             )
         """
         classname = classname.replace(" ", "").lower()
-        self.createImageReference(imagepath, classname)
+        self.createImageReference(ipath, classname)
         image = self.imageDict[classname]
         widthspan = int(image.width()/20)
         # just the vertical length of the image divided by 20 to get rowspan
         heightspan = int(image.height()/20)
         # the W value of the image divided by 20 to get the column position
-        columnarg = int(xpos/20)
-        rowarg = int(ypos/20)
+        columnarg = int(x/20)
+        rowarg = int(y/20)
         placedwidth = int(image.width())
         placedheight = int(image.height())
         label = Label(
@@ -176,31 +176,31 @@ class ElementCreator(ttk.Window):
             autostyle=False, bg=bg
         )
         if isPlaced:
-            label.place(x=xpos, y=ypos, width=placedwidth, height=placedheight)
+            label.place(x=x, y=y, width=placedwidth, height=placedheight)
         else:
             label.grid(row=rowarg, column=columnarg,
                        rowspan=heightspan, columnspan=widthspan, sticky=NSEW)
         self.updateWidgetsDict(root=root)
         return label
 
-    def frameCreator(self, xpos, ypos, framewidth, frameheight, root=None, classname=None, bg=LIGHTYELLOW, relief=FLAT, imgSettings=None, isPlaced=False) -> Frame:
+    def frameCreator(self, x, y, framewidth, frameheight, root=None, classname=None, bg=LIGHTYELLOW, relief=FLAT, imgSettings=None, isPlaced=False) -> Frame:
         classname = classname.replace(" ", "").lower()
         widthspan = int(framewidth / 20)
         heightspan = int(frameheight / 20)
-        columnarg = int(xpos / 20)
-        rowarg = int(ypos / 20)
+        columnarg = int(x / 20)
+        rowarg = int(y / 20)
 
         frame = Frame(root, width=1, height=1, bg=bg,
                       relief=relief, name=classname, autostyle=False,)
         if isPlaced:
-            frame.place(x=xpos, y=ypos, width=framewidth, height=frameheight)
+            frame.place(x=x, y=y, width=framewidth, height=frameheight)
         else:
             frame.grid(row=rowarg, column=columnarg, rowspan=heightspan,
                        columnspan=widthspan, sticky=NSEW)
         self.updateWidgetsDict(root=root)
         if imgSettings:
             listofimages = list(enumerate(imgSettings))
-        # imgBg is a list of tuples containing (imagepath, x, y, name)
+        # imgBg is a list of tuples containing (ipath, x, y, name)
         # example = [("Assets\Dashboard\Top Bar.png", 0, 0, "stringwhatever"),] -> 0 ('Assets\\Dashboard\\Top Bar.png', 0, 0, 'stringwhatever')
         for widgetname, widget in root.children.items():
             if widgetname == classname:
@@ -211,17 +211,17 @@ class ElementCreator(ttk.Window):
                         # print(j[1] / 20, j[2] / 20)
                         self.buttonCreator(
                             j[0],
-                            j[1] - xpos,
-                            j[2] - ypos,
+                            j[1] - x,
+                            j[2] - y,
                             classname=j[3],
                             root=widget,
                             buttonFunction=j[4])
         return frame
 
-    def entryCreator(self, xpos, ypos, width, height, root=None, classname=None, bg=WHITE, relief=FLAT, fg=BLACK, textvariable=None, pady=None, font=("Avenir Next Medium", 16)) -> Entry:
+    def entryCreator(self, x, y, width, height, root=None, classname=None, bg=WHITE, relief=FLAT, fg=BLACK, textvariable=None, pady=None, font=("Avenir Next Medium", 16)) -> Entry:
         classname = classname.lower().replace(" ", "")
-        columnarg = int(xpos / 20)
-        rowarg = int(ypos / 20)
+        columnarg = int(x / 20)
+        rowarg = int(y / 20)
         widthspan = int(width / 20)
         heightspan = int(height / 20)
         self.updateWidgetsDict(root=root)
@@ -235,10 +235,10 @@ class ElementCreator(ttk.Window):
                 widget.grid_propagate(False)
         return entry
 
-    def canvasCreator(self, xpos, ypos, width, height, root, classname=None, bgcolor=WHITE, imgSettings=None, relief=FLAT, isTransparent=False, transparentcolor=TRANSPARENTGREEN) -> Canvas:
+    def canvasCreator(self, x, y, width, height, root, classname=None, bgcolor=WHITE, imgSettings=None, relief=FLAT, isTransparent=False, transparentcolor=TRANSPARENTGREEN) -> Canvas:
         classname = classname.lower().replace(" ", "")
-        columnarg = int(xpos / 20)
-        rowarg = int(ypos / 20)
+        columnarg = int(x / 20)
+        rowarg = int(y / 20)
         widthspan = int(width / 20)
         heightspan = int(height / 20)
         if imgSettings:
@@ -274,16 +274,16 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         return canvas
 
-    def menubuttonCreator(self, xpos=None, ypos=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), text=None, variable=None, listofvalues=None, command=None) -> ttk.Menubutton:
+    def menubuttonCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), text=None, variable=None, listofvalues=None, command=None) -> ttk.Menubutton:
         """
-        Takes in arguments xpos, ypos, width, height, from Figma, creates a frame,\n
+        Takes in arguments x, y, width, height, from Figma, creates a frame,\n
         and places a menubutton inside of it. The menubutton is then returned into the global dict of widgets.\n
         Requires a var like StringVar() to be initialized and passed in.\n
         Feed in a list of values and command functions to be used in the menubutton.\n
         Styling handled by passing in a formatted classname and font to config a style.
         """
-        columnarg = int(xpos / 20)
-        rowarg = int(ypos / 20)
+        columnarg = int(x / 20)
+        rowarg = int(y / 20)
         widthspan = int(width / 20)
         heightspan = int(height / 20)
         classname = classname.lower().replace(" ", "")
@@ -302,7 +302,7 @@ class ElementCreator(ttk.Window):
                                 font=("Urbanist Medium", 20))
             menustyle.map(themename, foreground=[('active', BLACK), ("disabled", BLACK)],
                           background=[('active', "#ffe3bd"), ("disabled", "#ffe3bd")])
-        self.frameCreator(xpos, ypos, width, height, root,
+        self.frameCreator(x, y, width, height, root,
                           classname=f"{classname}hostfr", bg=bgcolor, relief=FLAT)
         frameref = self.widgetsDict[f"{classname}hostfr"]
         menubutton = ttk.Menubutton(
@@ -327,21 +327,21 @@ class ElementCreator(ttk.Window):
 
         return menubutton
 
-    def ttkEntryCreator(self, xpos=None, ypos=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), fg=BLACK, validation=False, passwordchar="*", captchavar=None, isPlaced=False) -> ttk.Entry:
+    def ttkEntryCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), fg=BLACK, validation=False, passwordchar="*", captchavar=None, isPlaced=False) -> ttk.Entry:
         """
-        Takes in arguments xpos, ypos, width, height, from Figma, creates a frame,\n
+        Takes in arguments x, y, width, height, from Figma, creates a frame,\n
         and places a ttk.Entry inside of it. The ttk.Entry is then returned into the global dict of widgets.\n
         Requires a var like StringVar() to be initialized and passed in.\n
         Styling handled by passing in a formatted classname and font to config a style.
         """
         classname = classname.lower().replace(" ", "")
-        columnarg = int(xpos / 20)
-        rowarg = int(ypos / 20)
+        columnarg = int(x / 20)
+        rowarg = int(y / 20)
         widthspan = int(width / 20)
         heightspan = int(height / 20)
         # entrystyle = ttk.Style()
         # entrystyle.configure(f"{classname}.TEntry", font=font, background=bgcolor, foreground=WHITE)
-        frame = self.frameCreator(xpos, ypos, width, height, root,
+        frame = self.frameCreator(x, y, width, height, root,
                                   classname=f"{classname}hostfr", bg=bgcolor, relief=FLAT, isPlaced=isPlaced)
 
         @validator
@@ -401,12 +401,12 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         return entry
 
-    def textElement(self, imagepath, xpos, ypos, classname=None, buttonFunction=None, root=None, relief=FLAT, fg=BLACK, bg=WHITE, font=SFPRO, text=None, size=40, isPlaced=False, yIndex=0, xoffset=0) -> Label | Button:
+    def textElement(self, ipath, x, y, classname=None, buttonFunction=None, root=None, relief=FLAT, fg=BLACK, bg=WHITE, font=SFPRO, text=None, size=40, isPlaced=False, yIndex=0, xoffset=0) -> Label | Button:
         classname = classname.replace(" ", "").lower()
         # ~~~ ADD TEXT TO IMAGE FUNCTIONS ~~~
         h = fg.lstrip("#")
         textcolor = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
-        im = Image.open(imagepath)
+        im = Image.open(ipath)
         font = ImageFont.truetype(font, size)
         draw = ImageDraw.Draw(im)
         # print(im.size) # Returns (width, height) tuple
@@ -421,8 +421,8 @@ class ElementCreator(ttk.Window):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         widthspan = int(image.width()/20)
         heightspan = int(image.height()/20)
-        columnarg = int(xpos/20)
-        rowarg = int(ypos/20)
+        columnarg = int(x/20)
+        rowarg = int(y/20)
         placedwidth = int(widthspan*20)
         placedheight = int(heightspan*20)
 
@@ -430,7 +430,7 @@ class ElementCreator(ttk.Window):
             if isPlaced:
                 element = Button(root, image=image, cursor="hand2", command=lambda: buttonFunction() if buttonFunction else print("No function assigned to button"),
                                  relief=relief, bg=bg, width=1, height=1, name=classname, autostyle=False)
-                element.place(x=xpos, y=ypos, width=placedwidth,
+                element.place(x=x, y=y, width=placedwidth,
                               height=placedheight)
             else:
                 element = Button(root, image=image, cursor="hand2", command=lambda: buttonFunction() if buttonFunction else print("No function assigned to button"),
@@ -441,7 +441,7 @@ class ElementCreator(ttk.Window):
             if isPlaced:
                 element = Label(root, image=image, relief=relief, bg=bg,
                                 width=1, height=1, name=classname, autostyle=False)
-                element.place(x=xpos, y=ypos, width=placedwidth,
+                element.place(x=x, y=y, width=placedwidth,
                               height=placedheight)
             else:
                 element = Label(root, image=image, relief=relief, bg=bg,
