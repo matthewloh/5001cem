@@ -1,3 +1,4 @@
+import threading
 from tkinter import *
 from ctypes import windll
 import ttkbootstrap as ttk
@@ -9,11 +10,13 @@ from dotenv import load_dotenv
 from prisma import Prisma
 from pendulum import timezone
 from nonstandardimports import *
+from views.dashboard import Dashboard
+from views.registration import RegistrationPage
 
 """
 Views
 """
-from basewindow import ElementCreator, gridGenerator
+from resource.basewindow import ElementCreator, gridGenerator
 
 load_dotenv()
 
@@ -29,102 +32,77 @@ class Window(ElementCreator):
         self.frames = {}
         self.subframes = {}
         self.initializeWindow()
-        # self.initMainPrisma()
-        for F in (HomePage,):
-            frame = F(parent=self.parentFrame, controller=self)
-            self.frames[F] = frame
-            frame.grid(row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW)
-            frame.grid_remove()
-
+        self.initMainPrisma()
         self.loadSignIn()
-        # self.show_frame(HomePage)
         self.bind("<F11>", lambda e: self.togglethewindowbar())
+        # self.pingBackend()
 
     def loadSignIn(self):
-        self.bg = self.labelCreator(
-            root=self.parentFrame,
-            x=0, y=0,
-            ipath=r"assets\HomePage\SignIn.png",
-            classname="homepagebg",
-        )
-        """
-        self.paramDict = {
-            "emailentry": {
-                "root": self.parentFrame,
-                "x": 1100, "y": 160,
-                "width": 680, "height": 80,
-                "classname":  EMAIL_ENT,
-            },
-            "passwordentry": {
-                "root": self.parentFrame,
-                "x": 1100, "y": 320,
-                "width": 680, "height": 80,
-                "classname": PW_ENT,
-            },
-        }
-        for paramname, param in self.paramDict.items():
-            self.widgetsDict[paramname] = self.ttkEntryCreator(**param)
-        self.widgetsDict[EMAIL_ENT].grid_remove() """
         self.loginEmailEntry = self.ttkEntryCreator(
             root=self.parentFrame,
-            x=1100, y=160,
-            width=680, height=80,
+            x=1140, y=440,
+            width=600, height=80,
             classname="emailentry"
         )
         self.loginPasswordEntry = self.ttkEntryCreator(
             root=self.parentFrame,
-            x=1100, y=320,
-            width=680, height=80,
+            x=1140, y=600,
+            width=600, height=80,
             classname="passwordentry"
         )
-
-    def updateWidgetsDict(self, root: Frame):
-        widgettypes = (
-            Label,
-            Button,
-            Frame,
-            Canvas,
-            Entry,
-            Text,
-            ScrolledFrame,
-            ScrolledText,
+        self.loginButton = self.buttonCreator(
+            root=self.parentFrame,
+            ipath=r"assets\HomePage\SignInButton.png",
+            x=1180, y=760,
+            classname="loginbutton",
+            buttonFunction=self.signIn,
         )
-        frames = ()
-        for widgetname, widget in self.children.items():
-            if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
-                self.widgetsDict[widgetname] = widget
-        for widgetname, widget in self.parentFrame.children.items():
-            if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
-                self.widgetsDict[widgetname] = widget
-        for widgetname, widget in root.children.items():
-            if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
-                self.widgetsDict[widgetname] = widget
+        self.signUpRedirectButton = self.buttonCreator(
+            root=self.parentFrame,
+            ipath=r"assets\HomePage\RedirectSignUpButton.png",
+            x=1180, y=940,
+            classname="signupredirectbutton",
+            useHover=True,
+            buttonFunction=self.loadReg,
+        )
+
+    def signIn(self):
+        self.dashboard = Dashboard(parent=self.parentFrame, controller=self)
+        self.frames[Dashboard] = self.dashboard
+        self.dashboard.grid(
+            row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW
+        )
+        self.dashboard.tkraise()
+        return
         try:
-            for widgetname, widget in self.get_page(HomePage).children.items():
-                if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
-                    self.widgetsDict[widgetname] = widget
-        except:
-            pass
-        try:
-            for widgetname, widget in self.widgetsDict["maincanvas"].children.items():
-                if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
-                    self.widgetsDict[widgetname] = widget
-        except:
-            pass
+            toast = ToastNotification(
+                title="Signing in",
+                message=f"Signing in...",
+                bootstyle=INFO,
+            )
+            toast.show_toast()
+            self.prisma = self.mainPrisma
+            emailtext = self.loginEmailEntry.get()
+            entrytext = self.loginPasswordEntry.get()
+            if emailtext == "" or entrytext == "":
+                toast.hide_toast()
+                toast = ToastNotification(
+                    title="Error",
+                    message=f"Please fill in all fields",
+                    duration=3000,
+                )
+                toast.show_toast()
+                return
+        except Exception as e:
+            print(e)
 
-    def show_frame(self, cont):
-        frame = self.frames[cont]
-        frame.grid()
-        frame.tkraise()
-
-    def show_canvas(self, cont):
-        canvas = self.canvasInDashboard[cont]
-        canvas.grid()
-        canvas.tk.call("raise", canvas._w)
-        canvas.focus_force()
-
-    def get_page(self, classname):
-        return self.frames[classname]
+    def loadReg(self):
+        self.registrationPage = RegistrationPage(
+            parent=self.parentFrame, controller=self)
+        self.frames[RegistrationPage] = self.registrationPage
+        self.registrationPage.grid(
+            row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW)
+        self.registrationPage.tkraise()
 
     def initializeWindow(self):
         windll.shcore.SetProcessDpiAwareness(1)
@@ -136,32 +114,21 @@ class Window(ElementCreator):
         elif self.winfo_screenwidth() > 1920 and self.winfo_screenheight() > 1080:
             self.geometry(
                 f"1920x1080+{quarterofscreenwidth}+{quarterofscreenheight}")
-        self.title("INTI Learning Platform")
+        self.title("Call a Doctor Desktop App")
         self.resizable(False, False)
         self.bind("<Escape>", lambda e: self.destroy())
         self.parentFrame = Frame(
-            self, bg=ORANGE, width=1920, height=1080, name="parentframe", autostyle=False
+            self, bg="#ecf2ff", width=1920, height=1080, name="parentframe", autostyle=False
+        )
+        gridGenerator(self.parentFrame, 96, 54, "#ecf2ff")
+        self.bg = self.labelCreator(
+            root=self.parentFrame,
+            x=0, y=0,
+            ipath=r"assets\HomePage\SignIn.png",
+            classname="homepagebg",
         )
         self.parentFrame.grid(row=0, column=0, rowspan=96,
                               columnspan=54, sticky=NSEW)
-        gridGenerator(self.parentFrame, 96, 54, OTHERPINK)
-
-
-class HomePage(Frame):
-    def __init__(self, parent, controller: Window):
-        Frame.__init__(self, parent, width=1, height=1,
-                       bg=OTHERPINK, name="dashboard", autostyle=False)
-        self.controller = controller
-        self.parent = parent
-        gridGenerator(self, 96, 54, LIGHTYELLOW)
-        self.load()
-
-    def load(self):
-        self.CT = self.controller
-        self.maincanvas = self.controller.canvasCreator(
-            x=80, y=80, width=1920, height=920, root=self,
-            classname="maincanvas", bgcolor=WHITE, isTransparent=True, transparentcolor=LIGHTYELLOW
-        )
 
 
 def runGui():

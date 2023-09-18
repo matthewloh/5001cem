@@ -9,4 +9,4 @@ import win32api
 import win32con
 import win32gui
 from PIL import Image, ImageTk, ImageSequence
-from static import *
+from resource.static import *

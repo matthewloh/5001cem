@@ -4,10 +4,11 @@ from tkinter import FLAT, NSEW, Frame, Label
 from prisma import Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.validation import add_regex_validation, validator, add_validation
 from nonstandardimports import *
 from tkinter import *
-from static import *
+from resource.static import *
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 # https://stackoverflow.com/a/68621773
 # This bit of code allows us to remove the window bar present in tkinter
@@ -58,9 +59,42 @@ class ElementCreator(ttk.Window):
             print(e)
 
     def initMainPrisma(self):
-        t = threading.Thread(target=self.startPrisma)
-        t.daemon = True
-        t.start()
+        self.t = threading.Thread(target=self.startPrisma)
+        self.t.daemon = True
+        self.t.start()
+
+    def pingBackend(self):
+        def foo():
+            if self.mainPrisma.is_connected:
+                self.mainPrisma.execute_raw(
+                    """ 
+                    SELECT 1;
+                    """
+                )
+            else:
+                self.mainPrisma.connect()
+        self.t = threading.Thread(target=foo)
+        self.t.daemon = True
+        self.t.start()
+        self.after(1000, self.pingBackend)
+
+    def updateWidgetsDict(self, root: Frame):
+        widgettypes = (
+            Label,
+            Button,
+            Frame,
+            Canvas,
+            Entry,
+            Text,
+            ScrolledFrame,
+            ScrolledText,
+        )
+        for widgetname, widget in self.children.items():
+            if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
+                self.widgetsDict[widgetname] = widget
+        for widgetname, widget in root.children.items():
+            if isinstance(widget, widgettypes) and not widgetname.startswith("!la"):
+                self.widgetsDict[widgetname] = widget
 
     def createImageReference(self, ipath: str, classname: str):
         # stores a key value pair of "classname" : "ipath"
@@ -90,7 +124,7 @@ class ElementCreator(ttk.Window):
         if len(tup) == 6:
             return dict(zip(("ipath", "x", "y", "classname", "root", "buttonFunction"), tup))
 
-    def buttonCreator(self, ipath=None, x=None, y=None, classname=None, buttonFunction=None, root=None, relief=SUNKEN, overrideRelief=FLAT, bg=WHITE, isPlaced=False) -> Button:
+    def buttonCreator(self, ipath=None, x=None, y=None, classname=None, buttonFunction=None, root=None, relief=FLAT, overrideRelief=FLAT, bg=WHITE, isPlaced=False, useHover=False) -> Button:
         """
         Args:
             ipath (str): path to the image
@@ -102,7 +136,7 @@ class ElementCreator(ttk.Window):
             isPlaced (bool): whether or not the button is placed.
 
         Returns:
-             Button: the button object placed in the root container
+             Button: the Tkinter button object placed in the root container
 
         Usage:
             self.controller.buttonCreator(
@@ -111,6 +145,12 @@ class ElementCreator(ttk.Window):
                 buttonFunction=lambda: function()
             )
         """
+        def hoverOnEnter(button, event):
+            button.config(relief="raised")
+
+        def unhoverOnLeave(button, event):
+            button.config(relief=relief)
+
         classname = classname.replace(" ", "").lower()
         self.createImageReference(ipath, classname)
         image = self.imageDict[classname]
@@ -136,6 +176,9 @@ class ElementCreator(ttk.Window):
         else:
             button.grid(row=rowarg, column=columnarg,
                         rowspan=heightspan, columnspan=widthspan, sticky=NSEW)
+        if useHover:
+            button.bind("<Enter>", lambda e: hoverOnEnter(button, e))
+            button.bind("<Leave>", lambda e: unhoverOnLeave(button, e))
         self.updateWidgetsDict(root=root)
         self.widgetsDict[classname].grid_propagate(False)
         return button
@@ -452,6 +495,20 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         element.grid_propagate(False)
         return element
+
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.grid()
+        frame.tkraise()
+
+    def show_canvas(self, cont):
+        canvas = self.canvasInDashboard[cont]
+        canvas.grid()
+        canvas.tk.call("raise", canvas._w)
+        canvas.focus_force()
+
+    def get_page(self, classname):
+        return self.frames[classname]
 
     def hex_to_rgb(self, hexstring) -> tuple:
         # Convert hexstring to integer
