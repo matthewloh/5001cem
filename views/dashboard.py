@@ -21,12 +21,12 @@ class Dashboard(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None, name="registration"):
         super().__init__(parent, width=1, height=1, bg="#344557", name=name)
         self.controller = controller
+        self.prisma = self.controller.mainPrisma
         self.parent = parent
         self.name = name
         gridGenerator(self, 96, 54, LIGHTYELLOW)
         self.createFrames()
         self.createElements()
-        self.prisma = self.controller.mainPrisma
 
     def createFrames(self):
         pass
@@ -39,8 +39,6 @@ class Dashboard(Frame):
             (r"assets\Dashboard\DashboardBG.png", 0, 0, "dashboardbg", self),
         ]
         self.staticBtns = [
-            (r"assets\Dashboard\PatientProfilePicture.png", 20, 100, "placeholderpfp",
-             self, lambda: [print('pfp clicked')]),
             (r"assets\Dashboard\SignOut.png", 20, 980, "signoutbtn",
              self, lambda:[self.grid_remove()]),
             (r"assets\Dashboard\Settings.png", 120, 980, "settingsbtn",
@@ -67,3 +65,59 @@ class Dashboard(Frame):
                 isPlaced=True,
             )
             initypos += 120
+
+    def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
+        self.profilePictures = {
+            "patient": r"assets\Dashboard\PatientAssets\PatientProfilePicture.png",
+            "doctor": r"assets/Dashboard/DoctorAssets/DoctorProfilePicture.png",
+            "clinicAdmin": r"assets/Dashboard/ClinicAdminAssets/AdminProfilePicture.png",
+            "govofficer": r"assets/Dashboard/OfficerAssets/OfficerProfilePicture.png",
+        }
+        self.dashboardChips = {
+            "patient": [
+                r"assets\Dashboard\PatientAssets\PatientBrowseClinics.png",
+                r"assets\Dashboard\PatientAssets\PatientPrescriptions.png",
+                r"assets\Dashboard\PatientAssets\PatientAppointments.png",
+            ],
+            "doctor": [
+                r"assets\Dashboard\DoctorAssets\DoctorYourClinic.png",
+                r"assets\Dashboard\DoctorAssets\DoctorPatientPrescriptions.png",
+                r"assets\Dashboard\DoctorAssets\DoctorPatientScheduling.png",
+            ],
+            "clinicAdmin": [
+                r"assets\Dashboard\ClinicAdminAssets\AdminManageClinic.png",
+                r"assets\Dashboard\ClinicAdminAssets\AdminViewPatientRequests.png",
+                r"assets\Dashboard\ClinicAdminAssets\AdminViewDoctorSchedule.png",
+            ],
+            "govofficer": [
+                r"assets\Dashboard\OfficerAssets\OfficerManageClinics.png",
+            ],
+        }
+        if patient:
+            role = "patient"
+        elif doctor:
+            role = "doctor"
+        elif clinicAdmin:
+            role = "clinicAdmin"
+        elif govofficer:
+            role = "govofficer"
+        else:
+            return
+        self.pfp = self.controller.buttonCreator(
+            ipath=self.profilePictures[role],
+            x=20, y=100, classname="profilepicture", root=self,
+            buttonFunction=lambda: [print(f"{role} pfp clicked")],
+        )
+        self.dashboardChip = self.controller.buttonCreator(
+            ipath=r"assets\Dashboard\DashboardChip.png",
+            x=20, y=300, classname="dashboardchip", root=self,
+            buttonFunction=lambda: [print(f"{role} dashboard chip clicked")],
+        )
+        self.dashboardChipButtons = []
+        for i, chip in enumerate(self.dashboardChips[role]):
+            self.dashboardChipButtons.append(self.controller.buttonCreator(
+                ipath=chip,
+                x=20, y=300 + (i * 100), classname=f"dashboardchip{i}", root=self,
+                buttonFunction=lambda num = i: [
+                    print(f"{role} dashboard chip {num} clicked")],
+            ))

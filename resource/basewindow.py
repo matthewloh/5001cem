@@ -388,25 +388,26 @@ class ElementCreator(ttk.Window):
                                   classname=f"{classname}hostfr", bg=bgcolor, relief=FLAT, isPlaced=isPlaced)
 
         @validator
-        def validateCaptcha(event):
-            """
-            Validates the captcha entry.
-            """
-            parentname = str(root).split(".")[-1]
-            if self.widgetsDict[f"{parentname}captcha"].get() == captchavar.get():
-                return True
-            else:
-                return False
-
-        @validator
         def validatePassword(event):
             """
             Validates the password and confirms password entries.
             """
             parentname = str(root).split(".")[-1]
-            if self.widgetsDict[f"{parentname}passent"].get() == "":
+            if self.widgetsDict["regpassent"].get() == "":
                 return False
-            if self.widgetsDict[f"{parentname}passent"].get() == self.widgetsDict[f"{parentname}confpassent"].get():
+            elif self.widgetsDict["regpassent"].get() == self.widgetsDict[f"regconfpassent"].get():
+                return True
+            else:
+                return False
+
+        @validator
+        def validateNRICorPassport(event):
+            """
+            Validates the NRIC or Passport number.
+            """
+            if self.widgetsDict["regnricent"].get() == "":
+                return False
+            elif self.widgetsDict["regnricent"].get().isalnum():
                 return True
             else:
                 return False

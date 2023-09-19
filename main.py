@@ -5,6 +5,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.toast import ToastNotification
+from ttkbootstrap.dialogs import MessageDialog
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from dotenv import load_dotenv
 from prisma import Prisma
@@ -67,12 +68,32 @@ class Window(ElementCreator):
         )
 
     def signIn(self):
+        choices = ["Patient:success", "Doctor:secondary",
+                   "Clinic Admin:info", "GovOfficer:warning", "Cancel:danger"]
         self.dashboard = Dashboard(parent=self.parentFrame, controller=self)
         self.frames[Dashboard] = self.dashboard
         self.dashboard.grid(
             row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW
         )
         self.dashboard.tkraise()
+        askOption = MessageDialog(
+            parent=self.loginButton,
+            title="Signing in (Dev)",
+            message="What would you like to sign in as?",
+            buttons=choices,
+        )
+        askOption.show()
+        if askOption.result == "Patient":
+            self.dashboard.loadRoleAssets(patient=True)
+        elif askOption.result == "Doctor":
+            self.dashboard.loadRoleAssets(doctor=True)
+        elif askOption.result == "Clinic Admin":
+            self.dashboard.loadRoleAssets(clinicAdmin=True)
+        elif askOption.result == "GovOfficer":
+            self.dashboard.loadRoleAssets(govofficer=True)
+        elif askOption.result == "Cancel":
+            self.dashboard.grid_remove()
+            return
         return
         try:
             toast = ToastNotification(

@@ -23,9 +23,13 @@ class RegistrationPage(Frame):
         self.createFrames()
         self.createElements()
         self.prisma = self.controller.mainPrisma
+        self.frameref.tkraise()
 
     def createFrames(self):
-        pass
+        self.frameref = self.controller.frameCreator(
+            x=560, y=80, framewidth=800, frameheight=920,
+            root=self, classname=f"registrationformframe",
+        )
 
     def createElements(self):
         """
@@ -33,6 +37,9 @@ class RegistrationPage(Frame):
         """
         self.staticImgLabels = [
             (r"assets\Registration\RegistrationBG.png", 0, 0, "registrationbg", self),
+            (r"assets\Registration\SignUpForm.png",
+             0, 0, f"formframebg", self.frameref),
+
         ]
         self.staticBtns = [
             (r"assets\Registration\RedirectLoginButton.png",
@@ -44,15 +51,27 @@ class RegistrationPage(Frame):
         ]
         self.controller.settingsUnpacker(self.staticImgLabels, "label")
         self.controller.settingsUnpacker(self.staticBtns, "button")
-        pass
+
+        self.userRegEntries = [
+            (40, 120, 720, 60, self.frameref, f"regfullname"),
+            (40, 220, 720, 60, self.frameref, f"regemail", "isEmail"),
+            (40, 320, 340, 60, self.frameref,
+             f"regpassent", "isPassword"),
+            (40, 480, 340, 60, self.frameref,
+             f"regconfpassent", "isConfPass"),
+            (420, 320, 340, 60, self.frameref,
+             f"regcontactnumber", "isContactNo"),
+        ]
+        for i in self.userRegEntries:
+            self.controller.ttkEntryCreator(**self.tupleToDict(i))
 
     def tupleToDict(self, tup):
         if len(tup) == 6:
-            return dict(zip(["xpos", "ypos", "width", "height", "root", "classname"], tup))
+            return dict(zip(["x", "y", "width", "height", "root", "classname"], tup))
         elif len(tup) == 7:
-            return dict(zip(["xpos", "ypos", "width", "height", "root", "classname", "validation"], tup))
+            return dict(zip(["x", "y", "width", "height", "root", "classname", "validation"], tup))
         elif len(tup) == 8:
-            return dict(zip(["xpos", "ypos", "width", "height", "root", "classname", "validation", "captchavar"], tup))
+            return dict(zip(["x", "y", "width", "height", "root", "classname", "validation", "captchavar"], tup))
 
     def loadAllDetailsForRegistration(self):
         prisma = self.prisma
@@ -65,29 +84,6 @@ class RegistrationPage(Frame):
             }
         )
         return clinics
-
-    def userReg(self):
-        self.frameref = self.controller.frameCreator(
-            xpos=560, ypos=80, framewidth=800, frameheight=920,
-            root=self.parent, classname=f"{self.name}",
-        )
-        self.imgLabels = [
-            (r"Assets\Login Page with Captcha\Sign Up Form.png",
-             0, 0, f"{self.name}BG", self.frameref),
-        ]
-        self.captchavar = StringVar()
-        self.userRegEntries = [
-            (40, 120, 720, 60, self.frameref, f"{self.name}fullname"),
-            (40, 220, 720, 60, self.frameref, f"{self.name}email", "isEmail"),
-            (40, 320, 340, 60, self.frameref,
-             f"{self.name}passent", "isPassword"),
-            (40, 480, 340, 60, self.frameref,
-             f"{self.name}confpassent", "isConfPass"),
-            (420, 320, 340, 60, self.frameref,
-             f"{self.name}contactnumber", "isContactNo"),
-            (420, 500, 340, 40, self.frameref,
-             f"{self.name}captcha", "isCaptcha", self.captchavar),
-        ]
 
     def loadRegThread(self, role):
         t = threading.Thread(target=self.loadReg, args=(role,))
