@@ -8,7 +8,7 @@ from ttkbootstrap.toast import ToastNotification
 from resource.static import *
 from resource.basewindow import ElementCreator, gridGenerator
 # from components.animatedgif import AnimatedGif
-from captcha.image import ImageCaptcha
+# from captcha.image import ImageCaptcha
 # from components.animatedgif import AnimatedGif
 import bcrypt
 
@@ -281,20 +281,20 @@ class RegistrationPage(Frame):
             )
             self.controller.widgetsDict["skipbutton"].grid()
 
-    def generateCaptchaChallenge(self):
-        # fonts=[r"Fonts\AvenirNext-Regular.ttf", r"Fonts\SF-Pro.ttf"]
-        image = ImageCaptcha(width=260, height=80, )
-        # random alphanumeric string of length 6
-        captcha_text = ''.join(random.choices(
-            string.ascii_uppercase + string.digits, k=6))
-        data = image.generate(captcha_text)
-        image.write(captcha_text, r"Assets\Login Page with Captcha\captcha.png")
-        self.captchavar.set(captcha_text)
-        self.controller.labelCreator(
-            imagepath=r"Assets\Login Page with Captcha\captcha.png",
-            xpos=420, ypos=420, classname="imagecaptchachallenge",
-            root=self.frameref
-        )
+    # def generateCaptchaChallenge(self):
+    #     # fonts=[r"Fonts\AvenirNext-Regular.ttf", r"Fonts\SF-Pro.ttf"]
+    #     image = ImageCaptcha(width=260, height=80, )
+    #     # random alphanumeric string of length 6
+    #     captcha_text = ''.join(random.choices(
+    #         string.ascii_uppercase + string.digits, k=6))
+    #     data = image.generate(captcha_text)
+    #     image.write(captcha_text, r"Assets\Login Page with Captcha\captcha.png")
+    #     self.captchavar.set(captcha_text)
+    #     self.controller.labelCreator(
+    #         imagepath=r"Assets\Login Page with Captcha\captcha.png",
+    #         xpos=420, ypos=420, classname="imagecaptchachallenge",
+    #         root=self.frameref
+    #     )
 
     def loadSchoolMenubuttons(self, instCode):
         # remove all widgets and refresh options

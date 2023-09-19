@@ -1,0 +1,7 @@
+pywin32
+tkwebview2 
+prisma
+ttkbootstrap
+python-dotenv
+bcrypt
+pendulum
