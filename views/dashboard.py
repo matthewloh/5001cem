@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import calendar
 import re
 import threading
@@ -46,25 +47,6 @@ class Dashboard(Frame):
         ]
         self.controller.settingsUnpacker(self.staticImgLabels, "label")
         self.controller.settingsUnpacker(self.staticBtns, "button")
-        exampleList = []
-        [exampleList.append("Thing " + str(i))
-         for i in range(50) if i % 2 == 0]
-        h = len(exampleList) * 100 + 20
-        if h < 960:
-            h = 960
-        self.exampleScrolledFrame = ScrolledFrame(
-            master=self, width=480, height=h, autohide=True, bootstyle="bg-round"
-        )
-        self.exampleScrolledFrame.place(x=240, y=100, width=480, height=960)
-        initypos = 0
-        for thing in exampleList:
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\thingbg.png", x=20, y=initypos+20,
-                classname=f"thing{thing}", root=self.exampleScrolledFrame,
-                text=thing, size=32, font=INTER,
-                isPlaced=True,
-            )
-            initypos += 120
 
     def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
         self.profilePictures = {
@@ -91,16 +73,33 @@ class Dashboard(Frame):
             ],
             "govofficer": [
                 r"assets\Dashboard\OfficerAssets\OfficerManageClinics.png",
+                r"assets\Dashboard\OfficerAssets\OfficerClinicRequests.png",
             ],
         }
         if patient:
             role = "patient"
+            self.primarypanel = PatientDashboard(
+                parent=self, controller=self.controller)
+            self.primarypanel.grid(
+                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         elif doctor:
             role = "doctor"
+            self.primarypanel = DoctorDashboard(
+                parent=self, controller=self.controller)
+            self.primarypanel.grid(
+                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         elif clinicAdmin:
             role = "clinicAdmin"
+            self.primarypanel = ClinicAdminDashboard(
+                parent=self, controller=self.controller)
+            self.primarypanel.grid(
+                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         elif govofficer:
             role = "govofficer"
+            self.primarypanel = GovOfficerDashboard(
+                parent=self, controller=self.controller)
+            self.primarypanel.grid(
+                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         else:
             return
         self.pfp = self.controller.buttonCreator(
@@ -111,13 +110,93 @@ class Dashboard(Frame):
         self.dashboardChip = self.controller.buttonCreator(
             ipath=r"assets\Dashboard\DashboardChip.png",
             x=20, y=300, classname="dashboardchip", root=self,
-            buttonFunction=lambda: [print(f"{role} dashboard chip clicked")],
+            buttonFunction=lambda: [print(f"home dashboard clicked")],
         )
         self.dashboardChipButtons = []
         for i, chip in enumerate(self.dashboardChips[role]):
             self.dashboardChipButtons.append(self.controller.buttonCreator(
                 ipath=chip,
-                x=20, y=300 + (i * 100), classname=f"dashboardchip{i}", root=self,
-                buttonFunction=lambda num = i: [
-                    print(f"{role} dashboard chip {num} clicked")],
+                x=20, y=380 + (i * 80), classname=f"dashboardchip{i}", root=self,
+                buttonFunction=lambda num=i: [
+                    print(f"{role} chip {num} clicked")],
             ))
+
+
+class PatientDashboard(Frame):
+    def __init__(self, parent=None, controller: ElementCreator = None):
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
+        self.controller = controller
+        self.parent = parent
+        gridGenerator(self, 84, 54, "#dee8e0")
+        self.prisma = self.controller.mainPrisma
+        self.createFrames()
+        self.createElements()
+
+    def createFrames(self):
+        pass
+
+    def createElements(self):
+        self.controller.labelCreator(
+            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
+            x=0, y=0, classname="primarypanelbg", root=self
+        )
+
+
+class DoctorDashboard(Frame):
+    def __init__(self, parent=None, controller: ElementCreator = None):
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
+        self.controller = controller
+        self.parent = parent
+        gridGenerator(self, 84, 54, "#dee8e0")
+        self.prisma = self.controller.mainPrisma
+        self.createFrames()
+        self.createElements()
+
+    def createFrames(self):
+        pass
+
+    def createElements(self):
+        self.controller.labelCreator(
+            ipath=r"assets\Dashboard\DoctorAssets\DoctorPrimaryPanelBG.png",
+            x=0, y=0, classname="primarypanelbg", root=self
+        )
+
+
+class ClinicAdminDashboard(Frame):
+    def __init__(self, parent=None, controller: ElementCreator = None):
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
+        self.controller = controller
+        self.parent = parent
+        gridGenerator(self, 84, 54, "#dee8e0")
+        self.prisma = self.controller.mainPrisma
+        self.createFrames()
+        self.createElements()
+
+    def createFrames(self):
+        pass
+
+    def createElements(self):
+        self.controller.labelCreator(
+            ipath=r"assets\Dashboard\ClinicAdminAssets\AdminPrimaryPanelBG.png",
+            x=0, y=0, classname="primarypanelbg", root=self
+        )
+
+
+class GovOfficerDashboard(Frame):
+    def __init__(self, parent=None, controller: ElementCreator = None):
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
+        self.controller = controller
+        self.parent = parent
+        gridGenerator(self, 84, 54, "#dee8e0")
+        self.prisma = self.controller.mainPrisma
+        self.createFrames()
+        self.createElements()
+
+    def createFrames(self):
+        pass
+
+    def createElements(self):
+        self.controller.labelCreator(
+            ipath=r"assets\Dashboard\OfficerAssets\OfficerPrimaryPanelBG.png",
+            x=0, y=0, classname="primarypanelbg", root=self
+        )

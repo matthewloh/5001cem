@@ -70,12 +70,6 @@ class Window(ElementCreator):
     def signIn(self):
         choices = ["Patient:success", "Doctor:secondary",
                    "Clinic Admin:info", "GovOfficer:warning", "Cancel:danger"]
-        self.dashboard = Dashboard(parent=self.parentFrame, controller=self)
-        self.frames[Dashboard] = self.dashboard
-        self.dashboard.grid(
-            row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW
-        )
-        self.dashboard.tkraise()
         askOption = MessageDialog(
             parent=self.loginButton,
             title="Signing in (Dev)",
@@ -83,6 +77,12 @@ class Window(ElementCreator):
             buttons=choices,
         )
         askOption.show()
+        self.dashboard = Dashboard(parent=self.parentFrame, controller=self)
+        self.frames[Dashboard] = self.dashboard
+        self.dashboard.grid(
+            row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW
+        )
+        self.dashboard.tkraise()
         if askOption.result == "Patient":
             self.dashboard.loadRoleAssets(patient=True)
         elif askOption.result == "Doctor":

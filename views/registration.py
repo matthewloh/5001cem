@@ -4,9 +4,12 @@ import string
 import threading
 from tkinter import *
 from ttkbootstrap.constants import *
+from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
+import pycountry
 from ttkbootstrap.toast import ToastNotification
 from resource.static import *
 from resource.basewindow import ElementCreator, gridGenerator
+from views.citystatesdict import states_dict
 # from components.animatedgif import AnimatedGif
 # from captcha.image import ImageCaptcha
 # from components.animatedgif import AnimatedGif
@@ -53,17 +56,98 @@ class RegistrationPage(Frame):
         self.controller.settingsUnpacker(self.staticBtns, "button")
 
         self.userRegEntries = [
-            (40, 120, 720, 60, self.frameref, f"regfullname"),
-            (40, 220, 720, 60, self.frameref, f"regemail", "isEmail"),
+            (40, 120, 720, 60, self.frameref, "regfullname"),
+            (40, 220, 340, 60, self.frameref, "regemail", "isEmail"),
+            (420, 220, 340, 60, self.frameref,
+             "regnric",
+             #  "isNRIC"
+             ),
             (40, 320, 340, 60, self.frameref,
-             f"regpassent", "isPassword"),
-            (40, 480, 340, 60, self.frameref,
-             f"regconfpassent", "isConfPass"),
+             "regrace",
+             ),
             (420, 320, 340, 60, self.frameref,
-             f"regcontactnumber", "isContactNo"),
+             "regcontactnumber", "isContactNo"),
+            (40, 440, 340, 60, self.frameref,
+             "countryoforigin"),
+            (420, 440, 340, 60, self.frameref,
+             "regpassent", "isPassword"),
+            (420, 620, 340, 60, self.frameref,
+             "regconfpassent", "isConfPass"),
+            (40, 540, 340, 60, self.frameref,
+             "regaddressline1"),
+            (40, 620, 340, 60, self.frameref,
+             "regaddressline2"),
+            (160, 700, 220, 60, self.frameref,
+             "regpostcode", "isPostcode"),
         ]
         for i in self.userRegEntries:
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
+        self.country, self.state, self.city = StringVar(
+        ), StringVar(), StringVar()
+        list = {
+            "country": {
+                "pos": {"x": 540, "y": 700, "width": 220, "height": 60},
+                "listofvalues": ["Malaysia", "Others"],
+                "variable": self.country,
+            }
+        }
+        for name, values in list.items():
+            self.controller.menubuttonCreator(
+                x=values["pos"]["x"], y=values["pos"]["y"], width=values["pos"]["width"], height=values["pos"]["height"],
+                root=self.frameref, classname=name, text=f"Please Select Country", listofvalues=values["listofvalues"],
+                variable=values["variable"], font=("Helvetica", 12),
+                command=lambda name=name: [self.loadStateMenubuttons(name)]
+            )
+
+    def loadStateMenubuttons(self, name):
+        # remove all widgets and refresh options
+        for widgetname, widget in self.frameref.children.items():
+            if not widgetname.startswith("!la"):
+                if widgetname in ["statehostfr", "cityhostfr"]:
+                    widget.grid_remove()
+        # reset variables
+        for var in [self.state, self.city]:
+            var.set("")
+        positions = {
+            "state": {"x": 160, "y": 780, "width": 220, "height": 60},
+        }
+        if not self.country.get() == "Malaysia":
+            return
+        statelist = list(states_dict.keys())
+        self.controller.menubuttonCreator(
+            x=positions["state"]["x"], y=positions["state"]["y"], width=positions[
+                "state"]["width"], height=positions["state"]["height"],
+            root=self.frameref, classname="state", text=f"Please Select State", listofvalues=statelist,
+            variable=self.state, font=("Helvetica", 12),
+            command=lambda: [self.loadCityMButtons(self.state.get())]
+        )
+
+    def loadCityMButtons(self, state):
+        # remove all widgets and refresh options
+        for widgetname, widget in self.frameref.children.items():
+            if not widgetname.startswith("!la"):
+                if widgetname in ["cityhostfr"]:
+                    widget.grid_remove()
+        # reset variables
+        for var in [self.city]:
+            var.set("")
+        positions = {
+            "city": {"x": 540, "y": 780, "width": 220, "height": 60},
+        }
+        citieslist = list(states_dict[f"{state}"])
+        self.controller.menubuttonCreator(
+            x=positions["city"]["x"], y=positions["city"]["y"], width=positions[
+                "city"]["width"], height=positions["city"]["height"],
+            root=self.frameref, classname="city", text=f"Please Select City", listofvalues=citieslist,
+            variable=self.city, font=("Helvetica", 12),
+            command=lambda: [print(f"{self.city.get()}")]
+        )
+
+    def get_countries(self):
+        countries = []
+        for country in pycountry.countries:
+            countries.append(country.name)
+        return countries
 
     def tupleToDict(self, tup):
         if len(tup) == 6:
@@ -94,19 +178,6 @@ class RegistrationPage(Frame):
         toast = ToastNotification(
             title="Please be patient", message="We are loading the Registration Form for you", bootstyle=INFO)
         toast.show_toast()
-        self.userReg()
-        lectBgPath = (r"Assets\Login Page with Captcha\LecturerForm.png",
-                      0, 600, f"{self.name}Lecturer", self.frameref)
-        studBgPath = (r"Assets\Login Page with Captcha\StudentForm.png",
-                      0, 600, f"{self.name}Student", self.frameref)
-        if role == "teacher":
-            self.imgLabels.append(lectBgPath)
-        elif role == "student":
-            self.imgLabels.append(studBgPath)
-        self.controller.settingsUnpacker(self.imgLabels, "label")
-        for i in self.userRegEntries:
-            self.controller.ttkEntryCreator(**self.tupleToDict(i))
-        self.generateCaptchaChallenge()
         # Create a structure to split institutions and their schools
         # an Institution has many Schools
         # A school has many Programmes
