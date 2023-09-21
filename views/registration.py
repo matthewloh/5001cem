@@ -5,7 +5,6 @@ import threading
 from tkinter import *
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
-import pycountry
 from ttkbootstrap.toast import ToastNotification
 from resource.static import *
 from resource.basewindow import ElementCreator, gridGenerator
@@ -142,12 +141,6 @@ class RegistrationPage(Frame):
             variable=self.city, font=("Helvetica", 12),
             command=lambda: [print(f"{self.city.get()}")]
         )
-
-    def get_countries(self):
-        countries = []
-        for country in pycountry.countries:
-            countries.append(country.name)
-        return countries
 
     def tupleToDict(self, tup):
         if len(tup) == 6:

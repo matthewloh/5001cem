@@ -16,6 +16,7 @@ from resource.basewindow import ElementCreator
 from datetime import datetime, timedelta
 import datetime as dt
 from pendulum import timezone
+import tkintermapview
 
 
 class Dashboard(Frame):
@@ -180,6 +181,10 @@ class ClinicAdminDashboard(Frame):
             ipath=r"assets\Dashboard\ClinicAdminAssets\AdminPrimaryPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
+        view = tkintermapview.TkinterMapView(
+            master=self, width=800, height=600, corner_radius=0
+        )
+        view.place(relx=0.5, rely=0.5, anchor=CENTER)
 
 
 class GovOfficerDashboard(Frame):
