@@ -20,7 +20,7 @@ import tkintermapview
 
 
 class Dashboard(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None, name="registration"):
+    def __init__(self, parent=None, controller: ElementCreator = None, name="maindashboard"):
         super().__init__(parent, width=1, height=1, bg="#344557", name=name)
         self.controller = controller
         self.prisma = self.controller.mainPrisma
@@ -38,12 +38,12 @@ class Dashboard(Frame):
         (imagepath, x, y, classname, root)
         """
         self.staticImgLabels = [
-            (r"assets\Dashboard\DashboardBG.png", 0, 0, "dashboardbg", self),
+            (r"assets/Dashboard/DashboardBG.png", 0, 0, "dashboardbg", self),
         ]
         self.staticBtns = [
-            (r"assets\Dashboard\SignOut.png", 20, 980, "signoutbtn",
+            (r"assets/Dashboard/SignOut.png", 20, 980, "signoutbtn",
              self, lambda:[self.grid_remove()]),
-            (r"assets\Dashboard\Settings.png", 120, 980, "settingsbtn",
+            (r"assets/Dashboard/Settings.png", 120, 980, "settingsbtn",
              self, lambda: print("hello")),
         ]
         self.controller.settingsUnpacker(self.staticImgLabels, "label")
@@ -51,56 +51,48 @@ class Dashboard(Frame):
 
     def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
         self.profilePictures = {
-            "patient": r"assets\Dashboard\PatientAssets\PatientProfilePicture.png",
+            "patient": r"assets/Dashboard/PatientAssets/PatientProfilePicture.png",
             "doctor": r"assets/Dashboard/DoctorAssets/DoctorProfilePicture.png",
             "clinicAdmin": r"assets/Dashboard/ClinicAdminAssets/AdminProfilePicture.png",
             "govofficer": r"assets/Dashboard/OfficerAssets/OfficerProfilePicture.png",
         }
         self.dashboardChips = {
             "patient": [
-                r"assets\Dashboard\PatientAssets\PatientBrowseClinics.png",
-                r"assets\Dashboard\PatientAssets\PatientPrescriptions.png",
-                r"assets\Dashboard\PatientAssets\PatientAppointments.png",
+                r"assets/Dashboard/PatientAssets/PatientBrowseClinics.png",
+                r"assets/Dashboard/PatientAssets/PatientPrescriptions.png",
+                r"assets/Dashboard/PatientAssets/PatientAppointments.png",
             ],
             "doctor": [
-                r"assets\Dashboard\DoctorAssets\DoctorYourClinic.png",
-                r"assets\Dashboard\DoctorAssets\DoctorPatientPrescriptions.png",
-                r"assets\Dashboard\DoctorAssets\DoctorPatientScheduling.png",
+                r"assets/Dashboard/DoctorAssets/DoctorYourClinic.png",
+                r"assets/Dashboard/DoctorAssets/DoctorPatientPrescriptions.png",
+                r"assets/Dashboard/DoctorAssets/DoctorPatientScheduling.png",
             ],
             "clinicAdmin": [
-                r"assets\Dashboard\ClinicAdminAssets\AdminManageClinic.png",
-                r"assets\Dashboard\ClinicAdminAssets\AdminViewPatientRequests.png",
-                r"assets\Dashboard\ClinicAdminAssets\AdminViewDoctorSchedule.png",
+                r"assets/Dashboard/ClinicAdminAssets/AdminManageClinic.png",
+                r"assets/Dashboard/ClinicAdminAssets/AdminViewPatientRequests.png",
+                r"assets/Dashboard/ClinicAdminAssets/AdminViewDoctorSchedule.png",
             ],
             "govofficer": [
-                r"assets\Dashboard\OfficerAssets\OfficerManageClinics.png",
-                r"assets\Dashboard\OfficerAssets\OfficerClinicRequests.png",
+                r"assets/Dashboard/OfficerAssets/OfficerManageClinics.png",
+                r"assets/Dashboard/OfficerAssets/OfficerClinicRequests.png",
             ],
         }
         if patient:
             role = "patient"
             self.primarypanel = PatientDashboard(
                 parent=self, controller=self.controller)
-            self.primarypanel.grid(
-                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         elif doctor:
             role = "doctor"
             self.primarypanel = DoctorDashboard(
                 parent=self, controller=self.controller)
-            self.primarypanel.grid(
-                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         elif clinicAdmin:
             role = "clinicAdmin"
             self.primarypanel = ClinicAdminDashboard(
                 parent=self, controller=self.controller)
-            self.primarypanel.grid(
-                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         elif govofficer:
             role = "govofficer"
             self.primarypanel = GovOfficerDashboard(
                 parent=self, controller=self.controller)
-            self.primarypanel.grid(
-                row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         else:
             return
         self.pfp = self.controller.buttonCreator(
@@ -109,7 +101,7 @@ class Dashboard(Frame):
             buttonFunction=lambda: [print(f"{role} pfp clicked")],
         )
         self.dashboardChip = self.controller.buttonCreator(
-            ipath=r"assets\Dashboard\DashboardChip.png",
+            ipath=r"assets/Dashboard/DashboardChip.png",
             x=20, y=300, classname="dashboardchip", root=self,
             buttonFunction=lambda: [print(f"home dashboard clicked")],
         )
@@ -129,6 +121,7 @@ class PatientDashboard(Frame):
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
+        self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -138,7 +131,7 @@ class PatientDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/PatientAssets/PatientPrimaryPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
@@ -149,6 +142,7 @@ class DoctorDashboard(Frame):
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
+        self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -158,7 +152,7 @@ class DoctorDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\DoctorAssets\DoctorPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/DoctorAssets/DoctorPrimaryPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
@@ -169,6 +163,8 @@ class ClinicAdminDashboard(Frame):
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
+        self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
+
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -178,7 +174,7 @@ class ClinicAdminDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\ClinicAdminAssets\AdminPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/ClinicAdminAssets/AdminPrimaryPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
         view = tkintermapview.TkinterMapView(
@@ -193,6 +189,7 @@ class GovOfficerDashboard(Frame):
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
+        self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -202,6 +199,6 @@ class GovOfficerDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\OfficerAssets\OfficerPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
