@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from prisma import Prisma
 from pendulum import timezone
 from nonstandardimports import *
-from views.dashboard import Dashboard
+from views.mainDashboard import Dashboard
 from views.registration import RegistrationPage
 
 """
