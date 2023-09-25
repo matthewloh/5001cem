@@ -19,13 +19,14 @@ from pendulum import timezone
 import tkintermapview
 
 
-class DoctorBrowseClinic(Frame):
+class DoctorViewPatientRequests(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
-        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="secondarypanel")
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="requestspanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
+        
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -35,6 +36,6 @@ class DoctorBrowseClinic(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
-            x=0, y=0, classname="secondarypanelbg", root=self
+            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
+            x=0, y=0, classname="requestspanelbg", root=self
         )

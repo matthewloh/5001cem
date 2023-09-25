@@ -17,13 +17,12 @@ from ttkbootstrap.dialogs.dialogs import DatePickerDialog
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.toast import ToastNotification
 
-from views.browseClinic.adminBrowse import AdminBrowseClinic
-from views.browseClinic.doctorBrowse import DoctorBrowseClinic
-from views.browseClinic.officerBrowse import OfficerBrowseClinic
-from views.browseClinic.patientBrowse import PatientBrowseClinic
+from views.appointments.adminManageAppointments import AdminManageAppointments
+from views.appointments.doctorViewAppointments import DoctorViewAppointments
+from views.appointments.patientViewAppointments import PatientViewAppointments
 
 
-class MainBrowseClinic:
+class MainViewAppointmentsInterface:
     def __init__(self, controller: ElementCreator = None, parent=None):
         self.controller = controller
         self.parent = parent
@@ -31,16 +30,13 @@ class MainBrowseClinic:
 
     def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
         if patient:
-            self.primarypanel = PatientBrowseClinic(
+            self.primarypanel = PatientViewAppointments(
                 parent=self.parent, controller=self.controller)
         elif doctor:
-            self.primarypanel = DoctorBrowseClinic(
+            self.primarypanel = DoctorViewAppointments(
                 parent=self.parent, controller=self.controller)
         elif clinicAdmin:
-            self.primarypanel = AdminBrowseClinic(
-                parent=self.parent, controller=self.controller)
-        elif govofficer:
-            self.primarypanel = OfficerBrowseClinic(
+            self.primarypanel = AdminManageAppointments(
                 parent=self.parent, controller=self.controller)
         else:
             return

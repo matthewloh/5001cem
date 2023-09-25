@@ -21,7 +21,7 @@ import tkintermapview
 
 class OfficerBrowseClinic(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
-        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="secondarypanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
@@ -37,5 +37,5 @@ class OfficerBrowseClinic(Frame):
     def createElements(self):
         self.controller.labelCreator(
             ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
-            x=0, y=0, classname="primarypanelbg", root=self
+            x=0, y=0, classname="secondarypanelbg", root=self
         )
