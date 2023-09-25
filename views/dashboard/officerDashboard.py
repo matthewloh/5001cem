@@ -40,6 +40,26 @@ class GovOfficerDashboard(Frame):
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
+        exampleList = []
+        [exampleList.append("Thing " + str(i))
+         for i in range(30) if i % 2 == 0]
+        h = len(exampleList) * 100 + 20
+        if h < 960:
+            h = 960
+        self.exampleScrolledFrame = ScrolledFrame(
+            master=self, width=480, height=h, autohide=True, bootstyle="bg-round"
+        )
+        self.exampleScrolledFrame.place(x=100, y=280, width=1460, height=580)
+        initypos = 0
+        for thing in exampleList:
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsbg.png", x=20, y=initypos+20,
+                classname=f"thing{thing}", root=self.exampleScrolledFrame,
+                text=thing, size=30, font=INTER,
+                isPlaced=True,
+            )
+            initypos += 120
+
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
             ipath="assets/Dashboard/OfficerAssets/OfficerProfilePicture.png",
