@@ -58,6 +58,18 @@ class GovOfficerDashboard(Frame):
                 text=thing, size=30, font=INTER,
                 isPlaced=True,
             )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
+                classname=f"hideindicator{thing}", root=self.exampleScrolledFrame,
+                x=1300, y=initypos+40, buttonFunction=lambda: [print(f"hide {thing}")],
+                isPlaced=True,
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/OfficerAssets/dustbin.png",
+                classname=f"dustbin{thing}", root=self.exampleScrolledFrame,
+                x=1380, y=initypos+40, buttonFunction=lambda: [print(f"delete {thing}")],
+                isPlaced=True
+            )
             initypos += 120
 
     def loadAssets(self):
