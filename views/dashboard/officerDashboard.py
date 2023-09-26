@@ -43,17 +43,20 @@ class GovOfficerDashboard(Frame):
         exampleList = []
         [exampleList.append("Thing " + str(i))
          for i in range(30) if i % 2 == 0]
-        h = len(exampleList) * 100 + 20
-        if h < 960:
-            h = 960
+        h = len(exampleList) * 120
+        if h < 600:
+            h = 600
         self.exampleScrolledFrame = ScrolledFrame(
-            master=self, width=480, height=h, autohide=True, bootstyle="bg-round"
+            master=self, width=1500, height=h, autohide=True, bootstyle="success-rounded"
         )
-        self.exampleScrolledFrame.place(x=100, y=280, width=1460, height=580)
-        initypos = 0
+        self.exampleScrolledFrame.grid_propagate(False)
+        self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
+        initialcoordinates = (20, 20)
         for thing in exampleList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsbg.png", x=20, y=initypos+20,
+                ipath=r"assets\Dashboard\clinicdetailsbg.png", x=x, y=y,
                 classname=f"thing{thing}", root=self.exampleScrolledFrame,
                 text=thing, size=30, font=INTER,
                 isPlaced=True,
@@ -61,16 +64,18 @@ class GovOfficerDashboard(Frame):
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
                 classname=f"hideindicator{thing}", root=self.exampleScrolledFrame,
-                x=1300, y=initypos+40, buttonFunction=lambda t = thing: [print(f"hide {t}")],
+                x=1300, y=initypos+40, buttonFunction=lambda: [print(f"hide {thing}")],
                 isPlaced=True,
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/dustbin.png",
                 classname=f"dustbin{thing}", root=self.exampleScrolledFrame,
-                x=1380, y=initypos+40, buttonFunction=lambda t = thing: [print(f"delete {t}")],
+                x=1380, y=initypos+40, buttonFunction=lambda: [print(f"delete {thing}")],
                 isPlaced=True
             )
-            initypos += 120
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 120
+            )
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
