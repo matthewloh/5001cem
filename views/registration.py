@@ -58,31 +58,26 @@ class RegistrationPage(Frame):
             (40, 120, 720, 60, self.frameref, "regfullname"),
             (40, 220, 340, 60, self.frameref, "regemail", "isEmail"),
             (420, 220, 340, 60, self.frameref,
-             "regnric",
-             #  "isNRIC"
-             ),
-            (40, 320, 340, 60, self.frameref,
-             "regrace",
-             ),
-            (420, 320, 340, 60, self.frameref,
-             "regcontactnumber", "isContactNo"),
-            (40, 440, 340, 60, self.frameref,
-             "countryoforigin"),
-            (420, 440, 340, 60, self.frameref,
-             "regpassent", "isPassword"),
-            (420, 620, 340, 60, self.frameref,
-             "regconfpassent", "isConfPass"),
-            (40, 540, 340, 60, self.frameref,
-             "regaddressline1"),
-            (40, 620, 340, 60, self.frameref,
-             "regaddressline2"),
-            (160, 700, 220, 60, self.frameref,
-             "regpostcode", "isPostcode"),
+             "regnric"),
+            (40, 320, 340, 60, self.frameref, "regrace"),
+            (420, 320, 340, 60, self.frameref, "regcontactnumber", "isContactNo"),
+            (40, 440, 340, 60, self.frameref, "countryoforigin"),
+            (420, 440, 340, 60, self.frameref, "regpassent", "isPassword"),
+            (420, 620, 340, 60, self.frameref, "regconfpassent", "isConfPass"),
+            (40, 540, 340, 60, self.frameref, "regaddressline1"),
+            (40, 620, 340, 60, self.frameref, "regaddressline2"),
+            (160, 700, 220, 60, self.frameref, "regpostcode", "isPostcode"),
         ]
         for i in self.userRegEntries:
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
-        self.country, self.state, self.city = StringVar(
-        ), StringVar(), StringVar()
+        WD = self.controller.widgetsDict
+        self.fullname, self.email, self.nric_passno = WD["regfullname"], WD["regemail"], WD["regnric"]
+        self.race, self.contactnumber, self.countryoforigin = WD[
+            "regrace"], WD["regcontactnumber"], WD["countryoforigin"]
+        self.password, self.confirmpassword = WD["regpassent"], WD["regconfpassent"]
+        self.addressline1, self.addressline2, self.postcode = WD[
+            "regaddressline1"], WD["regaddressline2"], WD["regpostcode"]
+        self.country, self.state, self.city = StringVar(), StringVar(), StringVar()
         list = {
             "country": {
                 "pos": {"x": 540, "y": 700, "width": 220, "height": 60},
@@ -90,16 +85,26 @@ class RegistrationPage(Frame):
                 "variable": self.country,
             }
         }
-        for name, values in list.items():
+        for name, v in list.items():
             self.controller.menubuttonCreator(
-                x=values["pos"]["x"], y=values["pos"]["y"], width=values["pos"]["width"], height=values["pos"]["height"],
-                root=self.frameref, classname=name, text=f"Please Select Country", listofvalues=values["listofvalues"],
-                variable=values["variable"], font=("Helvetica", 12),
-                command=lambda name=name: [self.loadStateMenubuttons(name)]
+                x=v["pos"]["x"], y=v["pos"]["y"], width=v["pos"]["width"], height=v["pos"]["height"],
+                root=self.frameref, classname=name, text=f"Please Select Country", listofvalues=v["listofvalues"],
+                variable=v["variable"], font=("Helvetica", 12),
+                command=lambda: [self.loadStateMenubuttons(self.country.get())]
             )
 
     def loadStateMenubuttons(self, name):
         # remove all widgets and refresh options
+        if name == "Others":
+            toast = ToastNotification(
+                title="The system is not fully supported for your country yet",
+                message="You may proceed to register but some features may not be available yet",
+                bootstyle="warning",
+                duration=5000,
+            )
+            self.country.set("Others")
+            self.state.set("Others")
+            toast.show_toast()
         for widgetname, widget in self.frameref.children.items():
             if not widgetname.startswith("!la"):
                 if widgetname in ["statehostfr", "cityhostfr"]:
