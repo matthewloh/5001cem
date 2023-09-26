@@ -47,7 +47,7 @@ class GovOfficerDashboard(Frame):
         if h < 600:
             h = 600
         self.exampleScrolledFrame = ScrolledFrame(
-            master=self, width=1500, height=h, autohide=True, bootstyle="success-rounded"
+            master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.exampleScrolledFrame.grid_propagate(False)
         self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
@@ -64,13 +64,13 @@ class GovOfficerDashboard(Frame):
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
                 classname=f"hideindicator{thing}", root=self.exampleScrolledFrame,
-                x=1300, y=initypos+40, buttonFunction=lambda: [print(f"hide {thing}")],
+                x=1300, y=y+20, buttonFunction=lambda t = thing: [print(f"hide {t}")],
                 isPlaced=True,
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/dustbin.png",
                 classname=f"dustbin{thing}", root=self.exampleScrolledFrame,
-                x=1380, y=initypos+40, buttonFunction=lambda: [print(f"delete {thing}")],
+                x=1380, y=y+20, buttonFunction=lambda t = thing: [print(f"delete {t}")],
                 isPlaced=True
             )
             initialcoordinates = (
