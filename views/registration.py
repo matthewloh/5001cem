@@ -15,6 +15,11 @@ from datetime import datetime as dt
 # from captcha.image import ImageCaptcha
 # from components.animatedgif import AnimatedGif
 import bcrypt
+from views.registrationForms.adminForm import AdminRegistrationForm
+from views.registrationForms.doctorForm import DoctorRegistrationForm
+from views.registrationForms.officerForm import OfficerRegistrationForm
+
+from views.registrationForms.patientForm import PatientRegistrationForm
 
 
 class RegistrationPage(Frame):
@@ -105,6 +110,26 @@ class RegistrationPage(Frame):
                 variable=v["variable"], font=("Helvetica", 12),
                 command=lambda: [self.loadStateMenubuttons(self.country.get())]
             )
+        self.patientFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/PatientFormButton.png",
+            x=1420, y=460, classname="patientformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(patient=True)
+        )
+        self.doctorFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/DoctorFormButton.png",
+            x=1420, y=600, classname="doctorformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(doctor=True)
+        )
+        self.adminFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/AdminFormButton.png",
+            x=1420, y=740, classname="adminformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(admin=True)
+        )
+        self.officerFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/OfficerFormButton.png",
+            x=1420, y=880, classname="officerformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(officer=True)
+        )
 
     def selectDate(self, btn):
         self.dateOfBirthEntry.configure(foreground="black")
@@ -848,3 +873,19 @@ class RegistrationPage(Frame):
 
     def loadSignIn(self):
         self.grid_remove()
+
+    def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
+        if patient:
+            self.primaryForm = PatientRegistrationForm(
+                parent=self, controller=self.controller)
+        elif doctor:
+            self.primaryForm = DoctorRegistrationForm(
+                parent=self, controller=self.controller)
+        elif clinicAdmin:
+            self.primaryForm = AdminRegistrationForm(
+                parent=self, controller=self.controller)
+        elif govofficer:
+            self.primaryForm = OfficerRegistrationForm(
+                parent=self, controller=self.controller)
+        else:
+            return
