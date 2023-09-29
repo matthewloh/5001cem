@@ -43,6 +43,9 @@ class GovOfficerDashboard(Frame):
         #insert map
         self.clinicsMap = tkintermapview.TkinterMapView(self,  width=841, height=618)
         self.clinicsMap.place(x=13, y=101)
+        self.clinicsMap.set_address("Penang, Malaysia")
+        self.clinicsMap.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)  # google normal
+
 
 
 
