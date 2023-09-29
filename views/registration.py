@@ -9,10 +9,17 @@ from ttkbootstrap.toast import ToastNotification
 from resource.static import *
 from resource.basewindow import ElementCreator, gridGenerator
 from views.citystatesdict import states_dict
+from ttkbootstrap.dialogs import DatePickerDialog, Querybox
+from datetime import datetime as dt
 # from components.animatedgif import AnimatedGif
 # from captcha.image import ImageCaptcha
 # from components.animatedgif import AnimatedGif
 import bcrypt
+from views.registrationForms.adminForm import AdminRegistrationForm
+from views.registrationForms.doctorForm import DoctorRegistrationForm
+from views.registrationForms.officerForm import OfficerRegistrationForm
+
+from views.registrationForms.patientForm import PatientRegistrationForm
 
 
 class RegistrationPage(Frame):
@@ -53,24 +60,35 @@ class RegistrationPage(Frame):
         ]
         self.controller.settingsUnpacker(self.staticImgLabels, "label")
         self.controller.settingsUnpacker(self.staticBtns, "button")
-
+        self.dateOfBirthEntry = self.controller.ttkEntryCreator(
+            x=40, y=320, width=260, height=60, root=self.frameref, classname="regbirthdate"
+        )
         self.userRegEntries = [
             (40, 120, 720, 60, self.frameref, "regfullname"),
             (40, 220, 340, 60, self.frameref, "regemail", "isEmail"),
-            (420, 220, 340, 60, self.frameref,
-             "regnric"),
-            (40, 320, 340, 60, self.frameref, "regrace"),
+            (420, 220, 340, 60, self.frameref, "regnric"),
+            (40, 320, 260, 60, self.frameref, "regbirthdate"),
             (420, 320, 340, 60, self.frameref, "regcontactnumber", "isContactNo"),
-            (40, 440, 340, 60, self.frameref, "countryoforigin"),
-            (420, 440, 340, 60, self.frameref, "regpassent", "isPassword"),
-            (420, 620, 340, 60, self.frameref, "regconfpassent", "isConfPass"),
-            (40, 540, 340, 60, self.frameref, "regaddressline1"),
-            (40, 620, 340, 60, self.frameref, "regaddressline2"),
-            (160, 700, 220, 60, self.frameref, "regpostcode", "isPostcode"),
+            (40, 420, 340, 60, self.frameref, "regpassent", "isPassword"),
+            (420, 420, 340, 60, self.frameref, "regconfpassent", "isConfPass"),
+            (40, 520, 340, 60, self.frameref, "countryoforigin"),
+            (420, 520, 340, 60, self.frameref, "regrace"),
+            (40, 660, 340, 60, self.frameref, "regaddressline1"),
+            (420, 660, 340, 60, self.frameref, "regaddressline2"),
+            (160, 740, 220, 60, self.frameref, "regpostcode", "isPostcode"),
         ]
         for i in self.userRegEntries:
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
         WD = self.controller.widgetsDict
+        self.datePicker = self.controller.buttonCreator(
+            ipath="assets/Registration/DatePicker.png",
+            x=320, y=320, classname="datepicker", root=self.frameref,
+            buttonFunction=lambda: self.selectDate(self.datePicker)
+        )
+
+        self.dobMsg = "Select Date of Birth"
+        self.dateOfBirthEntry.insert(0, self.dobMsg)
+        self.dateOfBirthEntry.config(state=READONLY)
         self.fullname, self.email, self.nric_passno = WD["regfullname"], WD["regemail"], WD["regnric"]
         self.race, self.contactnumber, self.countryoforigin = WD[
             "regrace"], WD["regcontactnumber"], WD["countryoforigin"]
@@ -80,7 +98,7 @@ class RegistrationPage(Frame):
         self.country, self.state, self.city = StringVar(), StringVar(), StringVar()
         list = {
             "country": {
-                "pos": {"x": 540, "y": 700, "width": 220, "height": 60},
+                "pos": {"x": 540, "y": 740, "width": 220, "height": 60},
                 "listofvalues": ["Malaysia", "Others"],
                 "variable": self.country,
             }
@@ -92,6 +110,57 @@ class RegistrationPage(Frame):
                 variable=v["variable"], font=("Helvetica", 12),
                 command=lambda: [self.loadStateMenubuttons(self.country.get())]
             )
+        self.patientFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/PatientFormButton.png",
+            x=1420, y=460, classname="patientformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(patient=True)
+        )
+        self.doctorFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/DoctorFormButton.png",
+            x=1420, y=600, classname="doctorformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(doctor=True)
+        )
+        self.adminFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/AdminFormButton.png",
+            x=1420, y=740, classname="adminformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(admin=True)
+        )
+        self.officerFormBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/OfficerFormButton.png",
+            x=1420, y=880, classname="officerformbtn", root=self,
+            buttonFunction=lambda: self.loadRoleAssets(officer=True)
+        )
+
+    def selectDate(self, btn):
+        self.dateOfBirthEntry.configure(foreground="black")
+        year = Querybox.get_integer(
+            parent=btn, title="Enter Year", minvalue=1900, maxvalue=2023, initialvalue=2023,
+            prompt="Please enter birth year, to aid in adjustment, left-click the arrow to move the calendar by one month. Right-click the arrow to move the calendar by one year or right-click the title to reset the calendar to the start date."
+        )
+        if year is None:
+            self.dateOfBirthEntry.configure(foreground="red")
+            return
+        dateTimeYear = dt.strptime(f"{year}", "%Y")
+        dialog = DatePickerDialog(
+            parent=btn, title="Select Date", firstweekday=0, startdate=dateTimeYear
+        )
+        if dialog.date_selected is None:
+            print('test')
+            return
+        if dialog.date_selected.year > dt.now().year or dialog.date_selected.year < 1900:
+            toast = ToastNotification(
+                title="Error",
+                message="Please select a valid date of birth between 1900 and the current year",
+                duration=3000,
+                bootstyle="danger"
+            )
+            toast.show_toast()
+            return
+        date = dialog.date_selected.strftime("%d/%m/%Y")
+        self.dateOfBirthEntry.configure(state=NORMAL)
+        self.dateOfBirthEntry.delete(0, END)
+        self.dateOfBirthEntry.insert(0, date)
+        self.dateOfBirthEntry.configure(state=READONLY)
 
     def loadStateMenubuttons(self, name):
         # remove all widgets and refresh options
@@ -113,7 +182,7 @@ class RegistrationPage(Frame):
         for var in [self.state, self.city]:
             var.set("")
         positions = {
-            "state": {"x": 160, "y": 780, "width": 220, "height": 60},
+            "state": {"x": 160, "y": 820, "width": 220, "height": 60},
         }
         if not self.country.get() == "Malaysia":
             return
@@ -136,7 +205,7 @@ class RegistrationPage(Frame):
         for var in [self.city]:
             var.set("")
         positions = {
-            "city": {"x": 540, "y": 780, "width": 220, "height": 60},
+            "city": {"x": 540, "y": 820, "width": 220, "height": 60},
         }
         citieslist = list(states_dict[f"{state}"])
         self.controller.menubuttonCreator(
@@ -804,3 +873,19 @@ class RegistrationPage(Frame):
 
     def loadSignIn(self):
         self.grid_remove()
+
+    def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
+        if patient:
+            self.primaryForm = PatientRegistrationForm(
+                parent=self, controller=self.controller)
+        elif doctor:
+            self.primaryForm = DoctorRegistrationForm(
+                parent=self, controller=self.controller)
+        elif clinicAdmin:
+            self.primaryForm = AdminRegistrationForm(
+                parent=self, controller=self.controller)
+        elif govofficer:
+            self.primaryForm = OfficerRegistrationForm(
+                parent=self, controller=self.controller)
+        else:
+            return
