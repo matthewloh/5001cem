@@ -22,7 +22,7 @@ from views.mainBrowseClinic import MainBrowseClinic
 
 class GovOfficerDashboard(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
-        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="dashboardpanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
@@ -37,8 +37,14 @@ class GovOfficerDashboard(Frame):
     def createElements(self):
         self.controller.labelCreator(
             ipath=r"assets/Dashboard/OfficerAssets/OfficerDashboardPanelBG.png",
-            x=0, y=0, classname="primarypanelbg", root=self
+            x=0, y=0, classname="admindashboardbg", root=self
         )
+
+        #insert map
+        self.clinicsMap = tkintermapview.TkinterMapView(self,  width=841, height=618)
+        self.clinicsMap.place(x=13, y=101)
+
+
 
 
     def loadAssets(self):

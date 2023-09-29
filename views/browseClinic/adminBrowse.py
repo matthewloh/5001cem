@@ -21,7 +21,7 @@ import tkintermapview
 
 class AdminBrowseClinic(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
-        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="secondarypanel")
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="browseclinicpanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
