@@ -18,6 +18,7 @@ from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.toast import ToastNotification
 
 from views.mainBrowseClinic import MainBrowseClinic
+from views.mainGRDRequests import MainGRDRequestsInterface
 from views.mainPatientRequests import MainPatientRequestsInterface
 from views.mainViewAppointments import MainViewAppointmentsInterface
 
@@ -54,6 +55,7 @@ class ClinicAdminDashboard(Frame):
                 "assets/Dashboard/ClinicAdminAssets/AdminManageClinic.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminViewPatientRequests.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminViewDoctorSchedule.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminGRDRequests.png"
             ],
         }
         self.browseClinic = self.controller.buttonCreator(
@@ -70,6 +72,11 @@ class ClinicAdminDashboard(Frame):
             ipath=d["clinicAdmin"][2],
             x=20, y=540, classname="viewdoctorschedule_chip", root=self.parent,
             buttonFunction=lambda: [self.loadViewAppointments()],
+        )
+        self.viewGRDRequests = self.controller.buttonCreator(
+            ipath=d["clinicAdmin"][3],
+            x=20, y=620, classname="grdrequests_chip", root=self.parent,
+            buttonFunction=lambda: [self.loadGRDRequests()],
         )
 
     def loadBrowseClinic(self):
@@ -98,3 +105,12 @@ class ClinicAdminDashboard(Frame):
             self.appointments = MainViewAppointmentsInterface(
                 controller=self.controller, parent=self.parent)
             self.appointments.loadRoleAssets(clinicAdmin=True)
+
+    def loadGRDRequests(self):
+        try:
+            self.grdRequests.primarypanel.grid()
+            self.grdRequests.primarypanel.tkraise()
+        except:
+            self.grdRequests = MainGRDRequestsInterface(
+                controller=self.controller, parent=self.parent)
+            self.grdRequests.loadRoleAssets(clinicAdmin=True)

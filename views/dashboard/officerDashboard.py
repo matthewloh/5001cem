@@ -18,11 +18,12 @@ from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.toast import ToastNotification
 
 from views.mainBrowseClinic import MainBrowseClinic
+from views.mainGRDRequests import MainGRDRequestsInterface
 
 
 class GovOfficerDashboard(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
-        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="dashboardpanel")
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
@@ -36,19 +37,17 @@ class GovOfficerDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/OfficerAssets/OfficerDashboardPanelBG.png",
-            x=0, y=0, classname="admindashboardbg", root=self
+            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
+            x=0, y=0, classname="primarypanelbg", root=self
         )
 
-        #insert map
-        self.clinicsMap = tkintermapview.TkinterMapView(self,  width=841, height=618)
+        # insert map
+        self.clinicsMap = tkintermapview.TkinterMapView(
+            self,  width=841, height=618)
         self.clinicsMap.place(x=13, y=101)
         self.clinicsMap.set_address("Penang, Malaysia")
-        self.clinicsMap.set_tile_server("https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)  # google normal
-
-
-
-
+        self.clinicsMap.set_tile_server(
+            "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)  # google normal
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -62,21 +61,16 @@ class GovOfficerDashboard(Frame):
                 r"assets/Dashboard/OfficerAssets/OfficerClinicRequests.png",
             ],
         }
-        self.officerDashboard = self.controller.buttonCreator(
+        self.browseClinic = self.controller.buttonCreator(
             ipath=d["govofficer"][0],
-            x=20, y=380, classname="officerdashboard_chip", root=self.parent,
+            x=20, y=380, classname="browseclinic_chip", root=self.parent,
             buttonFunction=lambda: [self.loadBrowseClinic()],
         )
-        self.clinicsRequests = self.controller.buttonCreator(
+        self.viewGRDRequests = self.controller.buttonCreator(
             ipath=d["govofficer"][1],
-            x=20, y=460, classname="clincsrequests_chip", root=self.parent,
-            buttonFunction=lambda: [self.loadClinicsRequests()],
+            x=20, y=460, classname="viewpatients_chip", root=self.parent,
+            buttonFunction=lambda: [self.loadGRDRequests()],
         )
-        # self.viewDoctorSchedule = self.controller.buttonCreator(
-        #     ipath=d["govofficer"][2],
-        #     x=20, y=540, classname="viewdoctorschedule_chip", root=self.parent,
-        #     buttonFunction=lambda: [self.loadViewDoctorSchedule()],
-        # )
 
     def loadBrowseClinic(self):
         try:
@@ -87,8 +81,11 @@ class GovOfficerDashboard(Frame):
                 controller=self.controller, parent=self.parent)
             self.mainInterface.loadRoleAssets(govofficer=True)
 
-    def loadClinicsRequests(self):
-        pass
-
-    def loadViewDoctorSchedule(self):
-        pass
+    def loadGRDRequests(self):
+        try:
+            self.grdRequests.primarypanel.grid()
+            self.grdRequests.primarypanel.tkraise()
+        except:
+            self.grdRequests = MainGRDRequestsInterface(
+                controller=self.controller, parent=self.parent)
+            self.grdRequests.loadRoleAssets(govofficer=True)
