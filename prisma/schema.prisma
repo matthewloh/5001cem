@@ -149,6 +149,7 @@ model Appointment {
 enum ApptStatus {
     PENDING
     CONFIRMED
+    ONGOING
     CANCELLED
     COMPLETED
 }

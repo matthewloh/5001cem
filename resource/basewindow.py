@@ -335,10 +335,17 @@ class ElementCreator(ttk.Window):
         menustyle = ttk.Style()
         menustyle.configure(
             style=themename, font=("Helvetica", 10),
-            background="#F9F5EB", foreground=BLACK,
+            background="#FFFFFF", foreground=BLACK,
             bordercolor="#78c2ad",
             relief="raised",
         )
+        if themename == "registrationformframe.TMenubutton":
+            menustyle.configure(style=themename, background=WHITE,
+                                foreground=BLACK, bordercolor="#78c2ad",
+                                font=("Helvetica", 12))
+            menustyle.map(themename, foreground=[('active', BLACK), ("disabled", BLACK)],
+                          background=[('active', WHITE), ("disabled", WHITE)])
+
         if themename == "apptcreateframe.TMenubutton":
             menustyle.configure(style=themename, background=LIGHTPURPLE,
                                 foreground=BLACK, bordercolor=LIGHTPURPLE,
