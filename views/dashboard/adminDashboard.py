@@ -40,7 +40,7 @@ class ClinicAdminDashboard(Frame):
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
-            ipath=r"assets/Dashboard/ClinicAdminAssets/AdminPrimaryPanelBG.png",
+            ipath="assets/Dashboard/ClinicAdminAssets/AdminPrimaryPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 

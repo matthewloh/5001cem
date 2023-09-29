@@ -53,14 +53,14 @@ class Window(ElementCreator):
         )
         self.loginButton = self.buttonCreator(
             root=self.parentFrame,
-            ipath=r"assets/HomePage/SignInButton.png",
+            ipath="assets/HomePage/SignInButton.png",
             x=1180, y=760,
             classname="loginbutton",
             buttonFunction=self.signIn,
         )
         self.signUpRedirectButton = self.buttonCreator(
             root=self.parentFrame,
-            ipath=r"assets/HomePage/RedirectSignUpButton.png",
+            ipath="assets/HomePage/RedirectSignUpButton.png",
             x=1180, y=940,
             classname="signupredirectbutton",
             useHover=True,
