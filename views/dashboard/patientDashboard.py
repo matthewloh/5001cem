@@ -70,6 +70,7 @@ class PatientDashboard(Frame):
             x=20, y=540, classname="viewdoctorschedule_chip", root=self.parent,
             buttonFunction=lambda: [self.loadViewAppointments()],
         )
+        self.loadDashboardButtons()
 
     def loadBrowseClinic(self):
         try:
@@ -97,3 +98,30 @@ class PatientDashboard(Frame):
             self.appointments = MainViewAppointmentsInterface(
                 controller=self.controller, parent=self.parent)
             self.appointments.loadRoleAssets(patient=True)
+
+    def loadDashboardButtons(self):
+        CREATOR = self.controller.buttonCreator
+        params = {
+            "findbrowseclinic": {
+                "ipath": "assets/Dashboard/PatientAssets/PatientDashboard/PatientFindBrowseClinic.png",
+                "x": 40, "y": 180,
+                "classname": "dash_findbrowseclinic",
+                "root": self,
+                "buttonFunction": lambda: [self.loadBrowseClinic()]
+            },
+            "searchbyspecialist": {
+                "ipath": "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
+                "x": 40, "y": 300,
+                "classname": "dash_searchbyspecialist",
+                "root": self,
+                "buttonFunction": lambda: [self.loadBrowseClinic()]
+            },
+            "dash_viewappointments": {
+                "ipath": "assets/Dashboard/PatientAssets/PatientDashboard/ViewAppointments.png",
+                "x": 40, "y": 420,
+                "classname": "dash_viewappointments",
+                "root": self,
+                "buttonFunction": lambda: [self.loadViewAppointments()]
+            },
+        }
+        self.patientFindBrowseClinic = CREATOR(**params["findbrowseclinic"])
