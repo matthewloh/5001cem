@@ -46,6 +46,15 @@ class GovOfficerDashboard(Frame):
             self,  width=841, height=618)
         self.clinicsMap.place(x=13, y=101)
         self.clinicsMap.set_address("Penang, Malaysia")
+        self.clinicsMap.set_marker(5.413263479503181, 100.31426702274236, text="Klinik Aman")
+        self.clinicsMap.set_marker(5.374242225957853, 100.30003988066953, text="Klinik Permai")
+        self.clinicsMap.set_marker(5.350497761813827, 100.29752593763575, text="Klinik Health Plus")
+        self.clinicsMap.set_marker(5.41933799120014, 100.34146279968276, text="Klinik Sentosa")
+        self.clinicsMap.set_marker(5.397361507607067, 100.31466076832014, text="Klinik Comfort Care")
+
+
+        # self.clinicsMap.set_marker("Kuala Lumpur, Malaysia", text="Clinic 2")
+
         self.clinicsMap.set_tile_server(
             "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
         
