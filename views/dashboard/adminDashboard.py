@@ -35,7 +35,6 @@ class ClinicAdminDashboard(Frame):
         self.createFrames()
         self.createElements()
         self.dashboardButtons()
-        self.createFrames()
         self.createDoctorList()
 
     def loadAssets(self):
@@ -108,30 +107,33 @@ class ClinicAdminDashboard(Frame):
             self.grdRequests = MainGRDRequestsInterface(
                 controller=self.controller, parent=self.parent)
             self.grdRequests.loadRoleAssets(clinicAdmin=True)
-    
+
     def createFrames(self):
         self.addListsFrame = self.controller.frameCreator(
-            x=0, y=0, classname="addlist", root=self,framewidth=1680, frameheight=1080 
+            x=0, y=0, classname="addlist", root=self, framewidth=1680, frameheight=1080
         )
-        self.addListsFrame.grid_remove()
-        pass
         self.deleteListsFrame = self.controller.frameCreator(
-            x=0, y=0, classname="deletelist", root=self,framewidth=1680, frameheight=1080 
+            x=0, y=0, classname="deletelist", root=self, framewidth=1680, frameheight=1080
         )
+        self.unloadStackedFrames()
+
+    def unloadStackedFrames(self):
+        self.addListsFrame.grid_remove()
         self.deleteListsFrame.grid_remove()
-        pass
-  
+
     def createElements(self):
         self.bg = self.controller.labelCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/Homepage.png",
             x=0, y=0, classname="homepage", root=self
         )
         self.imgLabels = [
-            ("assets/Dashboard/ClinicAdminAssets/AddList/AddList1.png", 0, 0, "addlistimage", self.addListsFrame),
-            ("assets/Dashboard/ClinicAdminAssets/DeleteList/Background.png", 0, 0, "deletelistimage", self.deleteListsFrame)
+            ("assets/Dashboard/ClinicAdminAssets/AddList/AddList1.png",
+             0, 0, "addlistimage", self.addListsFrame),
+            ("assets/Dashboard/ClinicAdminAssets/DeleteList/Background.png",
+             0, 0, "deletelistimage", self.deleteListsFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
-        
+
     def dashboardButtons(self):
         d = {
             "adminDashboard": [
@@ -144,12 +146,14 @@ class ClinicAdminDashboard(Frame):
         self.addDoctor = self.controller.buttonCreator(
             ipath=d["adminDashboard"][0],
             x=140, y=440, classname="adddoctor", root=self,
-            buttonFunction=lambda: [self.addListsFrame.grid() , self.addListsFrame.tkraise() ],
+            buttonFunction=lambda: [
+                self.addListsFrame.grid(), self.addListsFrame.tkraise()],
         )
         self.deleteDoctor = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
             x=380, y=440, classname="deletedoctor", root=self,
-            buttonFunction=lambda: [self.deleteListsFrame.grid() , self.deleteListsFrame.tkraise()],
+            buttonFunction=lambda: [
+                self.deleteListsFrame.grid(), self.deleteListsFrame.tkraise()],
         )
         self.viewDoctorSchedule = self.controller.buttonCreator(
             ipath=d["adminDashboard"][2],
@@ -161,7 +165,7 @@ class ClinicAdminDashboard(Frame):
             x=1480, y=580, classname="refresh2", root=self,
             buttonFunction=lambda: [print('refresh')],
         )
-        
+
     def createDoctorList(self):
         prisma = self.prisma
         doctors = prisma.doctor.find_many(
@@ -187,12 +191,8 @@ class ClinicAdminDashboard(Frame):
                 x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
                 text=f"{doctor.user.fullName}", size=30, font=INTER,
                 isPlaced=True,
-                buttonFunction=lambda:[print(doctor)]
+                buttonFunction=lambda: [print(doctor)]
             )
             initialCoordinates = (
                 initialCoordinates[0], initialCoordinates[1] + 100
             )
-
-    
-
-   
