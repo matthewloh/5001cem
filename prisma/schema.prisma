@@ -1,250 +1,250 @@
 generator client {
-    provider             = "prisma-client-py"
-    interface            = "sync"
-    recursive_type_depth = "-1"
+  provider             = "prisma-client-py"
+  interface            = "sync"
+  recursive_type_depth = "-1"
 }
 
 datasource db {
-    provider     = "mysql"
-    url          = env("DATABASE_URL")
-    relationMode = "prisma"
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
-// Translating this from a university environment
-// to a Call-a-Doctor consultancy service
-// A user can be a patient, doctor, clinicadmin, or sysadmin
-// A larger organization is known as the Government Registered Doctor system.
-// Clinic entity - Needs to know who is admin, who is doctor
-// Appointment/Consultation entity - Needs to know who is patient, who is doctor, which clinic
-// Prescription - Patient, Doctor, Clinic, Appointment
-
 model User {
-    id               String             @id @default(cuid())
-    fullName         String
-    email            String             @unique
-    password         String
-    contactNo        String
-    patient          Patient[]
-    clinicAdmin      ClinicAdmin[]
-    doctor           Doctor[]
-    govHealthOfficer GovHealthOfficer[]
+  id               String             @id @default(cuid())
+  fullName         String?
+  email            String?            @unique
+  nric_passport    String?            @unique
+  dateOfBirth      DateTime?
+  contactNo        String?
+  password         String?
+  countryOfOrigin  String?
+  race             String?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  postcode         String?
+  country          String?
+  patient          Patient[]
+  clinicAdmin      ClinicAdmin[]
+  doctor           Doctor[]
+  govHealthOfficer GovHealthOfficer[]
 }
 
 model Patient {
-    id             String        @id @default(cuid())
-    // Biodata
-    firstName      String
-    lastName       String
-    dateOfBirth    DateTime
-    gender         Gender
-    // Contact
-    patientAddress String?
-    city           String?
-    state          String?
-    zip            String?
-    userId         String
-    user           User          @relation(fields: [userId], references: [id])
-    appointments   Appointment[]
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  appointments Appointment[]
 
-    @@index([userId])
-}
-
-enum Gender {
-    MALE
-    FEMALE
-    OTHER
+  @@index([userId])
 }
 
 model ClinicAdmin {
-    id       String  @id @default(cuid())
-    user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId   String
-    clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
-    clinicId String?
+  id       String  @id @default(cuid())
+  userId   String
+  clinicId String?
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
 
-    @@index([userId])
-    @@index([clinicId])
+  @@index([userId])
+  @@index([clinicId])
 }
 
 model Doctor {
-    id        String @id @default(cuid())
-    // Biodata
-    firstName String
-    lastName  String
-    gender    Gender
+  id                 String               @id @default(cuid())
+  gender             Gender
+  speciality         Speciality?          @default(NONE)
+  userId             String
+  clinicId           String?
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments       Appointment[]
+  doctorApptSchedule DoctorApptSchedule[]
+  clinic             Clinic?              @relation(fields: [clinicId], references: [id], onDelete: SetNull)
 
-    // Doctor details
-    speciality         Speciality?          @default(NONE)
-    // TODO: Add Valid License
-    user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId             String
-    appointments       Appointment[]
-    doctorApptSchedule DoctorApptSchedule[]
-
-    clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
-    clinicId String?
-
-    @@index([userId])
-    @@index([clinicId])
+  @@index([userId])
+  @@index([clinicId])
 }
 
 model GovHealthOfficer {
-    id       String @id @default(cuid())
-    user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId   String
-    govRegId String
+  id       String @id @default(cuid())
+  userId   String
+  govRegId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@index([userId])
-    @@index([govRegId])
-}
-
-enum Speciality {
-    GENERAL_PRACTICE
-    DERMATOLOGY
-    CARDIOLOGY
-    GYNAECOLOGY
-    NEUROLOGY
-    OPHTHALMOLOGY
-    ORTHOPAEDICS
-    PAEDIATRICS
-    UROLOGY
-    OTHER
-    NONE
+  @@index([userId])
+  @@index([govRegId])
 }
 
 model Appointment {
-    id        Int      @id @default(autoincrement())
-    // Timestamps
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    // Appt Details
+  id              Int            @id @default(autoincrement())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  title           String
+  desc            String
+  startTime       DateTime
+  endTime         DateTime
+  completedAt     DateTime?
+  editedAt        DateTime?      @default(now())
+  status          ApptStatus     @default(PENDING)
+  docAccepted     Boolean        @default(false)
+  patientAccepted Boolean        @default(false)
+  docAcceptAt     DateTime?
+  patientAcceptAt DateTime?
+  patientId       String
+  doctorId        String
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          Doctor         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  prescription    Prescription[]
 
-    title           String
-    desc            String
-    startTime       DateTime
-    endTime         DateTime
-    completedAt     DateTime?
-    editedAt        DateTime?  @default(now())
-    status          ApptStatus @default(PENDING)
-    docAccepted     Boolean    @default(false)
-    patientAccepted Boolean    @default(false)
-    docAcceptAt     DateTime?
-    patientAcceptAt DateTime?
-
-    // Details Of Parties Involved  
-    patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-    patientId String
-
-    doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-    doctorId String
-
-    // No need for clinic because doctor is already linked to clinic
-    // Many prescriptions per appointment
-    prescription Prescription[]
-
-    @@index([patientId])
-    @@index([doctorId])
+  @@index([patientId])
+  @@index([doctorId])
 }
 
-enum ApptStatus {
-    PENDING
-    CONFIRMED
-    ONGOING
-    CANCELLED
-    COMPLETED
-}
-
-// TODO: Maybe a daily prescription update?
 model Prescription {
-    id            Int         @id @default(autoincrement())
-    // Prescription Details
-    title         String
-    desc          String
-    // Patient can update prescription
-    // TODO: Add Valid Prescripition Image
-    appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-    appointmentId Int
+  id            Int         @id @default(autoincrement())
+  title         String
+  desc          String
+  appointmentId Int
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
-    @@index([appointmentId])
+  @@index([appointmentId])
 }
 
 model DoctorApptSchedule {
-    id        Int      @id @default(autoincrement())
-    day       Day      @default(MONDAY)
-    startTime DateTime
-    endTime   DateTime
-    doctorId  String
-    doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  day       Day      @default(MONDAY)
+  startTime DateTime
+  endTime   DateTime
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-    @@index([doctorId])
-}
-
-enum Day {
-    MONDAY
-    TUESDAY
-    WEDNESDAY
-    THURSDAY
-    FRIDAY
-    SATURDAY
-    SUNDAY
+  @@index([doctorId])
 }
 
 model Clinic {
-    id                 String            @id @default(cuid())
-    name               String
-    address            String
-    city               String
-    state              String
-    zip                String
-    phoneNum           String
-    govRegId           String?
-    govRegDocSystem    GovRegSystem?     @relation(fields: [govRegId], references: [id], onDelete: SetNull)
-    admin              ClinicAdmin[]
-    doctor             Doctor[]
-    // No need for appointment because it is already linked to doctor
-    clinicRegistration ClinicEnrolment[]
+  id                 String            @id @default(cuid())
+  name               String
+  address            String
+  city               String
+  state              String
+  zip                String
+  phoneNum           String
+  govRegId           String?
+  govRegDocSystem    GovRegSystem?     @relation(fields: [govRegId], references: [id], onDelete: SetNull)
+  admin              ClinicAdmin[]
+  doctor             Doctor[]
+  clinicRegistration ClinicEnrolment[]
 
-    @@index([govRegId])
+  @@index([govRegId])
 }
 
 model ClinicEnrolment {
-    id              String          @id @default(cuid())
-    createdAt       DateTime        @default(now())
-    updatedAt       DateTime        @updatedAt
-    status          EnrolmentStatus @default(PENDING)
-    clinicId        String
-    clinic          Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-    govRegId        String
-    govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id], onDelete: Cascade)
+  id              String          @id @default(cuid())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  status          EnrolmentStatus @default(PENDING)
+  clinicId        String
+  govRegId        String
+  clinic          Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id], onDelete: Cascade)
 
-    @@index([clinicId])
-    @@index([govRegId])
-}
-
-enum EnrolmentStatus {
-    PENDING
-    APPROVED
-    REJECTED
+  @@index([clinicId])
+  @@index([govRegId])
 }
 
 model GovRegSystem {
-    id               String           @id @default(cuid())
-    typeOfSystem     TypeOfSystem
-    healthcareSystem HealthcareSystem
+  id                    String            @id @default(cuid())
+  typeOfSystem          TypeOfSystem
+  healthcareSystem      HealthcareSystem
+  clinic                Clinic[]
+  programmeRegistration ClinicEnrolment[]
+}
 
-    clinic                Clinic[]
-    programmeRegistration ClinicEnrolment[]
+model PatientHealthRecord {
+  id                String  @id
+  patientId         String  @unique
+  allergies         String? @db.Text
+  bloodType         String? @db.Text
+  currentMedication String? @db.Text
+  familyHistory     String? @db.Text
+  height            Int?
+  pastMedication    String? @db.Text
+  pastSurgery       String? @db.Text
+  weight            Int?
+}
+
+model doctorPrescription {
+  id        Int    @id @default(autoincrement())
+  name      String
+  contact   String
+  email     String
+  age       Int
+  gender    String
+  ic_number String
+  medicine  String
+  symptoms  String
+  allergies String
+  date      String
+  time      String
+  duration  String
+  details   String
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Speciality {
+  GENERAL_PRACTICE
+  DERMATOLOGY
+  CARDIOLOGY
+  GYNAECOLOGY
+  NEUROLOGY
+  OPHTHALMOLOGY
+  ORTHOPAEDICS
+  PAEDIATRICS
+  UROLOGY
+  OTHER
+  NONE
+}
+
+enum ApptStatus {
+  PENDING
+  CONFIRMED
+  ONGOING
+  CANCELLED
+  COMPLETED
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum EnrolmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum TypeOfSystem {
-    CLINIC
-    HOSPITAL
-    PHARMACY
-    OTHER
+  CLINIC
+  HOSPITAL
+  PHARMACY
+  OTHER
 }
 
 enum HealthcareSystem {
-    GOVERNMENT
-    PRIVATE
-    OTHER
+  GOVERNMENT
+  PRIVATE
+  OTHER
 }
