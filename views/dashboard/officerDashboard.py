@@ -37,7 +37,7 @@ class GovOfficerDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/OfficerAssets/OfficerDashboardPanelBG.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
@@ -47,7 +47,33 @@ class GovOfficerDashboard(Frame):
         self.clinicsMap.place(x=13, y=101)
         self.clinicsMap.set_address("Penang, Malaysia")
         self.clinicsMap.set_tile_server(
-            "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)  # google normal
+            "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
+        
+        exampleList = []
+        [exampleList.append("Clinic " + str(i))
+         for i in range(30) if i % 2 == 0]
+        h = len(exampleList) * 120
+        if h < 600:
+            h = 600
+        self.exampleScrolledFrame = ScrolledFrame(
+            master=self, width=750, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.exampleScrolledFrame.grid_propagate(False)
+        self.exampleScrolledFrame.place(x=900, y=314, width=750, height=620)
+        initialcoordinates = (20, 20)
+        for thing in exampleList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\cliniclistbg.png", x=x, y=y,
+                classname=f"clinic{thing}", root=self.exampleScrolledFrame,
+                text=thing, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 120
+            )
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
