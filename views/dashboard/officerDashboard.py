@@ -69,7 +69,7 @@ class GovOfficerDashboard(Frame):
         )
         self.exampleScrolledFrame.grid_propagate(False)
         self.exampleScrolledFrame.place(x=900, y=314, width=750, height=620)
-        initialcoordinates = (20, 20)
+        initialcoordinates = (20, 10)
         for thing in exampleList:
             x = initialcoordinates[0]
             y = initialcoordinates[1]
@@ -83,6 +83,33 @@ class GovOfficerDashboard(Frame):
             initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
+
+        clinicStatusList = []
+        [clinicStatusList.append("Clinic " + str(i))
+         for i in range(20) if i % 2 == 0]
+        h = len(clinicStatusList) * 120
+        if h < 200:
+            h = 200
+        self.clinicStatusScrolledFrame = ScrolledFrame(
+            master=self, width=798, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.clinicStatusScrolledFrame.grid_propagate(False)
+        self.clinicStatusScrolledFrame.place(x=20, y=826, width=825, height=193)
+        initialcoordinates = (10, 10)
+        for thing in clinicStatusList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\OfficerAssets\clinicsstatusbg.png", x=x, y=y,
+                classname=f"clinicstatus{thing}", root=self.clinicStatusScrolledFrame,
+                text=thing, size=18, font=INTER,
+                isPlaced=True,
+            )
+
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 70
+            )
+        
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
