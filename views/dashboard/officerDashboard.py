@@ -1,6 +1,6 @@
 import calendar
 import datetime as dt
-import re, os
+import re
 import threading
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
@@ -8,8 +8,6 @@ from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
 from tkinter import messagebox
-from dotenv import load_dotenv
-
 
 import tkintermapview
 from geopy.geocoders import GoogleV3
@@ -22,8 +20,6 @@ from ttkbootstrap.toast import ToastNotification
 
 from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
-
-load_dotenv()
 
 
 class GovOfficerDashboard(Frame):
