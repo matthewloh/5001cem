@@ -1,6 +1,6 @@
 import calendar
 import datetime as dt
-import re
+import re, os
 import threading
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
@@ -8,8 +8,11 @@ from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
 from tkinter import messagebox
+from dotenv import load_dotenv
+
 
 import tkintermapview
+from geopy.geocoders import GoogleV3
 from pendulum import timezone
 from ttkbootstrap.constants import *
 from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
@@ -19,6 +22,8 @@ from ttkbootstrap.toast import ToastNotification
 
 from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
+
+load_dotenv()
 
 
 class GovOfficerDashboard(Frame):
@@ -46,11 +51,17 @@ class GovOfficerDashboard(Frame):
             self,  width=841, height=618)
         self.clinicsMap.place(x=13, y=101)
         self.clinicsMap.set_address("Penang, Malaysia")
-        self.clinicsMap.set_marker(5.413263479503181, 100.31426702274236, text="Klinik Aman")
-        self.clinicsMap.set_marker(5.374242225957853, 100.30003988066953, text="Klinik Permai")
-        self.clinicsMap.set_marker(5.350497761813827, 100.29752593763575, text="Klinik Health Plus")
-        self.clinicsMap.set_marker(5.41933799120014, 100.34146279968276, text="Klinik Sentosa")
-        self.clinicsMap.set_marker(5.397361507607067, 100.31466076832014, text="Klinik Comfort Care")
+        self.loc = GoogleV3(api_key=os.getenv("MAPS_API_KEY"), user_agent="myGeocoder")
+        self.clinic1 = self.loc.geocode("603, Jalan Datuk Keramat,Georgetown, Pulau Pinang")
+        self.clinic2 = self.loc.geocode("163-1-2, Jalan Permai, Taman Brown, 11700 Georgetown, Pulau Pinang")
+        self.clinic3 = self.loc.geocode("725-U, Jalan Sungai Dua, Desa Permai Indah, 11700 Gelugor, Pulau Pinang")
+        self.clinic4 = self.loc.geocode("20, Lebuh Penang, George Town, 10450 George Town, Pulau Pinang")
+        self.clinic5 = self.loc.geocode("Jln Perak, Taman Desa Green, 11600 George Town, Pulau Pinang")
+        self.clinicsMap.set_marker(self.clinic1.latitude, self.clinic1.longitude, text="Klinik Aman")
+        self.clinicsMap.set_marker(self.clinic2.latitude, self.clinic2.longitude, text="Klinik Permai")
+        self.clinicsMap.set_marker(self.clinic3.latitude, self.clinic3.longitude, text="Klinik Health Plus")
+        self.clinicsMap.set_marker(self.clinic4.latitude, self.clinic4.longitude, text="Klinik Sentosa")
+        self.clinicsMap.set_marker(self.clinic5.latitude, self.clinic5.longitude, text="Klinik Comfort Care")
 
 
         # self.clinicsMap.set_marker("Kuala Lumpur, Malaysia", text="Clinic 2")
