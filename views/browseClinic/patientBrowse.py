@@ -26,7 +26,7 @@ class PatientBrowseClinic(Frame):
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-        
+
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -38,4 +38,32 @@ class PatientBrowseClinic(Frame):
         self.controller.labelCreator(
             ipath="assets/BrowseClinic/Patient/BG.png",
             x=0, y=0, classname="secondarypanelbg", root=self
+        )
+        self.createButtons()
+        self.createEntry()
+
+    def createButtons(self):
+        CREATOR = self.controller.buttonCreator
+        IP, X, Y, CN, R, BF = "ipath", "x", "y", "classname", "root", "buttonFunction"
+        name = "browseclinic"
+        params = {
+            "searchbutton": {
+                IP: "assets/BrowseClinic/Patient/Search.png",
+                X: 780,
+                Y: 80,
+                CN: f"{name}_searchbtn",
+                R: self,
+                BF: lambda: [print('test')]
+            },
+        }
+        for param in params:
+            CREATOR(**params[param])
+
+    def createEntry(self):
+        CREATOR = self.controller.ttkEntryCreator
+        self.searchEntry = CREATOR(
+            x=0, y=80,
+            width=780, height=80,
+            classname="searchentry", root=self,
+            placeholder="Search for clinics"
         )
