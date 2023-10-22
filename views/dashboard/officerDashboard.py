@@ -1,6 +1,7 @@
 import calendar
 import datetime as dt
 import re
+import os
 import threading
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
@@ -8,6 +9,8 @@ from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
 from tkinter import messagebox
+from dotenv import load_dotenv
+
 
 import tkintermapview
 from geopy.geocoders import GoogleV3
@@ -20,6 +23,8 @@ from ttkbootstrap.toast import ToastNotification
 
 from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
+load_dotenv()
+
 
 
 class GovOfficerDashboard(Frame):
@@ -47,7 +52,7 @@ class GovOfficerDashboard(Frame):
             self,  width=841, height=618)
         self.clinicsMap.place(x=13, y=101)
         self.clinicsMap.set_address("Penang, Malaysia")
-        self.loc = GoogleV3(api_key="AIzaSyCDjOimUHmEsPbiYNG8qezUdDwTbZ8fRlE", user_agent="myGeocoder")
+        self.loc = GoogleV3(api_key=os.getenv("MAPS_API_KEY"), user_agent="myGeocoder")
         self.clinic1 = self.loc.geocode("603, Jalan Datuk Keramat,Georgetown, Pulau Pinang")
         self.clinic2 = self.loc.geocode("163-1-2, Jalan Permai, Taman Brown, 11700 Georgetown, Pulau Pinang")
         self.clinic3 = self.loc.geocode("725-U, Jalan Sungai Dua, Desa Permai Indah, 11700 Gelugor, Pulau Pinang")
