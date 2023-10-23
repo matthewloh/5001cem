@@ -36,6 +36,7 @@ class ClinicAdminDashboard(Frame):
         self.createElements()
         self.dashboardButtons()
         self.createDoctorList()
+        self.loadDoctorsAndFilterBySpeciality()
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -133,6 +134,28 @@ class ClinicAdminDashboard(Frame):
              0, 0, "deletelistimage", self.deleteListsFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
+
+    def loadDoctorsAndFilterBySpeciality(self):
+        prisma = self.prisma
+        doctors = prisma.doctor.find_many()
+        self.specialitiesAndDoctors = {}
+        for doctor in doctors:
+            if doctor.speciality not in self.specialitiesAndDoctors.keys():
+                self.specialitiesAndDoctors[doctor.speciality] = []
+            self.specialitiesAndDoctors[doctor.speciality].append(doctor)
+        self.specialitySelected = StringVar()
+        keyOptionsForMenuButton = list(self.specialitiesAndDoctors.keys())
+        self.specialityMenuButton = self.controller.menubuttonCreator(
+            x=140, y=240, classname="specialitymenubutton", root=self,
+            width=400, height=80, listofvalues=keyOptionsForMenuButton,
+            variable=self.specialitySelected,
+            command=lambda: [
+                self.loadDoctorsBySpeciality(self.specialitySelected.get())],
+            text="Select Speciality"
+        )
+
+    def loadDoctorsBySpeciality(self, option):
+        print(self.specialitiesAndDoctors[option])
 
     def dashboardButtons(self):
         d = {
