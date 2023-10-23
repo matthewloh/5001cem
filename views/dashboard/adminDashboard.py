@@ -137,9 +137,13 @@ class ClinicAdminDashboard(Frame):
 
     def loadDoctorsAndFilterBySpeciality(self):
         prisma = self.prisma
-        doctors = prisma.doctor.find_many()
+        self.doctors = prisma.doctor.find_many(
+            include={
+                "user": True,
+            }
+        )
         self.specialitiesAndDoctors = {}
-        for doctor in doctors:
+        for doctor in self.doctors:
             if doctor.speciality not in self.specialitiesAndDoctors.keys():
                 self.specialitiesAndDoctors[doctor.speciality] = []
             self.specialitiesAndDoctors[doctor.speciality].append(doctor)
@@ -155,7 +159,29 @@ class ClinicAdminDashboard(Frame):
         )
 
     def loadDoctorsBySpeciality(self, option):
-        print(self.specialitiesAndDoctors[option])
+        doctors = self.specialitiesAndDoctors[option]
+        h = len(doctors) * 100
+        if h < 375:
+            h = 375
+        self.doctorsScrolledFrame = ScrolledFrame(
+            master=self, width=920, height=h, autohide=True, bootstyle="bg-round")
+        self.doctorsScrolledFrame.place(
+            x=680, y=145, width=920, height=375
+        )
+        initialCoordinates = (20, 20)
+        for doctor in doctors:
+            x = initialCoordinates[0]
+            y = initialCoordinates[1]
+            self.controller.textElement(
+                ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/ListButton.png",
+                x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
+                text=f"{doctor.user.fullName}", size=30, font=INTER,
+                isPlaced=True,
+                buttonFunction=lambda d = doctor: [print(d)]
+            )
+            initialCoordinates = (
+                initialCoordinates[0], initialCoordinates[1] + 100
+            )
 
     def dashboardButtons(self):
         d = {
@@ -219,23 +245,3 @@ class ClinicAdminDashboard(Frame):
             initialCoordinates = (
                 initialCoordinates[0], initialCoordinates[1] + 100
             )
-
-    def loadDoctorsAndFilterBySpeciality(self):
-        doctors = prisma.doctor.find_many(include={"user": True})
-        # Empty dictionary
-        specialityOptions = {}
-        
-        for doctor in doctors:
-            # If the key doesn't already exist, create it
-            if doctor.speciality not in specialityOptions.keys():
-                specialityOptions[doctor.speciality] = []
-            # Append the doctor to the list
-            specialityOptions[doctor.speciality].append(doctor)
-        # Print the dictionary
-        for k, v in specialityOptions.items():
-            print(k)
-            for doctor in v:
-                print(doctor)
-        
-   
-   
