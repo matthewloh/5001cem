@@ -101,27 +101,32 @@ class PatientDashboard(Frame):
 
     def loadDashboardButtons(self):
         CREATOR = self.controller.buttonCreator
+        IP, X, Y, CN, R, BF = "ipath", "x", "y", "classname", "root", "buttonFunction"
         params = {
             "findbrowseclinic": {
-                "ipath": "assets/Dashboard/PatientAssets/PatientDashboard/PatientFindBrowseClinic.png",
-                "x": 40, "y": 180,
-                "classname": "dash_findbrowseclinic",
-                "root": self,
-                "buttonFunction": lambda: [self.loadBrowseClinic()]
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/PatientFindBrowseClinic.png",
+                X: 40,
+                Y: 180,
+                CN: "dash_findbrowseclinic",
+                R: self,
+                BF: lambda: [self.loadBrowseClinic()]
             },
             "searchbyspecialist": {
-                "ipath": "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
-                "x": 40, "y": 300,
-                "classname": "dash_searchbyspecialist",
-                "root": self,
-                "buttonFunction": lambda: [self.loadBrowseClinic()]
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
+                X: 40,
+                Y: 300,
+                CN: "dash_searchbyspecialist",
+                R: self,
+                BF: lambda: [self.loadBrowseClinic()]
             },
             "dash_viewappointments": {
-                "ipath": "assets/Dashboard/PatientAssets/PatientDashboard/ViewAppointments.png",
-                "x": 40, "y": 420,
-                "classname": "dash_viewappointments",
-                "root": self,
-                "buttonFunction": lambda: [self.loadViewAppointments()]
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/ViewAppointments.png",
+                X: 40,
+                Y: 420,
+                CN: "dash_viewappointments",
+                R: self,
+                BF: lambda: [self.loadViewAppointments()]
             },
         }
-        self.patientFindBrowseClinic = CREATOR(**params["findbrowseclinic"])
+        for param in params:
+            CREATOR(**params[param])
