@@ -30,12 +30,54 @@ class PatientCreateRequests(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.createbutton()
+        self.createFormEntries()
 
     def createFrames(self):
         pass
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/DoctorAssets/DoctorPrimaryPanelBG.png",
+            ipath="assets/Dashboard/PatientAssets/PatientRequestPrescription.png",
             x=0, y=0, classname="requestspanelbg", root=self
+        )
+
+    def createFormEntries(self):
+        CREATOR = self.controller.ttkEntryCreator
+        FONT = ("Arial", 24)
+
+        self.patientBrowserSelectAddress = CREATOR(
+            x=124, y=383, width=611, height=56,
+            root=self, classname="Patient_Request_Prescription_Name",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientBrowserSelectAddress = CREATOR(
+            x=124, y=383, width=611, height=56,
+            root=self, classname="Patient_Request_Prescription_Name",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientBrowserSearchClinic = CREATOR(
+            x=124, y=487, width=611, height=56,
+            root=self, classname="Patient_Request_Prescription_Contact",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientBrowserSearchClinic = CREATOR(
+            x=124, y=592, width=611, height=56,
+            root=self, classname="Patient_Request_Prescription_Email",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientBrowserSearchClinic = CREATOR(
+            x=124, y=773, width=611, height=56,
+            root=self, classname="Patient_Request_Prescription_DoctorName",
+            font=FONT, isPlaced=True
+        )
+
+    def createbutton(self):
+        self.submitButton = self.controller.buttonCreator(
+            ipath="assets/Dashboard/PatientAssets/PatientSubmitButton.png", x=290 , y=853,
+            classname = "PatientRequestPrescription" , root=self, buttonFunction=lambda:[print('print=Submit')]
         )

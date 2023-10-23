@@ -3,6 +3,7 @@ import calendar
 import re
 import threading
 from tkinter import *
+from tkinter import ttk
 from tkinter import messagebox
 from prisma.models import Appointment
 from ttkbootstrap.constants import *
@@ -29,12 +30,15 @@ class DoctorRegistrationForm(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+    
 
     def createFrames(self):
         pass
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
+            ipath="assets/Dashboard/DoctorAssets/DoctorClinic1.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
+
+   

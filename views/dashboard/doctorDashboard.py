@@ -32,13 +32,14 @@ class DoctorDashboard(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.createPatientList()
 
     def createFrames(self):
         pass
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/DoctorAssets/DoctorPrimaryPanelBG.png",
+            ipath="assets/Dashboard/DoctorAssets/DoctorDashboard.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
@@ -97,3 +98,31 @@ class DoctorDashboard(Frame):
             self.appointments = MainViewAppointmentsInterface(
                 controller=self.controller, parent=self.parent)
             self.appointments.loadRoleAssets(doctor=True)
+
+    def createPatientList(self):
+            prisma = self.prisma
+            patients = prisma.patient.find_many(
+                include={
+                    "appointments": {
+                        "include": {
+                            "doctor": {
+                                "include": {
+                                    "user": True
+                                }
+                            },
+                            "prescription": True
+                        }
+
+                    },
+                    "user": True
+                }
+            )
+            for patient in patients:
+                singlePatientsApps = patient.appointments
+                for app in singlePatientsApps:
+                    prescriptions = app.prescription
+                    for p in prescriptions:
+                        t = p.title
+                        d = p.desc
+
+    
