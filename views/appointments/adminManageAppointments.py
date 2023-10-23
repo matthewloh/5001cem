@@ -29,13 +29,63 @@ class AdminManageAppointments(Frame):
 
         self.prisma = self.controller.mainPrisma
         self.createFrames()
-        self.createElements()
+        self.appointmentImgLabels()
+        self.appointmentButtons()
 
     def createFrames(self):
-        pass
+        self.createAppointmentsFrame = self.controller.frameCreator(
+            x=0, y=0, classname="createframe", root=self, framewidth=1680, frameheight=1080
+        )
+        self.manageAppointmentsFrame = self.controller.frameCreator(
+            x=0, y=0, classname="manageframe", root=self, framewidth=1680, frameheight=1080
+        )
+        self.unloadStackedFrames()
 
-    def createElements(self):
-        self.controller.labelCreator(
-            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
-            x=0, y=0, classname="appointmentspanelbg", root=self
+    def unloadStackedFrames(self):
+        self.createAppointmentsFrame.grid_remove()
+        self.manageAppointmentsFrame.grid_remove()
+
+    def appointmentImgLabels(self):
+        self.bg = self.controller.labelCreator(
+            ipath="assets/Appointments/Homepage/AppointmentDashboard.png",
+            x=0, y=0, classname="appointmenthomepage", root=self
+        )
+        self.imgLabels = [
+            ("assets/Appointments/Creation/AppointmentCreation.png",
+             0, 0, "creationimage", self.createAppointmentsFrame),
+            ("assets/Appointments/Management/AppointmentManagement.png",
+             0, 0, "manageimage", self.manageAppointmentsFrame)
+        ]
+        self.controller.settingsUnpacker(self.imgLabels, "label")
+
+    def appointmentButtons(self):
+        d = {
+            "appointmentButtons": [
+                "assets/Appointments/Homepage/CreateAppointments.png",
+                "assets/Appointments/Homepage/ManageAppointments.png",
+                "assets/Appointments/Creation/ReturnCreationButton.png",
+                "assets/Appointments/Creation/ReturnManagementButton.png"
+            ]
+        }
+        self.creationButton = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][0],
+            x=60, y=680, classname="createbutton", root=self,
+            buttonFunction=lambda: [
+                self.createAppointmentsFrame.grid(), self.createAppointmentsFrame.tkraise()],
+        )
+        self.managementButton = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][1],
+            x=600, y=680, classname="managebutton", root=self,
+            buttonFunction=lambda: [
+                self.manageAppointmentsFrame.grid(), self.manageAppointmentsFrame.tkraise()],
+        )
+        self.returncreationBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][2],
+            x=0, y=40, classname="returncreation", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [self.createAppointmentsFrame.grid_remove()],
+        )
+        self.returnmanagementBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][3],
+            x=40, y=60, classname="returnmanagement", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid_remove()],
         )

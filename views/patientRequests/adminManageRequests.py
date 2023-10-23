@@ -29,35 +29,48 @@ class AdminManagePatientRequests(Frame):
 
         self.prisma = self.controller.mainPrisma
         self.createFrames()
-        self.createElements()
-        self.createButtons()
+        self.patientImgLabels()
+        self.patientRequestButtons()
         self.createPatientList()
 
     def createFrames(self):
         pass
 
-    def createElements(self):
+    def patientImgLabels(self):
         self.controller.labelCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/PatientList.png",
             x=0, y=0, classname="patientrequests", root=self
         )
 
-    def createButtons(self):
-        self.AcceptButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Accept.png", x=380,y=140, 
-            classname="accept", root=self, buttonFunction=lambda: [print('accept')])
-        
-        self.RejectButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Reject.png", x=590,y=140, 
-            classname="reject", root=self, buttonFunction=lambda: [print('reject')])
-   
-        self.RefreshButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Refresh.png", x=680,y=300, 
-            classname="refresh3", root=self, buttonFunction=lambda: [print('refresh')])
-        
-        self.RefreshButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Refresh.png", x=1520,y=100, 
-            classname="refresh4", root=self, buttonFunction=lambda: [print('refresh')])
+    def patientRequestButtons(self):
+        d = {
+            "patientRequest": [
+                "assets/Dashboard/ClinicAdminAssets/PatientRequests/Accept.png",
+                "assets/Dashboard/ClinicAdminAssets/PatientRequests/Reject.png",
+                "assets/Dashboard/ClinicAdminAssets/PatientRequests/Refresh.png",
+                "assets/Dashboard/ClinicAdminAssets/PatientRequests/Refresh.png"
+            ]
+        }
+        self.addDoctor = self.controller.buttonCreator(
+            ipath=d["patientRequest"][0],
+            x=380, y=140, classname="accept", root=self,
+            buttonFunction=lambda: [print('accept')],
+        )
+        self.rejectButton = self.controller.buttonCreator(
+            ipath=d["patientRequest"][1],
+            x=580,y=140, classname="reject", root=self,
+            buttonFunction=lambda: [print('reject')],
+        )
+        self.refresh3button = self.controller.buttonCreator(
+            ipath=d["patientRequest"][2],
+            x=680,y=300, classname="refresh3", root=self,
+            buttonFunction=lambda: [print('refresh')],
+        )
+        self.refresh4button = self.controller.buttonCreator(
+            ipath=d["patientRequest"][3],
+            x=1520, y=100, classname="refresh4", root=self,
+            buttonFunction=lambda: [print('refresh')],
+        )
         
     def createPatientList(self):
         prisma = self.prisma
@@ -66,7 +79,7 @@ class AdminManagePatientRequests(Frame):
                 "user": True,
             }
         )
-        h = len(patient) * 100
+        h = len(patients) * 100
         if h < 770:
             h = 770
 

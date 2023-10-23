@@ -155,12 +155,12 @@ class ClinicAdminDashboard(Frame):
             buttonFunction=lambda: [
                 self.deleteListsFrame.grid(), self.deleteListsFrame.tkraise()],
         )
-        self.viewDoctorSchedule = self.controller.buttonCreator(
+        self.refresh1button = self.controller.buttonCreator(
             ipath=d["adminDashboard"][2],
             x=1480, y=60, classname="refresh1", root=self,
             buttonFunction=lambda: [print('refresh')],
         )
-        self.viewGRDRequests = self.controller.buttonCreator(
+        self.refresh2button = self.controller.buttonCreator(
             ipath=d["adminDashboard"][3],
             x=1480, y=580, classname="refresh2", root=self,
             buttonFunction=lambda: [print('refresh')],
@@ -196,3 +196,23 @@ class ClinicAdminDashboard(Frame):
             initialCoordinates = (
                 initialCoordinates[0], initialCoordinates[1] + 100
             )
+
+    def loadDoctorsAndFilterBySpeciality(self):
+        doctors = prisma.doctor.find_many(include={"user": True})
+        # Empty dictionary
+        specialityOptions = {}
+        
+        for doctor in doctors:
+            # If the key doesn't already exist, create it
+            if doctor.speciality not in specialityOptions.keys():
+                specialityOptions[doctor.speciality] = []
+            # Append the doctor to the list
+            specialityOptions[doctor.speciality].append(doctor)
+        # Print the dictionary
+        for k, v in specialityOptions.items():
+            print(k)
+            for doctor in v:
+                print(doctor)
+        
+   
+   
