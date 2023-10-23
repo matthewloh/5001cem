@@ -79,42 +79,7 @@ class OfficerBrowseClinic(Frame):
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
 
-    # def loadAssets(self):
-    #     self.pfp = self.controller.buttonCreator(
-    #         ipath="assets/Dashboard/OfficerAssets/OfficerProfilePicture.png",
-    #         x=20, y=100, classname="profilepicture", root=self.parent,
-    #         buttonFunction=lambda: [print('hello')]
-    #     )
-    #     d = {
-    #         "govofficer": [
-    #             r"assets/Dashboard/OfficerAssets/OfficerManageClinics.png",
-    #             r"assets/Dashboard/OfficerAssets/OfficerClinicRequests.png",
-    #         ],
-    #     }
-    #     self.officerDashboard = self.controller.buttonCreator(
-    #         ipath=d["govofficer"][0],
-    #         x=20, y=380, classname="officerdashboard_chip", root=self.parent,
-    #         buttonFunction=lambda: [self.loadOfficerDashboard()],
-    #     )
-    #     self.clinicsRequests = self.controller.buttonCreator(
-    #         ipath=d["govofficer"][1],
-    #         x=20, y=460, classname="clincsrequests_chip", root=self.parent,
-    #         buttonFunction=lambda: [self.loadClinicsRequests()],
-    #     )
-    #     # self.viewDoctorSchedule = self.controller.buttonCreator(
-    #     #     ipath=d["govofficer"][2],
-    #     #     x=20, y=540, classname="viewdoctorschedule_chip", root=self.parent,
-    #     #     buttonFunction=lambda: [self.loadViewDoctorSchedule()],
-    #     # )
-
-    # def loadOfficerDashboard(self):
-    #     try:
-    #         self.mainInterface.primarypanel.grid()
-    #         self.mainInterface.primarypanel.tkraise()
-    #     except:
-    #         self.mainInterface = Dashboard(
-    #             controller=self.controller, parent=self.parent)
-    #         self.mainInterface.loadRoleAssets(govofficer=True)
+    
 
     # def loadClinicsRequests(self):
     #     pass

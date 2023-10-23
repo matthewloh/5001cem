@@ -1,29 +1,11 @@
-
-
-import calendar
-import datetime as dt
-import re
-import threading
-from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from resource.basewindow import ElementCreator, gridGenerator
+from resource.basewindow import ElementCreator
 from resource.static import *
 from tkinter import *
-from tkinter import messagebox
 
-import tkintermapview
-from pendulum import timezone
 from ttkbootstrap.constants import *
-from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
-from ttkbootstrap.dialogs.dialogs import DatePickerDialog
-from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
-from ttkbootstrap.toast import ToastNotification
 
-from views.browseClinic.adminBrowse import AdminBrowseClinic
-from views.browseClinic.doctorBrowse import DoctorBrowseClinic
-from views.browseClinic.officerBrowse import OfficerBrowseClinic
-from views.browseClinic.patientBrowse import PatientBrowseClinic
-from views.patientRequests.adminManageRequests import AdminManagePatientRequests
+from views.patientRequests.adminManageRequests import \
+    AdminManagePatientRequests
 from views.patientRequests.doctorViewRequests import DoctorViewPatientRequests
 from views.patientRequests.patientCreateRequests import PatientCreateRequests
 

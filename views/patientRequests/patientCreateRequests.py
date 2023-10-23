@@ -26,7 +26,7 @@ class PatientCreateRequests(Frame):
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-        
+
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -38,7 +38,7 @@ class PatientCreateRequests(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/Dashboard/PatientAssets/PatientRequestPrescription.png",
+            ipath="assets/Prescriptions/Patient/BG.png",
             x=0, y=0, classname="requestspanelbg", root=self
         )
 

@@ -377,7 +377,7 @@ class ElementCreator(ttk.Window):
 
         return menubutton
 
-    def ttkEntryCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), fg=BLACK, validation=False, passwordchar="*", captchavar=None, isPlaced=False) -> ttk.Entry:
+    def ttkEntryCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), fg=BLACK, validation=False, passwordchar="*", captchavar=None, isPlaced=False, placeholder=None) -> ttk.Entry:
         """
         Takes in arguments x, y, width, height, from Figma, creates a frame,\n
         and places a ttk.Entry inside of it. The ttk.Entry is then returned into the global dict of widgets.\n
@@ -419,10 +419,10 @@ class ElementCreator(ttk.Window):
             else:
                 return False
 
-        themename = f"{str(root).split('.')[-1]}.TEntry"
-        ttk.Style().configure(
-            style=themename, font=font, background=NICEBLUE, foreground=BLACK,
-        )
+        # themename = f"{str(root).split('.')[-1]}.TEntry"
+        # ttk.Style().configure(
+        #     style=themename, font=font, background=NICEBLUE, foreground=BLACK,
+        # )
         entry = ttk.Entry(frame, bootstyle=PRIMARY, foreground=fg,
                           name=classname, font=font, background=bgcolor)
         entry.grid(row=0, column=0, rowspan=heightspan,
@@ -447,6 +447,16 @@ class ElementCreator(ttk.Window):
             # just not blank
             add_regex_validation(widget=entry, pattern="^.*\S.*$")
             pass
+
+        def entryEnter(event):
+            entry.config(foreground=BLACK)
+        if placeholder:
+            entry.insert(0, placeholder)
+            entry.config(foreground="#bfbfbf")
+            entry.bind("<FocusIn>", lambda e: [[entry.delete(0, END) if entry.get(
+            ) == placeholder else None], entry.config(foreground=BLACK)])
+            entry.bind("<FocusOut>", lambda e: [entry.insert(0, placeholder), entry.config(
+                foreground="#bfbfbf")] if entry.get() == "" else None)
 
         self.widgetsDict[classname] = entry
         self.updateWidgetsDict(root=root)

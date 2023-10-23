@@ -45,24 +45,23 @@ class RegistrationPage(Frame):
         (imagepath, x, y, classname, root)
         """
         self.staticImgLabels = [
-            (r"assets\Registration\RegistrationBG.png", 0, 0, "registrationbg", self),
-            (r"assets\Registration\SignUpForm.png",
+            ("assets/Registration/RegistrationBG.png", 0, 0, "registrationbg", self),
+            ("assets/Registration/SignUpForm.png",
              0, 0, f"formframebg", self.frameref),
 
         ]
         self.staticBtns = [
-            (r"assets\Registration\RedirectLoginButton.png",
+            ("assets/Registration/RedirectLoginButton.png",
              60, 80, "redirectloginbutton", self,
              lambda: self.loadSignIn()),
-            (r"assets\Registration\CompleteRegButton.png",
-             1420, 880, "completeregbutton", self,
-             lambda: print('hello')),
         ]
         self.controller.settingsUnpacker(self.staticImgLabels, "label")
         self.controller.settingsUnpacker(self.staticBtns, "button")
-        self.dateOfBirthEntry = self.controller.ttkEntryCreator(
-            x=40, y=320, width=260, height=60, root=self.frameref, classname="regbirthdate"
-        )
+        self.loadFormEntries()
+        self.createCountryMenuBtns()
+        self.createRoleButtons()
+
+    def loadFormEntries(self):
         self.userRegEntries = [
             (40, 120, 720, 60, self.frameref, "regfullname"),
             (40, 220, 340, 60, self.frameref, "regemail", "isEmail"),
@@ -80,12 +79,15 @@ class RegistrationPage(Frame):
         for i in self.userRegEntries:
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
         WD = self.controller.widgetsDict
+
         self.datePicker = self.controller.buttonCreator(
             ipath="assets/Registration/DatePicker.png",
             x=320, y=320, classname="datepicker", root=self.frameref,
             buttonFunction=lambda: self.selectDate(self.datePicker)
         )
-
+        self.dateOfBirthEntry = self.controller.ttkEntryCreator(
+            x=40, y=320, width=260, height=60, root=self.frameref, classname="regbirthdate"
+        )
         self.dobMsg = "Select Date of Birth"
         self.dateOfBirthEntry.insert(0, self.dobMsg)
         self.dateOfBirthEntry.config(state=READONLY)
@@ -96,6 +98,8 @@ class RegistrationPage(Frame):
         self.addressline1, self.addressline2, self.postcode = WD[
             "regaddressline1"], WD["regaddressline2"], WD["regpostcode"]
         self.country, self.state, self.city = StringVar(), StringVar(), StringVar()
+
+    def createCountryMenuBtns(self):
         list = {
             "country": {
                 "pos": {"x": 540, "y": 740, "width": 220, "height": 60},
@@ -110,6 +114,8 @@ class RegistrationPage(Frame):
                 variable=v["variable"], font=("Helvetica", 12),
                 command=lambda: [self.loadStateMenubuttons(self.country.get())]
             )
+
+    def createRoleButtons(self):
         self.patientFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/PatientFormButton.png",
             x=1420, y=460, classname="patientformbtn", root=self,
@@ -123,12 +129,12 @@ class RegistrationPage(Frame):
         self.adminFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/AdminFormButton.png",
             x=1420, y=740, classname="adminformbtn", root=self,
-            buttonFunction=lambda: self.loadRoleAssets(admin=True)
+            buttonFunction=lambda: self.loadRoleAssets(clinicAdmin=True)
         )
         self.officerFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/OfficerFormButton.png",
             x=1420, y=880, classname="officerformbtn", root=self,
-            buttonFunction=lambda: self.loadRoleAssets(officer=True)
+            buttonFunction=lambda: self.loadRoleAssets(govofficer=True)
         )
 
     def selectDate(self, btn):
@@ -156,6 +162,7 @@ class RegistrationPage(Frame):
             )
             toast.show_toast()
             return
+        self.dateTimeDOB = dialog.date_selected
         date = dialog.date_selected.strftime("%d/%m/%Y")
         self.dateOfBirthEntry.configure(state=NORMAL)
         self.dateOfBirthEntry.delete(0, END)
@@ -366,15 +373,15 @@ class RegistrationPage(Frame):
             else:
                 pass
 
-        self.controller.buttonCreator(r"Assets\Login Page with Captcha\ValidateInfoButton.png", 600, 560, classname="validateinfobtn", root=self.frameref,
+        self.controller.buttonCreator(r"Assets/Login Page with Captcha/ValidateInfoButton.png", 600, 560, classname="validateinfobtn", root=self.frameref,
                                       buttonFunction=lambda: [
                                           checkCaptchaCorrect()])
-        self.controller.buttonCreator(r"Assets\Login Page with Captcha\regeneratecaptcha.png", 680, 420,
+        self.controller.buttonCreator(r"Assets/Login Page with Captcha/regeneratecaptcha.png", 680, 420,
                                       classname="regeneratecaptcha", root=self.frameref,
                                       buttonFunction=lambda: self.generateCaptchaChallenge())
         if role == "teacher":
             self.controller.buttonCreator(
-                r"Assets\Login Page with Captcha\CompleteRegSignIn.png", 1240, 980,
+                r"Assets/Login Page with Captcha/CompleteRegSignIn.png", 1240, 980,
                 classname="completeregbutton", buttonFunction=lambda: self.send_data(
                     data={
                         "fullName": entries["fullname"].get(),
@@ -395,7 +402,7 @@ class RegistrationPage(Frame):
             self.controller.widgetsDict["skipbutton"].grid()
         elif role == "student":
             self.controller.buttonCreator(
-                r"Assets\Login Page with Captcha\CompleteRegSignIn.png", 1240, 980,
+                r"Assets/Login Page with Captcha/CompleteRegSignIn.png", 1240, 980,
                 classname=f"completeregbutton", buttonFunction=lambda: self.send_data(
                     data={
                         "fullName": entries["fullname"].get(),
@@ -416,16 +423,16 @@ class RegistrationPage(Frame):
             self.controller.widgetsDict["skipbutton"].grid()
 
     # def generateCaptchaChallenge(self):
-    #     # fonts=[r"Fonts\AvenirNext-Regular.ttf", r"Fonts\SF-Pro.ttf"]
+    #     # fonts=[r"Fonts/AvenirNext-Regular.ttf", r"Fonts/SF-Pro.ttf"]
     #     image = ImageCaptcha(width=260, height=80, )
     #     # random alphanumeric string of length 6
     #     captcha_text = ''.join(random.choices(
     #         string.ascii_uppercase + string.digits, k=6))
     #     data = image.generate(captcha_text)
-    #     image.write(captcha_text, r"Assets\Login Page with Captcha\captcha.png")
+    #     image.write(captcha_text, r"Assets/Login Page with Captcha/captcha.png")
     #     self.captchavar.set(captcha_text)
     #     self.controller.labelCreator(
-    #         imagepath=r"Assets\Login Page with Captcha\captcha.png",
+    #         imagepath=r"Assets/Login Page with Captcha/captcha.png",
     #         xpos=420, ypos=420, classname="imagecaptchachallenge",
     #         root=self.frameref
     #     )
@@ -792,7 +799,7 @@ class RegistrationPage(Frame):
             bootstyle=DANGER
         )
         phoneregex = re.compile(
-            r"^(\+?6?01)[02-46-9]-*[0-9]{7}$|^(\+?6?01)[1]-*[0-9]{8}$")
+            r"^(/+?6?01)[02-46-9]-*[0-9]{7}$|^(/+?6?01)[1]-*[0-9]{8}$")
         if re.match(phoneregex, contactNo):
             return True
         else:
@@ -865,7 +872,7 @@ class RegistrationPage(Frame):
             parent=self, controller=self.controller,
             xpos=0, ypos=0, bg="#344557",
             framewidth=800, frameheight=920, classname="loadingspinner",
-            imagepath=r"Assets\spinners.gif", imagexpos=200, imageypos=300)
+            imagepath=r"Assets/spinners.gif", imagexpos=200, imageypos=300)
         self.controller.labelCreator(
             r"Assets/signinguplabel.png", 140, 620, "signinguplabel", self.gif)
         t.daemon = True
@@ -875,6 +882,15 @@ class RegistrationPage(Frame):
         self.grid_remove()
 
     def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
+        self.btns = [self.patientFormBtn, self.doctorFormBtn,
+                     self.adminFormBtn, self.officerFormBtn]
+        for btn in self.btns:
+            btn.grid_remove()
+        self.returnToPersonalDetails = self.controller.buttonCreator(
+            ipath="assets/Registration/ReturnToPersonalInfoBtn.png",
+            x=60, y=760, classname="returntopersonaldetails", root=self,
+            buttonFunction=lambda: self.reloadPersonalDetails()
+        )
         if patient:
             self.primaryForm = PatientRegistrationForm(
                 parent=self, controller=self.controller)
@@ -889,3 +905,11 @@ class RegistrationPage(Frame):
                 parent=self, controller=self.controller)
         else:
             return
+
+    def reloadPersonalDetails(self):
+        self.primaryForm.roleImg.grid_remove()
+        self.frameref.tkraise()
+        for btn in self.btns:
+            btn.grid()
+        self.primaryForm.completeRegBtn.grid_remove()
+        self.returnToPersonalDetails.grid_remove()

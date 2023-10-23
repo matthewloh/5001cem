@@ -36,6 +36,46 @@ class OfficerGRDRequests(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/DoctorAssets/DoctorPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/OfficerAssets/OfficerClinicsRequestsBG.png",
             x=0, y=0, classname="grdrequestsbg", root=self
         )
+
+        exampleList = []
+        [exampleList.append("Clinic " + str(i))
+         for i in range(30) if i % 2 == 0]
+        h = len(exampleList) * 120
+        if h < 600:
+            h = 600
+        self.exampleScrolledFrame = ScrolledFrame(
+            master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.exampleScrolledFrame.grid_propagate(False)
+        self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
+        initialcoordinates = (20, 20)
+        for thing in exampleList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsbg.png", x=x, y=y,
+                classname=f"thing{thing}", root=self.exampleScrolledFrame,
+                text=thing, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/OfficerAssets/OfficerAcceptClinic.png",
+                classname=f"acceptclinic{thing}", root=self.exampleScrolledFrame,
+                x=1055, y=y+20, buttonFunction=lambda t = thing: [print(f"acceptclinic {t}")],
+                isPlaced=True,
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/OfficerAssets/OfficerRejectClinic.png",
+                classname=f"rejectclinic{thing}", root=self.exampleScrolledFrame,
+                x=1055+216, y=y+20, buttonFunction=lambda t = thing: [print(f"rejectclinic {t}")],
+                isPlaced=True
+            )
+
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 120
+            )
+

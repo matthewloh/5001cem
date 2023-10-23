@@ -38,7 +38,7 @@ class PatientDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/PatientAssets/PatientPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/PatientAssets/PatientDashboard/PatientDashboard.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
@@ -70,6 +70,7 @@ class PatientDashboard(Frame):
             x=20, y=540, classname="viewdoctorschedule_chip", root=self.parent,
             buttonFunction=lambda: [self.loadViewAppointments()],
         )
+        self.loadDashboardButtons()
 
     def loadBrowseClinic(self):
         try:
@@ -97,3 +98,35 @@ class PatientDashboard(Frame):
             self.appointments = MainViewAppointmentsInterface(
                 controller=self.controller, parent=self.parent)
             self.appointments.loadRoleAssets(patient=True)
+
+    def loadDashboardButtons(self):
+        CREATOR = self.controller.buttonCreator
+        IP, X, Y, CN, R, BF = "ipath", "x", "y", "classname", "root", "buttonFunction"
+        params = {
+            "findbrowseclinic": {
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/PatientFindBrowseClinic.png",
+                X: 40,
+                Y: 180,
+                CN: "dash_findbrowseclinic",
+                R: self,
+                BF: lambda: [self.loadBrowseClinic()]
+            },
+            "searchbyspecialist": {
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
+                X: 40,
+                Y: 300,
+                CN: "dash_searchbyspecialist",
+                R: self,
+                BF: lambda: [self.loadBrowseClinic()]
+            },
+            "dash_viewappointments": {
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/ViewAppointments.png",
+                X: 40,
+                Y: 420,
+                CN: "dash_viewappointments",
+                R: self,
+                BF: lambda: [self.loadViewAppointments()]
+            },
+        }
+        for param in params:
+            CREATOR(**params[param])
