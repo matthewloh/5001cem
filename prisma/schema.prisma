@@ -1,13 +1,13 @@
 generator client {
-  provider             = "prisma-client-py"
-  recursive_type_depth = "-1"
-  interface            = "sync"
+    provider             = "prisma-client-py"
+    recursive_type_depth = "-1"
+    interface            = "sync"
 }
 
 datasource db {
-  provider     = "mysql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
 }
 
 model User {
@@ -33,12 +33,15 @@ model User {
 }
 
 model Patient {
-    id           String        @id @default(cuid())
-    userId       String
-    user         User          @relation(fields: [userId], references: [id])
-    appointments Appointment[]
+    id             String              @id @default(cuid())
+    userId         String
+    user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+    appointments   Appointment[]
+    healthRecord   PatientHealthRecord @relation(fields: [healthRecordId], references: [id])
+    healthRecordId String
 
     @@index([userId])
+    @@index([healthRecordId])
 }
 
 model ClinicAdmin {
@@ -48,8 +51,8 @@ model ClinicAdmin {
     user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
 
-  @@index([userId])
-  @@index([clinicId])
+    @@index([userId])
+    @@index([clinicId])
 }
 
 model Doctor {
@@ -164,16 +167,16 @@ model GovRegSystem {
 }
 
 model PatientHealthRecord {
-    id                String  @id
-    patientId         String  @unique
-    allergies         String? @db.Text
-    bloodType         String? @db.Text
-    currentMedication String? @db.Text
-    familyHistory     String? @db.Text
-    height            Int?
-    pastMedication    String? @db.Text
-    pastSurgery       String? @db.Text
-    weight            Int?
+    id                String    @id @default(cuid())
+    allergies         String?   @db.Text
+    bloodType         String?   @db.Text
+    currentMedication String?   @db.Text
+    familyHistory     String?   @db.Text
+    height            Float?    @db.Float
+    pastMedication    String?   @db.Text
+    pastSurgery       String?   @db.Text
+    weight            Float?    @db.Float
+    patient           Patient[]
 }
 
 model doctorPrescription {
@@ -238,14 +241,14 @@ enum EnrolmentStatus {
 }
 
 enum TypeOfSystem {
-  CLINIC
-  HOSPITAL
-  PHARMACY
-  OTHER
+    CLINIC
+    HOSPITAL
+    PHARMACY
+    OTHER
 }
 
 enum HealthcareSystem {
-  GOVERNMENT
-  PRIVATE
-  OTHER
+    GOVERNMENT
+    PRIVATE
+    OTHER
 }
