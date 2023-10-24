@@ -38,7 +38,7 @@ class PatientViewAppointments(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/Dashboard/PatientAssets/PatientBookAppointment.png",
+            ipath="assets/Appointments/Patient/BG.png",
             x=0, y=0, classname="appointmentspanelbg", root=self
         )
 

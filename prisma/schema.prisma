@@ -71,10 +71,13 @@ model Doctor {
 }
 
 model GovHealthOfficer {
-    id       String @id @default(cuid())
-    userId   String
-    govRegId String
-    user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id           String    @id @default(cuid())
+    userId       String
+    govRegId     String
+    stateManaged States
+    startDate    DateTime
+    endDate      DateTime?
+    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@index([userId])
     @@index([govRegId])
@@ -160,8 +163,6 @@ model ClinicEnrolment {
 
 model GovRegSystem {
     id                    String            @id @default(cuid())
-    typeOfSystem          TypeOfSystem
-    healthcareSystem      HealthcareSystem
     clinic                Clinic[]
     programmeRegistration ClinicEnrolment[]
 }
@@ -240,15 +241,19 @@ enum EnrolmentStatus {
     REJECTED
 }
 
-enum TypeOfSystem {
-    CLINIC
-    HOSPITAL
-    PHARMACY
-    OTHER
-}
-
-enum HealthcareSystem {
-    GOVERNMENT
-    PRIVATE
-    OTHER
+enum States {
+    JOHOR
+    KEDAH
+    KELANTAN
+    MELAKA
+    NEGERI_SEMBILAN
+    PAHANG
+    PERAK
+    PERLIS
+    PULAU_PINANG
+    SABAH
+    SARAWAK
+    SELANGOR
+    TERENGGANU
+    WILAYAH_PERSEKUTUAN
 }

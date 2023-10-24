@@ -76,30 +76,28 @@ class PatientBrowseClinic(Frame):
         self.clinicsMap.place(x=0, y=180)
         self.clinicsMap.set_address("Penang, Malaysia")
         self.clinicsMap.set_tile_server(
-            "https://mt0.google.com/vt/lyrs=m&hl=en&x ={x}&y={y}&z={z}&s=Ga", max_zoom=22) 
-        
+            "https://mt0.google.com/vt/lyrs=m&hl=en&x ={x}&y={y}&z={z}&s=Ga", max_zoom=22)
+
     def createFormEntries(self):
         CREATOR = self.controller.ttkEntryCreator
-        FONT = ("Arial", 24)
+        FONT = ("Inter", 16)
 
-        self.patientBrowserSelectAddress = CREATOR(
+        self.patientBrowserEnterAddress = CREATOR(
             x=0, y=80, width=780, height=80,
             root=self, classname="Patient_Browse_Clinic1",
-            font=FONT, isPlaced=True
+            font=FONT, isPlaced=True,
+            placeholder="Enter your address here"
         )
-
-        # Add a placeholder/hint text
-        self.patientBrowserSelectAddress.insert(0, "Enter your address here")
-       
 
         self.patientBrowserSearchClinic = CREATOR(
             x=1494, y=195, width=158, height=75,
             root=self, classname="Patient_Browse_Clinic",
-            font=FONT, isPlaced=True
+            font=FONT, isPlaced=True,
+            placeholder="Enter your address here"
         )
 
     def createbutton(self):
         self.submitButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/PatientAssets/PatientBrowseClinicSearchButton.png", x=780 , y=80,
-            classname = "PatientSetLocation" , root=self, buttonFunction=lambda:[print('print=Submit')]
+            ipath="assets/Dashboard/PatientAssets/PatientBrowseClinicSearchButton.png", x=780, y=80,
+            classname="PatientSetLocation", root=self, buttonFunction=lambda: [print('print=Submit')]
         )
