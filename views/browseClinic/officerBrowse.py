@@ -73,7 +73,7 @@ class OfficerBrowseClinic(Frame):
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsbg.png", x=x, y=y,
+                ipath="assets/Dashboard/clinicdetailsbg.png", x=x, y=y,
                 classname=f"thing{thing}", root=self.exampleScrolledFrame,
                 text=thing, size=30, font=INTER,
                 isPlaced=True,

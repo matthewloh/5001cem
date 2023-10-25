@@ -30,6 +30,8 @@ class PatientViewAppointments(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.createbutton()
+        self.createFormEntries()
 
     def createFrames(self):
         pass
@@ -38,4 +40,38 @@ class PatientViewAppointments(Frame):
         self.controller.labelCreator(
             ipath="assets/Appointments/Patient/BG.png",
             x=0, y=0, classname="appointmentspanelbg", root=self
+        )
+
+    def createFormEntries(self):
+        CREATOR = self.controller.ttkEntryCreator
+        FONT = ("Arial", 24)
+
+        self.patientAppointmentClinicName = CREATOR(
+            x=1174, y=664, width=360, height=46,
+            root=self, classname="Patient_Appointment_Clinic_Name",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientAppointmentDoctorName = CREATOR(
+            x=1174, y=727, width=360, height=46,
+            root=self, classname="Patient_Appointment_Doctor_Name",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientAppointmentDate = CREATOR(
+            x=1174, y=790, width=360, height=46,
+            root=self, classname="Patient_Appointment_Date",
+            font=FONT, isPlaced=True
+        )
+
+        self.patientAppointmentTime = CREATOR(
+            x=1174, y=853, width=360, height=46,
+            root=self, classname="Patient_Appointment_Time",
+            font=FONT, isPlaced=True
+        )
+
+    def createbutton(self):
+        self.submitButton = self.controller.buttonCreator(
+            ipath="assets/Dashboard/PatientAssets/PatientSubmitButton.png", x=1100 , y=920,
+            classname = "PatientSubmitApppointment" , root=self, buttonFunction=lambda:[print('print=Submit')]
         )
