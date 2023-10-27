@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import calendar
 import re
 import threading
+import ttkbootstrap as tb
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -20,6 +21,7 @@ from pendulum import timezone
 import tkintermapview
 
 
+
 class PatientBrowseClinic(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="browseclinicpanel")
@@ -33,6 +35,7 @@ class PatientBrowseClinic(Frame):
         self.createElements()
         self.createFormEntries()
         self.createbutton()
+        self.loadAppScrolledFrame()
 
     def createFrames(self):
         pass
@@ -76,7 +79,63 @@ class PatientBrowseClinic(Frame):
         self.clinicsMap.place(x=0, y=180)
         self.clinicsMap.set_address("Penang, Malaysia")
         self.clinicsMap.set_tile_server(
-            "https://mt0.google.com/vt/lyrs=m&hl=en&x ={x}&y={y}&z={z}&s=Ga", max_zoom=22) 
+            "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22) 
+        
+    def loadAppScrolledFrame(self):
+        prisma = self.prisma
+        # appointments = prisma.appointment.find_many(
+        #     where={
+        #         "doctor": {
+        #             "is": {
+        #                 "userId": self.getUserID()
+        #             }
+        #         }
+        #     },
+        #     include={
+        #         "patient": {
+        #             "include": {
+        #                 "user": True
+        #             }
+        #         }
+        #     }
+        # )
+        appointments = [1, 2, 3, 4, 5, 6, 7]
+        h = len(appointments) * 120
+        if h < 620:
+            h = 620
+
+        #first scroll frame
+        self.viewClinicStatus = ScrolledFrame(
+            master=self, width=1500, height=h, bootstyle="bg-round", autohide=True
+        )
+        self.viewClinicStatus.place(
+            x=8, y=906, width=837, height=136)
+        initCoords = (5, 5)
+        for a in appointments:
+            bg = self.controller.labelCreator(
+                ipath="assets/Dashboard/PatientAssets/PatientListButton/PatientBrowseClinicStatus.png",
+                x=initCoords[0], y=initCoords[1], classname=f"browseClinicStatus{a}", root=self.viewClinicStatus,
+                isPlaced=True
+            )
+            initCoords = (initCoords[0], initCoords[1] + 55)
+
+    
+        self.viewClinicList = ScrolledFrame(
+            master=self, width=1500, height=h, bootstyle="bg-round", autohide=True
+        )
+        self.viewClinicList.place(
+            x=907, y=350, width=750, height=692)
+        initCoords = (5, 5)
+        for a in appointments:
+            #a.fullname.userId
+            bg = self.controller.labelCreator(
+                ipath="assets/Dashboard/PatientAssets/PatientListButton/PatientBrowseClinicLIst.png",
+                x=initCoords[0], y=initCoords[1], classname=f"browseClinicList{a}", root=self.viewClinicList,
+                isPlaced=True
+            )
+            initCoords = (initCoords[0], initCoords[1] + 120)
+
+
         
     def createFormEntries(self):
         CREATOR = self.controller.ttkEntryCreator
@@ -89,14 +148,16 @@ class PatientBrowseClinic(Frame):
         )
 
         # Add a placeholder/hint text
-        self.patientBrowserSelectAddress.insert(0, "Enter your address here")
+        self.patientBrowserSelectAddress.insert(50, "Enter your address here")
        
 
         self.patientBrowserSearchClinic = CREATOR(
-            x=1494, y=195, width=158, height=75,
+            x=1494, y=190, width=158, height=75,
             root=self, classname="Patient_Browse_Clinic",
             font=FONT, isPlaced=True
         )
+
+        self.patientBrowserSearchClinic.insert(0, "Search")
 
     def createbutton(self):
         self.submitButton = self.controller.buttonCreator(

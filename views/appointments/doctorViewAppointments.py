@@ -30,17 +30,17 @@ class DoctorViewAppointments(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
-        self.createDoctorList()
+        self.loadAppScrolledFrame()
+       
 
     def createFrames(self):
         pass
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/Appointments/Doctor/BG.png",
-            x=0, y=0, classname="appointmentspanelbg", root=self
+            ipath="assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
+            x=0, y=0, classname="secondarypanelbg", root=self
         )
-        self.loadAppScrolledFrame()
 
     def loadAppScrolledFrame(self):
         prisma = self.prisma
@@ -68,12 +68,15 @@ class DoctorViewAppointments(Frame):
             master=self, width=1500, height=h, bootstyle="bg-round", autohide=True
         )
         self.appointmentScrolledFrame.place(
-            x=80, y=320, width=1500, height=620)
+            x=161, y=280, width=1311, height=683)
         initCoords = (20, 20)
         for a in appointments:
+            #a.fullname.userId
             bg = self.controller.labelCreator(
-                ipath="assets/Appointments/Doctor/SingleAppBG.png",
-                x=initCoords[0], y=initCoords[1], classname=f"appointmentbg{a}", root=self.appointmentScrolledFrame,
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DoctorRequestPrescriptionButton.png",
+                x=initCoords[0], y=initCoords[1], classname=f"AcceptPrescriptionRequest{a}", root=self.appointmentScrolledFrame,
                 isPlaced=True
             )
-            initCoords = (initCoords[0], initCoords[1] + 120)
+            initCoords = (initCoords[0], initCoords[1] + 100)
+
+

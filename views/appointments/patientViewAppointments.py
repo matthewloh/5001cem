@@ -32,6 +32,7 @@ class PatientViewAppointments(Frame):
         self.createElements()
         self.createbutton()
         self.createFormEntries()
+        self.loadAppScrolledFrame()
 
     def createFrames(self):
         pass
@@ -69,6 +70,61 @@ class PatientViewAppointments(Frame):
             root=self, classname="Patient_Appointment_Time",
             font=FONT, isPlaced=True
         )
+
+    def loadAppScrolledFrame(self):
+        prisma = self.prisma
+        # appointments = prisma.appointment.find_many(
+        #     where={
+        #         "doctor": {
+        #             "is": {
+        #                 "userId": self.getUserID()
+        #             }
+        #         }
+        #     },
+        #     include={
+        #         "patient": {
+        #             "include": {
+        #                 "user": True
+        #             }
+        #         }
+        #     }
+        # )
+        appointments = [1, 2, 3, 4, 5, 6, 7]
+        h = len(appointments) * 120
+        if h < 620:
+            h = 620
+
+        #first scroll frame
+        self.appointmentViewClinicListScrolledFrame = ScrolledFrame(
+            master=self, width=1500, height=h, bootstyle="light", autohide=True
+        )
+        self.appointmentViewClinicListScrolledFrame.place(
+            x=44, y=234, width=758, height=759)
+        initCoords = (10, 10)
+        for a in appointments:
+            #a.fullname.userId
+            bg = self.controller.labelCreator(
+                ipath="assets/Dashboard/PatientAssets/PatientListButton/PatientAppointmentClinicList.png",
+                x=initCoords[0], y=initCoords[1], classname=f"appointmentbg{a}", root=self.appointmentViewClinicListScrolledFrame,
+                isPlaced=True
+            )
+            initCoords = (initCoords[0], initCoords[1] + 120)
+
+    
+        self.appointmentViewDcotorListScrolledFrame = ScrolledFrame(
+            master=self, width=1500, height=h, bootstyle="bg-round", autohide=True
+        )
+        self.appointmentViewDcotorListScrolledFrame.place(
+            x=908, y=241, width=644, height=272)
+        initCoords = (25, 25)
+        for a in appointments:
+            #a.fullname.userId
+            bg = self.controller.labelCreator(
+                ipath="assets/Dashboard/PatientAssets/PatientListButton/PatientAppointmentDoctorList.png",
+                x=initCoords[0], y=initCoords[1], classname=f"appointmentbg1{a}", root=self.appointmentViewDcotorListScrolledFrame,
+                isPlaced=True
+            )
+            initCoords = (initCoords[0], initCoords[1] + 120)
 
     def createbutton(self):
         self.submitButton = self.controller.buttonCreator(
