@@ -111,6 +111,7 @@ class AdminRegistrationForm(Frame):
         self.cliniczipVar = StringVar()
         self.cliniccontactnumberVar = StringVar()
         self.clinichrsVar = StringVar()
+        self.clinicidVar = StringVar()
 
     def loadSpecificSubmission(self, option: str):
         if option == self.OPT1STR:
@@ -225,6 +226,15 @@ class AdminRegistrationForm(Frame):
                 R: frame,
                 PH: "Clinic Hours"
             },
+            "clinicid": {
+                X: 380,
+                Y: 600,
+                W: 300,
+                H: 80,
+                CN: "clinicidentry",
+                R: frame,
+                PH: "Clinic ID"
+            }
         }
         for p in param:
             CREATOR(**param[p])
@@ -245,6 +255,7 @@ class AdminRegistrationForm(Frame):
         WD["clinicstateentry"].insert(0, self.clinicstateVar.get())
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
         WD["clinichrsentry"].insert(0, self.clinichrsVar.get())
+        WD["clinicidentry"].insert(0, self.clinicidVar.get())
 
     def saveClinicInformation(self):
         prisma = self.prisma
@@ -263,6 +274,8 @@ class AdminRegistrationForm(Frame):
             WD["cliniczipentry"].get())
         self.clinichrsVar.set(
             WD["clinichrsentry"].get())
+        self.clinicidVar.set(
+            WD["clinicidentry"].get())
         msg = f"""
         Clinic Information Saved!
         Name: {self.clinicnameVar.get()}
@@ -272,6 +285,7 @@ class AdminRegistrationForm(Frame):
         State: {self.clinicstateVar.get()}
         Zip: {self.cliniczipVar.get()} 
         Hours: {self.clinichrsVar.get()}
+        ID: {self.clinicidVar.get()}
         """
         Messagebox.show_info(
             title="Clinic Information",
@@ -490,15 +504,12 @@ class AdminRegistrationForm(Frame):
             }
         )
 
-        # clinicEnrolment = prisma.clinicenrolment.create(
-        #     data={
-        #         "clinic": {
-        #             "connect": {
-        #                 "id": clinicAdmin.id
-        #             }
-        #         },
-        #         "createdAt": datetime.now(tz=timezone("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S"),
-        #         "updatedAt": datetime.now(tz=timezone("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S"),
-        #         "status": "PENDING"
-        #     }
-        # )
+        clinicEnrolment = prisma.clinicenrolment.create(
+            data={
+                "create": {
+                    # "clinicId": self.clinicidVar.get(),
+                    # "govRegId": "1234",
+                },
+            }
+            
+        )

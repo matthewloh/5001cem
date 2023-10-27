@@ -136,7 +136,7 @@ model Clinic {
   state              String
   zip                String
   phoneNum           String
-  clinicHrs          String
+  clinicHrs          String?           @db.Text
   govRegId           String?
   clinicImg          Bytes?
   govRegDocSystem    GovRegSystem?     @relation(fields: [govRegId], references: [id], onDelete: SetNull)
