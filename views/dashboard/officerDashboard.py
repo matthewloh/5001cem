@@ -126,12 +126,12 @@ class GovOfficerDashboard(Frame):
             )
 
         clinicStatusList = []
-        contactList = []
+        contactsList = []
         docAvailableList = []
         patientsList = []
         [clinicStatusList.append("Clinic " + str(i))
          for i in range(20) if i % 2 == 0]
-        [contactList.append("Contact " + str(i))
+        [contactsList.append("Contact " + str(i))
             for i in range(20) if i % 2 == 0]
         [docAvailableList.append( str(i))
             for i in range(20) if i % 2 == 0]
@@ -146,7 +146,7 @@ class GovOfficerDashboard(Frame):
         self.clinicStatusScrolledFrame.grid_propagate(False)
         self.clinicStatusScrolledFrame.place(x=20, y=826, width=825, height=193)
         initialcoordinates = (10, 10)
-        for thing, contact, docAvailable, patients in zip(clinicStatusList, contactList, docAvailableList, patientsList):
+        for thing, contacts, docAvailable, patients in zip(clinicStatusList, contactsList, docAvailableList, patientsList):
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
@@ -158,8 +158,8 @@ class GovOfficerDashboard(Frame):
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\miniclinicsdetailsbg.png", x=240, y=y+15,
-                classname=f"contact{contact}", root=self.clinicStatusScrolledFrame,
-                text=contact, size=18, font=INTER,
+                classname=f"contacts{contacts}", root=self.clinicStatusScrolledFrame,
+                text=contacts, size=18, font=INTER,
                 isPlaced=True,
             )
 
