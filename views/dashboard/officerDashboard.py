@@ -36,6 +36,9 @@ class GovOfficerDashboard(Frame):
     def createFrames(self):
         pass
 
+    def unloadStackedFrames(self):
+        pass
+
     def createElements(self):
         self.controller.labelCreator(
             ipath=r"assets/Dashboard/OfficerAssets/OfficerDashboardPanelBG.png",
@@ -64,7 +67,7 @@ class GovOfficerDashboard(Frame):
 
         self.clinicsMap.set_tile_server(
             "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
-        
+
         exampleList = []
         contactList = []
         addressList = []

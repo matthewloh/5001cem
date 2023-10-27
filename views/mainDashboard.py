@@ -76,9 +76,9 @@ class Dashboard(Frame):
         self.dashboardChip = self.controller.buttonCreator(
             ipath=r"assets/Dashboard/DashboardChip.png",
             x=20, y=300, classname="dashboardchip", root=self,
-            buttonFunction=lambda: self.test(),
+            buttonFunction=lambda: self.unloadStackedFrames(),
         )
         
-    def test(self):
-        # self.primarypanel.mainInterface.primarypanel.grid_remove()
+    def unloadStackedFrames(self):
+        self.primarypanel.unloadStackedFrames()
         self.primarypanel.tkraise()

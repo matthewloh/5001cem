@@ -34,15 +34,9 @@ class ClinicAdminDashboard(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
-
-    def createFrames(self):
-        pass
-
-    def createElements(self):
-        self.bg = self.controller.labelCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/AdminPrimaryPanelBG.png",
-            x=0, y=0, classname="primarypanelbg", root=self
-        )
+        self.dashboardButtons()
+        self.createDoctorList()
+        self.loadDoctorsAndFilterBySpeciality()
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -114,3 +108,140 @@ class ClinicAdminDashboard(Frame):
             self.grdRequests = MainGRDRequestsInterface(
                 controller=self.controller, parent=self.parent)
             self.grdRequests.loadRoleAssets(clinicAdmin=True)
+
+    def createFrames(self):
+        self.addListsFrame = self.controller.frameCreator(
+            x=0, y=0, classname="addlist", root=self, framewidth=1680, frameheight=1080
+        )
+        self.deleteListsFrame = self.controller.frameCreator(
+            x=0, y=0, classname="deletelist", root=self, framewidth=1680, frameheight=1080
+        )
+        self.unloadStackedFrames()
+
+    def unloadStackedFrames(self):
+        self.addListsFrame.grid_remove()
+        self.deleteListsFrame.grid_remove()
+
+    def createElements(self):
+        self.bg = self.controller.labelCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/Homepage.png",
+            x=0, y=0, classname="homepage", root=self
+        )
+        self.imgLabels = [
+            ("assets/Dashboard/ClinicAdminAssets/AddList/AddList1.png",
+             0, 0, "addlistimage", self.addListsFrame),
+            ("assets/Dashboard/ClinicAdminAssets/DeleteList/Background.png",
+             0, 0, "deletelistimage", self.deleteListsFrame)
+        ]
+        self.controller.settingsUnpacker(self.imgLabels, "label")
+
+    def loadDoctorsAndFilterBySpeciality(self):
+        prisma = self.prisma
+        self.doctors = prisma.doctor.find_many(
+            include={
+                "user": True,
+            }
+        )
+        self.specialitiesAndDoctors = {}
+        for doctor in self.doctors:
+            if doctor.speciality not in self.specialitiesAndDoctors.keys():
+                self.specialitiesAndDoctors[doctor.speciality] = []
+            self.specialitiesAndDoctors[doctor.speciality].append(doctor)
+        self.specialitySelected = StringVar()
+        keyOptionsForMenuButton = list(self.specialitiesAndDoctors.keys())
+        self.specialityMenuButton = self.controller.menubuttonCreator(
+            x=140, y=240, classname="specialitymenubutton", root=self,
+            width=400, height=80, listofvalues=keyOptionsForMenuButton,
+            variable=self.specialitySelected,
+            command=lambda: [
+                self.loadDoctorsBySpeciality(self.specialitySelected.get())],
+            text="Select Speciality"
+        )
+
+    def loadDoctorsBySpeciality(self, option):
+        doctors = self.specialitiesAndDoctors[option]
+        h = len(doctors) * 100
+        if h < 375:
+            h = 375
+        self.doctorsScrolledFrame = ScrolledFrame(
+            master=self, width=920, height=h, autohide=True, bootstyle="bg-round")
+        self.doctorsScrolledFrame.place(
+            x=680, y=145, width=920, height=375
+        )
+        initialCoordinates = (20, 20)
+        for doctor in doctors:
+            x = initialCoordinates[0]
+            y = initialCoordinates[1]
+            self.controller.textElement(
+                ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/ListButton.png",
+                x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
+                text=f"{doctor.user.fullName}", size=30, font=INTER,
+                isPlaced=True,
+                buttonFunction=lambda d = doctor: [print(d)]
+            )
+            initialCoordinates = (
+                initialCoordinates[0], initialCoordinates[1] + 100
+            )
+
+    def dashboardButtons(self):
+        d = {
+            "adminDashboard": [
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/AddDoctor.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/DeleteDoctor.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Refresh.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Refresh.png"
+            ]
+        }
+        self.addDoctor = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][0],
+            x=140, y=440, classname="adddoctor", root=self,
+            buttonFunction=lambda: [
+                self.addListsFrame.grid(), self.addListsFrame.tkraise()],
+        )
+        self.deleteDoctor = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][1],
+            x=380, y=440, classname="deletedoctor", root=self,
+            buttonFunction=lambda: [
+                self.deleteListsFrame.grid(), self.deleteListsFrame.tkraise()],
+        )
+        self.refresh1button = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][2],
+            x=1480, y=60, classname="refresh1", root=self,
+            buttonFunction=lambda: [print('refresh')],
+        )
+        self.refresh2button = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][3],
+            x=1480, y=580, classname="refresh2", root=self,
+            buttonFunction=lambda: [print('refresh')],
+        )
+
+    def createDoctorList(self):
+        prisma = self.prisma
+        doctors = prisma.doctor.find_many(
+            include={
+                "user": True,
+            }
+        )
+        h = len(doctors) * 100
+        if h < 375:
+            h = 375
+
+        self.doctorsScrolledFrame = ScrolledFrame(
+            master=self, width=920, height=h, autohide=True, bootstyle="bg-round")
+        self.doctorsScrolledFrame.place(
+            x=680, y=145, width=920, height=375
+        )
+        initialCoordinates = (20, 20)
+        for doctor in doctors:
+            x = initialCoordinates[0]
+            y = initialCoordinates[1]
+            self.controller.textElement(
+                ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/ListButton.png",
+                x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
+                text=f"{doctor.user.fullName}", size=30, font=INTER,
+                isPlaced=True,
+                buttonFunction=lambda: [print(doctor)]
+            )
+            initialCoordinates = (
+                initialCoordinates[0], initialCoordinates[1] + 100
+            )
