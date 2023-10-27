@@ -46,6 +46,26 @@ def prismaCreateClinicAdmin():
     print(admin.clinic.json(indent=6))
 
 
+def prismaCreateGovOfficer():
+    officer = prisma.govhealthofficer.create(
+        data={
+            "user": {
+                "create": {
+                    "fullName": "John Doe",
+                }
+            },
+            "systemSupervising": {
+                "create" : {
+                    "state" : "MELAKA"
+                }
+            },
+            "startDate": datetime.now(),
+            "endDate": datetime.now() + timedelta(days=365),
+        }
+    )
+    govSystems = prisma.govregsystem.find_first()
+    print(govSystems.json())
+
 """ 
 -- Backend Process Flow --
 1. Create Clinic Admin
@@ -66,4 +86,5 @@ def prismaCreateClinicAdmin():
 """
 
 if __name__ == "__main__":
-    prismaCreateClinicAdmin()
+    # prismaCreateClinicAdmin()
+    prismaCreateGovOfficer()
