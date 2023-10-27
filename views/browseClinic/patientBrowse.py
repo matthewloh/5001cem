@@ -160,7 +160,13 @@ class PatientBrowseClinic(Frame):
         self.patientBrowserSearchClinic.insert(0, "Search")
 
     def createbutton(self):
+        def update_map_location():
+            new_address = self.patientBrowserSelectAddress.get()
+            self.clinicsMap.set_address(new_address)
+
         self.submitButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/PatientAssets/PatientBrowseClinicSearchButton.png", x=780 , y=80,
-            classname = "PatientSetLocation" , root=self, buttonFunction=lambda:[print('print=Submit')]
+            ipath="assets/Dashboard/PatientAssets/PatientBrowseClinicSearchButton.png",
+            x=780, y=80, classname="PatientSetLocation", root=self,
+            buttonFunction=update_map_location  
         )
+
