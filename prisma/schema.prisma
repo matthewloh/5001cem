@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  interface            = "sync"
   recursive_type_depth = "-1"
+  interface            = "sync"
 }
 
 datasource db {
@@ -70,13 +70,13 @@ model Doctor {
 }
 
 model GovHealthOfficer {
-  id           String                        @id @default(cuid())
-  userId       String
-  govRegId     String
-  endDate      DateTime?
-  startDate    DateTime
-  stateManaged GovHealthOfficer_stateManaged
-  user         User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String       @id @default(cuid())
+  userId            String
+  govRegId          String       @unique
+  endDate           DateTime?
+  startDate         DateTime
+  systemSupervising GovRegSystem @relation(fields: [govRegId], references: [id], onDelete: Cascade)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([govRegId])
@@ -137,18 +137,13 @@ model Clinic {
   zip                String
   phoneNum           String
   clinicHrs          String?           @db.Text
-  govRegId           String?
   clinicImg          Bytes?
-  govRegDocSystem    GovRegSystem?     @relation(fields: [govRegId], references: [id], onDelete: SetNull)
   admin              ClinicAdmin[]
   doctor             Doctor[]
   clinicRegistration ClinicEnrolment[]
-
-  @@index([govRegId])
 }
 
 model ClinicEnrolment {
-  id              String          @id @default(cuid())
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   status          EnrolmentStatus @default(PENDING)
@@ -157,13 +152,15 @@ model ClinicEnrolment {
   clinic          Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id], onDelete: Cascade)
 
+  @@id([clinicId, govRegId])
   @@index([clinicId])
   @@index([govRegId])
 }
 
 model GovRegSystem {
-  id                    String            @id @default(cuid())
-  clinic                Clinic[]
+  id                    String             @id @default(cuid())
+  state                 GovRegSystem_state
+  supervisingOfficer    GovHealthOfficer?
   programmeRegistration ClinicEnrolment[]
 }
 
@@ -240,7 +237,7 @@ enum EnrolmentStatus {
   REJECTED
 }
 
-enum GovHealthOfficer_stateManaged {
+enum GovRegSystem_state {
   JOHOR
   KEDAH
   KELANTAN
