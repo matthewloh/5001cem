@@ -30,6 +30,7 @@ class DoctorViewAppointments(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.createDoctorList()
 
     def createFrames(self):
         pass

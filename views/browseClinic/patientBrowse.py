@@ -39,7 +39,7 @@ class PatientBrowseClinic(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/BrowseClinic/Patient/BG.png",
+            ipath="assets/Dashboard/PatientAssets/PatientBrowseClinic.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
         self.createButtons()

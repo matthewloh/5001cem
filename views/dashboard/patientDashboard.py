@@ -38,7 +38,7 @@ class PatientDashboard(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/PatientAssets/PatientDashboard/PatientDashboard.png",
+            ipath="assets/Dashboard/PatientAssets/PatientDashboard/PatientDashboard.png",
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
