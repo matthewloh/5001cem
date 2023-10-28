@@ -1,4 +1,4 @@
-from ctypes import windll
+# from ctypes import windll
 import threading
 from tkinter import FLAT, NSEW, Frame, Label
 from prisma import Prisma
@@ -15,18 +15,18 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 # More information on the ctypes library can be found here:
 # https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
 # https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
-SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
+# GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
+# SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
 
 
-def get_handle(root) -> int:
-    root.update_idletasks()
-    # This gets the window's parent same as `ctypes.windll.user32.GetParent`
-    return GetWindowLongPtrW(root.winfo_id(), GWLP_HWNDPARENT)
+# def get_handle(root) -> int:
+#     root.update_idletasks()
+#     # This gets the window's parent same as `ctypes.windll.user32.GetParent`
+#     return GetWindowLongPtrW(root.winfo_id(), GWLP_HWNDPARENT)
 
 
-user32 = windll.user32
-eventId = None
+# user32 = windll.user32
+# eventId = None
 
 
 def gridGenerator(root: Frame, width, height, color, overriderelief: bool = False, relief: str = FLAT, name=None):
@@ -528,29 +528,29 @@ class ElementCreator(ttk.Window):
     def get_page(self, classname):
         return self.frames[classname]
 
-    def hex_to_rgb(self, hexstring) -> tuple:
-        # Convert hexstring to integer
-        hexint = int(hexstring[1:], 16)
-        # Extract Red, Green, and Blue values from integer using bit shifting
-        red = hexint >> 16
-        green = (hexint >> 8) & 0xFF
-        blue = hexint & 0xFF
-        colorkey = win32api.RGB(red, green, blue)
-        return colorkey
+    # def hex_to_rgb(self, hexstring) -> tuple:
+    #     # Convert hexstring to integer
+    #     hexint = int(hexstring[1:], 16)
+    #     # Extract Red, Green, and Blue values from integer using bit shifting
+    #     red = hexint >> 16
+    #     green = (hexint >> 8) & 0xFF
+    #     blue = hexint & 0xFF
+    #     colorkey = win32api.RGB(red, green, blue)
+    #     return colorkey
 
-    def togglethewindowbar(self) -> None:
-        self.deletethewindowbar() if self.state() == "normal" else self.showthewindowbar()
+    # def togglethewindowbar(self) -> None:
+    #     self.deletethewindowbar() if self.state() == "normal" else self.showthewindowbar()
 
-    def deletethewindowbar(self) -> None:
-        hwnd: int = get_handle(self)
-        style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
-        style &= ~(WS_CAPTION | WS_THICKFRAME)
-        SetWindowLongPtrW(hwnd, GWL_STYLE, style)
-        self.state("zoomed")
+    # def deletethewindowbar(self) -> None:
+    #     hwnd: int = get_handle(self)
+    #     style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
+    #     style &= ~(WS_CAPTION | WS_THICKFRAME)
+    #     SetWindowLongPtrW(hwnd, GWL_STYLE, style)
+    #     self.state("zoomed")
 
-    def showthewindowbar(self) -> None:
-        hwnd: int = get_handle(self)
-        style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
-        style |= WS_CAPTION | WS_THICKFRAME
-        SetWindowLongPtrW(hwnd, GWL_STYLE, style)
-        self.state("normal")
+    # def showthewindowbar(self) -> None:
+    #     hwnd: int = get_handle(self)
+    #     style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
+    #     style |= WS_CAPTION | WS_THICKFRAME
+    #     SetWindowLongPtrW(hwnd, GWL_STYLE, style)
+    #     self.state("normal")

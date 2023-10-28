@@ -33,14 +33,14 @@ model User {
 }
 
 model Patient {
-  id             String        @id @default(cuid())
-  userId         String
-  healthRecordId String
-  user           User          @relation(fields: [userId], references: [id])
-  appointments   Appointment[]
+    id             String        @id @default(cuid())
+    userId         String
+    healthRecordId String
+    user           User          @relation(fields: [userId], references: [id])
+    appointments   Appointment[]
 
-  @@index([userId])
-  @@index([healthRecordId])
+    @@index([userId])
+    @@index([healthRecordId])
 }
 
 model ClinicAdmin {
@@ -165,15 +165,15 @@ model GovRegSystem {
 }
 
 model PatientHealthRecord {
-  id                String  @id
-  allergies         String? @db.Text
-  bloodType         String? @db.Text
-  currentMedication String? @db.Text
-  familyHistory     String? @db.Text
-  height            Float?  @db.Float
-  pastMedication    String? @db.Text
-  pastSurgery       String? @db.Text
-  weight            Float?  @db.Float
+    id                String  @id
+    allergies         String? @db.Text
+    bloodType         String? @db.Text
+    currentMedication String? @db.Text
+    familyHistory     String? @db.Text
+    height            Float?  @db.Float
+    pastMedication    String? @db.Text
+    pastSurgery       String? @db.Text
+    weight            Float?  @db.Float
 }
 
 model doctorPrescription {
