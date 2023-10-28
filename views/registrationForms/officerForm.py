@@ -6,6 +6,7 @@ import calendar
 import re
 import threading
 from tkinter import *
+from views.citystatesdict import states_dict
 from tkinter import messagebox
 from prisma.models import Appointment
 from ttkbootstrap.constants import *
@@ -38,6 +39,15 @@ class OfficerRegistrationForm(Frame):
     def createFrames(self):
         pass
 
+    def createLabels(self):
+        self.roleImg = self.controller.labelCreator(
+            ipath="assets/Registration/OfficerFormButton.png",
+            x=60, y=880, classname="roleimg", root=self.parent,
+        )
+
+    def initializeFormVars(self):
+        self.vars = {k: StringVar() for k in self.optList}
+
     def createElements(self):
         self.controller.labelCreator(
             ipath="assets/Registration/Officer/OfficerSignUpForm.png",
@@ -45,34 +55,91 @@ class OfficerRegistrationForm(Frame):
         )
         self.createLabels()
         self.createButtons()
-
-    def createLabels(self):
-        self.roleImg = self.controller.labelCreator(
-            ipath="assets/Registration/OfficerFormButton.png",
-            x=60, y=880, classname="roleimg", root=self.parent,
-        )
+        self.createEntries()
+        self.initializeFormVars()
 
     def createButtons(self):
-        OPT1STR = "Government Registered Doctor"
-        OPT2STR = "Area of Jurisdiction"
-        OPT3STR = "Other Information"
-        optList = [OPT1STR, OPT2STR, OPT3STR]
-        # creating a button arrangement of two per row
-        # iterates over the list of options and creates a button for each
-        for i, option in enumerate(optList):
-            x = 40 if i % 2 == 0 else 420
-            y = 120 + (i // 2) * 120
-            self.controller.textElement(
-                ipath="assets/Registration/Patient/PatientButtonOptionBg.png",
-                x=x, y=y, classname="formoption" + str(i + 1), root=self,
-                text=option, size=20, font=INTER,
-                buttonFunction=lambda o=option: self.loadSpecificSubmission(o)
-            )
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
             buttonFunction=lambda: self.confirmSubmission()
         )
+
+    def createEntries(self):
+        self.OPT1STR = "Government Registered Doctor ID"
+        self.OPT2STR = "Area of Jurisdiction"
+        self.OPT3STR = "Start of Duty"
+        self.OPT4STR = "End of Duty"
+        self.optList = [self.OPT1STR, self.OPT2STR, self.OPT3STR, self.OPT4STR]
+        X, Y, W, H, R, CN, PH = "x", "y", "width", "height", "root", "classname", "placeholder"
+        statelist = list(states_dict.keys())
+        ENTCREATOR = self.controller.ttkEntryCreator
+        param = {
+            self.OPT1STR: {
+                X: 340,
+                Y: 100,
+                W: 420,
+                H: 60,
+                CN: "grdidentry",
+                R: self,
+                PH: "Enter your GRD ID",
+            },
+            "startOfDuty": {
+                X: 340,
+                Y: 300,
+                W: 360,
+                H: 60,
+                CN: "startofdutyentry",
+                R: self,
+                PH: "Select Start of Duty",
+            },
+            "endOfDuty": {
+                X: 340,
+                Y: 400,
+                W: 360,
+                H: 60,
+                CN: "endofdutyentry",
+                R: self,
+                PH: "Select End of Duty",
+            }
+        }
+        for p in param:
+            ENTCREATOR(**param[p])
+        WD = self.controller.widgetsDict
+        self.jurisdictionState = StringVar()
+        self.controller.menubuttonCreator(
+            x=340, y=200, width=420, height=60,
+            root=self, classname="stateofjurisdiction",
+            text=f"Please Select State", listofvalues=statelist,
+            variable=self.jurisdictionState, font=("Helvetica", 12),
+            command=lambda: [None]
+        )
+
+        self.startDatePicker = self.controller.buttonCreator(
+            ipath="assets/Registration/DatePicker.png",
+            x=700, y=300, classname="datepicker_start", root=self,
+            buttonFunction=lambda: self.selectDate(
+                self.startDatePicker, WD["startofdutyentry"])
+        )
+        self.endDatePicker = self.controller.buttonCreator(
+            ipath="assets/Registration/DatePicker.png",
+            x=700, y=400, classname="datepicker_end", root=self,
+            buttonFunction=lambda: self.selectDate(
+                self.endDatePicker, WD["endofdutyentry"])
+        )
+
+    def selectDate(self, button: Button, entry: Entry):
+        dialog = DatePickerDialog(
+            parent=button, title="Select Date",
+            firstweekday=0,
+            startdate=dt.date.today(),
+        )
+        if dialog.date_selected is None:
+            return
+        date = dialog.date_selected.strftime("%d/%m/%Y")
+        entry.configure(state="normal")
+        entry.delete(0, END)
+        entry.insert(0, date)
 
     def loadSpecificSubmission(self, option: str):
         print(option)
@@ -90,7 +157,9 @@ class OfficerRegistrationForm(Frame):
         dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
         # datetimeObj
         dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
-        doctor = prisma.doctor.create(
+        UTC = timezone("UTC")
+        KL = timezone("Asia/Kuala_Lumpur")
+        officer = prisma.govhealthofficer.create(
             data={
                 "user": {
                     "create": {
@@ -110,5 +179,13 @@ class OfficerRegistrationForm(Frame):
                         "country": self.country,
                     }
                 },
+                "govRegId": WD["grdidentry"].get(),
+                "stateManaged": self.jurisdictionState.get().upper().replace(" ", "_"),
+                "startDate": KL.convert(
+                    datetime.strptime(WD["startofdutyentry"].get(), "%d/%m/%Y")
+                ),
+                "endDate": KL.convert(
+                    datetime.strptime(WD["endofdutyentry"].get(), "%d/%m/%Y")
+                )
             }
         )

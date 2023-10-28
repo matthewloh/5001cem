@@ -38,13 +38,28 @@ class OfficerBrowseClinic(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/OfficerAssets/OfficerManageClinicsBG.png",
             x=0, y=0, classname="browseclinicbg", root=self
         )
 
         exampleList = []
-        [exampleList.append("Thing " + str(i))
+        reg_idList = []
+        contactList = []
+        opHrsList = []
+        addressList = []
+        [exampleList.append("Thing " + str(i)) 
          for i in range(30) if i % 2 == 0]
+        [reg_idList.append("Reg_id " + str(i)) 
+         for i in range(30) if i % 2 == 0]
+        [contactList.append("Contact " + str(i)) 
+         for i in range(30) if i % 2 == 0]
+        [opHrsList.append("OpHrs " + str(i)) 
+         for i in range(30) if i % 2 == 0]
+        [addressList.append("Address " + str(i))
+            for i in range(30) if i % 2 == 0]
+        
+        
+        
         h = len(exampleList) * 120
         if h < 600:
             h = 600
@@ -54,7 +69,7 @@ class OfficerBrowseClinic(Frame):
         self.exampleScrolledFrame.grid_propagate(False)
         self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
         initialcoordinates = (20, 20)
-        for thing in exampleList:
+        for thing, reg_id, contact, opHr, addr in zip(exampleList, reg_idList, contactList, opHrsList, addressList):
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
@@ -63,6 +78,35 @@ class OfficerBrowseClinic(Frame):
                 text=thing, size=30, font=INTER,
                 isPlaced=True,
             )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=320, y=y+15,
+                classname=f"reg_id{reg_id}", root=self.exampleScrolledFrame,
+                text=reg_id, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=520, y=y+15,
+                classname=f"contact{contact}", root=self.exampleScrolledFrame,
+                text=contact, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=760, y=y+15,
+                classname=f"opHr{opHr}", root=self.exampleScrolledFrame,
+                text=opHr, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=1000, y=y+15,
+                classname=f"addr{addr}", root=self.exampleScrolledFrame,
+                text=addr, size=30, font=INTER,
+                isPlaced=True,
+            )
+
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
                 classname=f"hideindicator{thing}", root=self.exampleScrolledFrame,

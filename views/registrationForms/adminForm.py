@@ -110,6 +110,7 @@ class AdminRegistrationForm(Frame):
         self.clinicstateVar = StringVar()
         self.cliniczipVar = StringVar()
         self.cliniccontactnumberVar = StringVar()
+        self.clinichrsVar = StringVar()
 
     def loadSpecificSubmission(self, option: str):
         if option == self.OPT1STR:
@@ -215,6 +216,16 @@ class AdminRegistrationForm(Frame):
                 R: frame,
                 PH: "Clinic Zip"
             },
+            "clinichrs": {
+                X: 40,
+                Y: 600,
+                W: 300,
+                H: 80,
+                CN: "clinichrsentry",
+                R: frame,
+                PH: "Clinic Hours"
+            },
+            
         }
         for p in param:
             CREATOR(**param[p])
@@ -234,8 +245,10 @@ class AdminRegistrationForm(Frame):
         WD["cliniccityentry"].insert(0, self.cliniccityVar.get())
         WD["clinicstateentry"].insert(0, self.clinicstateVar.get())
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
+        WD["clinichrsentry"].insert(0, self.clinichrsVar.get())
 
     def saveClinicInformation(self):
+        prisma = self.prisma
         WD = self.controller.widgetsDict
         self.clinicnameVar.set(
             WD["clinicnameentry"].get())
@@ -249,6 +262,9 @@ class AdminRegistrationForm(Frame):
             WD["clinicstateentry"].get())
         self.cliniczipVar.set(
             WD["cliniczipentry"].get())
+        self.clinichrsVar.set(
+            WD["clinichrsentry"].get())
+    
         msg = f"""
         Clinic Information Saved!
         Name: {self.clinicnameVar.get()}
@@ -257,12 +273,16 @@ class AdminRegistrationForm(Frame):
         City: {self.cliniccityVar.get()}
         State: {self.clinicstateVar.get()}
         Zip: {self.cliniczipVar.get()} 
+        Hours: {self.clinichrsVar.get()}
         """
         Messagebox.show_info(
             title="Clinic Information",
             message=msg,
             parent=self.inputframe
         )
+
+
+        
 
     def loadCloseAndSaveButtons(self):
         self.closebutton.grid()
@@ -466,7 +486,37 @@ class AdminRegistrationForm(Frame):
                         "zip": self.cliniczipVar.get(),
                         "clinicImg": self.getBase64Data(),
                         "phoneNum": self.cliniccontactnumberVar.get(),
+                        "clinicHrs": self.clinichrsVar.get(),
                     }
                 }
+            },
+            include={
+                "clinic": True,
             }
+        )
+        govRegSystem = prisma.govregsystem.find_first(
+            where={
+                "state": self.state.upper(),
+            }
+        )
+        govRegSystem = prisma.govregsystem.create(
+            data={
+                "state": self.state.upper(),
+            }
+        )
+        clinicEnrolment = prisma.clinicenrolment.create(
+            data={
+                "clinic" : {
+                    "connect": {
+                        "id": clinicAdmin.clinic.id
+                    }
+                },
+                "govRegDocSystem": {
+                    "connect": {
+                        "id": govRegSystem.id
+                    }
+                },
+                "status": "PENDING"
+            }
+            
         )
