@@ -29,12 +29,91 @@ class DoctorBrowseClinic(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.createFormEntries()
 
     def createFrames(self):
         pass
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
+            ipath="assets/Dashboard/DoctorAssets/DoctorClinic.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
+
+    def createFormEntries(self):
+        CREATOR = self.controller.ttkEntryCreator
+        FONT = ("Arial", 16)
+
+        self.patientName = CREATOR(
+            x=302, y=322, width=435, height=35,
+            root=self, classname="doc_name",
+            font=FONT, isPlaced=True
+        )
+        self.patientContact = CREATOR(
+            x=302, y=382, width=435, height=35,
+            root=self, classname="doc_email",
+            font=FONT, isPlaced=True
+        )
+        self.patientEmail = CREATOR(
+            x=302, y=441, width=435, height=35,
+            root=self, classname="doc_phoneNo",
+            font=FONT, validation="isEmail",
+            isPlaced=True
+        )
+        self.patientAge = CREATOR(
+            x=302, y=500, width=435, height=35,
+            root=self, classname="doc_age",
+            font=FONT, isPlaced=True
+        )
+        self.patientGender = CREATOR(
+            x=302, y=559, width=435, height=35,
+            root=self, classname="doc_gender",
+            font=FONT, isPlaced=True
+        )
+        self.patientICNo = CREATOR(
+            x=302, y=618, width=435, height=35,
+            root=self, classname="doc_races",
+            font=FONT, isPlaced=True
+        )
+        self.medReportMedicines = CREATOR(
+            x=302, y=677, width=435, height=35,
+            root=self, classname="doc_nationality",
+            font=FONT, isPlaced=True
+        )
+        self.medReportSymptoms = CREATOR(
+            x=302, y=736, width=435, height=35,
+            root=self, classname="doc_passport",
+            font=FONT, isPlaced=True
+        )
+        self.medReportAllergies = CREATOR(
+            x=1024, y=322, width=435, height=35,
+            root=self, classname="doc_clinic_name1",
+            font=FONT, isPlaced=True
+        )
+        self.appDetailsDate = CREATOR(
+            x=1024, y=378, width=435, height=35,
+            root=self, classname="doc__clinic_email",
+            font=FONT, isPlaced=True
+        )
+        self.appDetailsTime = CREATOR(
+            x=1024, y=434, width=435, height=35,
+            root=self, classname="doc_clinic_name",
+            font=FONT, isPlaced=True
+        )
+        self.appDetailsTime = CREATOR(
+            x=1024, y=490, width=435, height=35,
+            root=self, classname="doc_address_1",
+            font=FONT, isPlaced=True
+        )
+        self.appDetailsTime = CREATOR(
+            x=1024, y=544, width=435, height=35,
+            root=self, classname="doc_address_2",
+            font=FONT, isPlaced=True
+        )
+
+        
+        
+
+
+
+
