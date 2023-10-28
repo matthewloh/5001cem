@@ -37,7 +37,7 @@ class DoctorBrowseClinic(Frame):
     def createElements(self):
         self.controller.labelCreator(
             ipath="assets/Dashboard/DoctorAssets/DoctorClinic.png",
-            x=0, y=0, classname="secondarypanelbg", root=self
+            x=0, y=0, classname="DoctorClinic", root=self
         )
 
     def createFormEntries(self):
