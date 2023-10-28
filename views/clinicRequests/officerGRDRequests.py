@@ -41,8 +41,18 @@ class OfficerGRDRequests(Frame):
         )
 
         exampleList = []
+        reg_idList = []
+        contactList = []
+        opHrsList = []
         [exampleList.append("Clinic " + str(i))
          for i in range(30) if i % 2 == 0]
+        [reg_idList.append("Reg_id " + str(i))
+         for i in range(30) if i % 2 == 0]
+        [contactList.append("Contact " + str(i))
+         for i in range(30) if i % 2 == 0]
+        [opHrsList.append("OpHrs " + str(i))
+         for i in range(30) if i % 2 == 0]
+
         h = len(exampleList) * 120
         if h < 600:
             h = 600
@@ -52,13 +62,34 @@ class OfficerGRDRequests(Frame):
         self.exampleScrolledFrame.grid_propagate(False)
         self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
         initialcoordinates = (20, 20)
-        for thing in exampleList:
+        for thing, reg_id, contact, opHrs in zip(exampleList, reg_idList, contactList, opHrsList):
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsbg.png", x=x, y=y,
                 classname=f"thing{thing}", root=self.exampleScrolledFrame,
                 text=thing, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=340, y=y+15,
+                classname=f"reg_id{thing}", root=self.exampleScrolledFrame,
+                text=reg_id, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=540, y=y+15,
+                classname=f"contact{thing}", root=self.exampleScrolledFrame,
+                text=contact, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            self.controller.textElement(
+                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=780, y=y+15,
+                classname=f"opHrs{thing}", root=self.exampleScrolledFrame,
+                text=opHrs, size=30, font=INTER,
                 isPlaced=True,
             )
 

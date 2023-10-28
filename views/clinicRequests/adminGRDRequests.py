@@ -36,6 +36,38 @@ class AdminGRDRequest(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets/Dashboard/OfficerAssets/OfficerPrimaryPanelBG.png",
+            ipath=r"assets/Dashboard/ClinicAdminAssets/AdminViewGRDStatusBG.png",
             x=0, y=0, classname="grdrequestsbg", root=self
         )
+
+        self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/adminrefreshbtn.png",
+            x=1391, y=136, classname="grdrequestsrefresh", root=self, 
+            buttonFunction=lambda:print("refresh grd requests"), isPlaced=True
+        )
+
+        exampleList = []
+        [exampleList.append("Thing " + str(i))
+         for i in range(30) if i % 2 == 0]
+        h = len(exampleList) * 120
+        if h < 600:
+            h = 600
+        self.exampleScrolledFrame = ScrolledFrame(
+            master=self, width=1420, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.exampleScrolledFrame.grid_propagate(False)
+        self.exampleScrolledFrame.place(x=100, y=310, width=1450, height=620)
+        initialcoordinates = (20,20)
+        for request in exampleList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
+            self.controller.textElement(
+                ipath=r"assets/Dashboard/ClinicAdminAssets/admingrdrequestsbg.png", x=x, y=y,
+                classname=f"request{request}", root=self.exampleScrolledFrame,
+                text=request, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 120
+            )

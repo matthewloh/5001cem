@@ -38,6 +38,9 @@ class DoctorDashboard(Frame):
     def createFrames(self):
         pass
 
+    def unloadStackedFrames(self):
+        pass
+
     def createElements(self):
         self.controller.labelCreator(
             ipath="assets/Dashboard/DoctorAssets/DoctorDashboard.png",
