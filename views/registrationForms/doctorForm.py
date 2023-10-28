@@ -10,6 +10,7 @@ from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
 
+from ttkbootstrap.scrolled import ScrolledText
 from ttkbootstrap.constants import *
 
 
@@ -26,7 +27,11 @@ class DoctorRegistrationForm(Frame):
         self.createElements()
 
     def createFrames(self):
-        pass
+        self.inputframe = self.controller.frameCreator(
+            x=40, y=100, framewidth=720, frameheight=780,
+            bg=WHITE, classname="inputframe", root=self
+        )
+        self.inputframe.grid_remove()
 
     def createElements(self):
         self.controller.labelCreator(
@@ -35,6 +40,7 @@ class DoctorRegistrationForm(Frame):
         )
         self.createLabels()
         self.createButtons()
+        self.initializeFormVars()
 
     def createLabels(self):
         self.roleImg = self.controller.labelCreator(
@@ -43,11 +49,11 @@ class DoctorRegistrationForm(Frame):
         )
 
     def createButtons(self):
-        OPT1STR = "Employment History"
-        OPT2STR = "Education History"
-        OPT3STR = "Specialization"
-        OPT4STR = "Other Information"
-        optList = [OPT1STR, OPT2STR, OPT3STR, OPT4STR]
+        self.OPT1STR = "Employment History"
+        self.OPT2STR = "Education History"
+        self.OPT3STR = "Specialization"
+        self.OPT4STR = "Other Information"
+        optList = [self.OPT1STR, self.OPT2STR, self.OPT3STR, self.OPT4STR]
         # creating a button arrangement of two per row
         # iterates over the list of options and creates a button for each
         for i, option in enumerate(optList):
@@ -57,7 +63,7 @@ class DoctorRegistrationForm(Frame):
                 ipath="assets/Registration/Patient/PatientButtonOptionBg.png",
                 x=x, y=y, classname="formoption" + str(i + 1), root=self,
                 text=option, size=20, font=INTER,
-                buttonFunction=lambda o=option: self.loadSpecificSubmission(o)
+                buttonFunction=lambda o=option: self.loadInputForOption(o)
             )
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
@@ -65,8 +71,54 @@ class DoctorRegistrationForm(Frame):
             buttonFunction=lambda: self.confirmSubmission()
         )
 
-    def loadSpecificSubmission(self, option: str):
-        print(option)
+    def initializeFormVars(self):
+        self.vars = {k: StringVar() for k in [
+            self.OPT1STR, self.OPT2STR, self.OPT3STR, self.OPT4STR]}
+
+    def loadInputForOption(self, option: str):
+        self.loadInfoLabel(option)
+        self.createEditText()
+        if self.vars[option].get() != "":
+            self.inputTextSpace.insert("1.0", self.vars[option].get())
+        self.configSaveClearButtons(option)
+
+    def configSaveClearButtons(self, option):
+        BUTTONCREATOR = self.controller.buttonCreator
+
+        BUTTONCREATOR(
+            ipath="assets/Registration/Patient/Back.png", x=640, y=10,
+            classname="reg_backbutton", root=self.inputframe,
+            buttonFunction=lambda: [self.inputframe.grid_remove()],
+            isPlaced=True
+        )
+        BUTTONCREATOR(
+            ipath="assets/Registration/Patient/ClearText.png", x=100, y=680,
+            classname="reg_cleartextbutton", root=self.inputframe,
+            buttonFunction=lambda: [self.inputTextSpace.delete("1.0", END)],
+        )
+        BUTTONCREATOR(
+            ipath="assets/Registration/Patient/SaveText.png", x=400, y=680,
+            classname="reg_savetext", root=self.inputframe,
+            buttonFunction=lambda: [
+                self.vars[option].set(self.inputTextSpace.get("1.0", "end-1c"))],
+        )
+
+    def createEditText(self):
+        self.inputText = ScrolledText(
+            master=self.inputframe, width=520, height=520, padding=0,
+            bootstyle="success-round", autohide=True)
+        self.inputText.place(x=100, y=140, width=520, height=520)
+        self.inputTextSpace = self.inputText.text
+        self.inputTextSpace.config(font=("Inter", 20), fg=BLACK)
+
+    def loadInfoLabel(self, option):
+        self.inputframe.grid()
+        self.inputframe.tkraise()
+        infolabel = self.controller.textElement(
+            ipath="assets/Registration/InputFormTextBG.png", x=0, y=0,
+            classname="inputformtext", root=self.inputframe, text=f"Input your {option} here",
+            size=30, font=INTER
+        )
 
     def confirmSubmission(self):
         prisma = self.prisma

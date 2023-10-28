@@ -36,6 +36,6 @@ class AdminBrowseClinic(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
+            ipath="assets/Dashboard/DoctorAssets/DoctorDashboard.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
