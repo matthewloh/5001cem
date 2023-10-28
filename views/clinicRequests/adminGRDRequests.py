@@ -41,7 +41,7 @@ class AdminGRDRequest(Frame):
         )
 
         self.controller.buttonCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/adminrefreshbtn.png",
+            ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
             x=1391, y=136, classname="grdrequestsrefresh", root=self, 
             buttonFunction=lambda:print("refresh grd requests"), isPlaced=True
         )
@@ -62,7 +62,7 @@ class AdminGRDRequest(Frame):
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/admingrdrequestsbg.png", x=x, y=y,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/srollbutton.png", x=x, y=y,
                 classname=f"request{request}", root=self.exampleScrolledFrame,
                 text=request, size=30, font=INTER,
                 isPlaced=True,
