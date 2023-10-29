@@ -53,8 +53,8 @@ class PatientRegistrationForm(Frame):
         self.OPT2STR = "Current Medications"
         self.OPT3STR = "Allergies"
         self.OPT4STR = "Family History"
-        self.OPT5STR = "Additional Biodata(eg. Past Surgeries)"
-        self.OPT6STR = "Input Height, Weight and Blood Type"
+        self.OPT5STR = "Additional Biodata"
+        self.OPT6STR = "Input Height, Weight\nand Blood Type"
         optList = [self.OPT1STR, self.OPT2STR, self.OPT3STR,
                    self.OPT4STR, self.OPT5STR, self.OPT6STR]
         # creating a button arrangement of two per row
@@ -66,7 +66,8 @@ class PatientRegistrationForm(Frame):
                 ipath="assets/Registration/Patient/PatientButtonOptionBg.png",
                 x=x, y=y, classname="formoption" + str(i + 1), root=self,
                 text=option, size=20, font=INTER,
-                buttonFunction=lambda o=option: self.loadInputForOption(o)
+                buttonFunction=lambda o=option: self.loadInputForOption(o),
+                yIndex=-2/3 if i == 5 else 0
             )
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
@@ -146,12 +147,6 @@ class PatientRegistrationForm(Frame):
 
     def confirmSubmission(self):
         prisma = self.prisma
-        WD = self.controller.widgetsDict
-        # get the values from the entry boxes
-        entries = (WD["regfullname"], WD["regemail"], WD["regnric"],
-                   WD["regrace"], WD["regcontactnumber"], WD["countryoforigin"],
-                   WD["regpassent"], WD["regconfpassent"], WD["regaddressline1"],
-                   WD["regaddressline2"], WD["regpostcode"])
         self.country, self.state, self.city = self.parent.country.get(
         ), self.parent.state.get(), self.parent.city.get()
         dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
@@ -161,17 +156,18 @@ class PatientRegistrationForm(Frame):
             data={
                 "user": {
                     "create": {
-                        "fullName": entries[0].get(),
-                        "email": entries[1].get(),
-                        "nric_passport": entries[2].get(),
+                        "fullName": self.parent.fullname.get(),
+                        "email": self.parent.email.get(),
+                        "nric_passport": self.parent.nric_passno.get(),
                         "dateOfBirth": dateObj,
-                        "contactNo": entries[4].get(),
-                        "password": self.parent.encryptPassword(entries[6].get()),
-                        "race": entries[3].get(),
-                        "countryOfOrigin": WD["countryoforigin"].get(),
-                        "addressLine1": WD["regaddressline1"].get(),
-                        "addressLine2": WD["regaddressline2"].get(),
-                        "postcode": WD["regpostcode"].get(),
+                        "contactNo": self.parent.contactnumber.get(),
+                        "password": self.parent.encryptPassword(self.parent.password.get()),
+                        "race": self.parent.race.get().upper().replace(" ", "_"),
+                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                        "countryOfOrigin": self.parent.countryoforigin.get(),
+                        "addressLine1": self.parent.addressline1.get(),
+                        "addressLine2": self.parent.addressline2.get(),
+                        "postcode": self.parent.postcode.get(),
                         "city": self.city,
                         "state": self.state,
                         "country": self.country,

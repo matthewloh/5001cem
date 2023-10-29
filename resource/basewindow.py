@@ -334,7 +334,7 @@ class ElementCreator(ttk.Window):
         # print(themename, classname)
         menustyle = ttk.Style()
         menustyle.configure(
-            style=themename, font=("Helvetica", 10),
+            style=themename, font=("Helvetica", 16),
             background="#FFFFFF", foreground=BLACK,
             bordercolor="#78c2ad",
             relief="raised",

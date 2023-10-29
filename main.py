@@ -145,6 +145,7 @@ class Window(ElementCreator):
         gridGenerator(self.parentFrame, 96, 54, "#ecf2ff")
         self.bg = self.labelCreator(
             root=self.parentFrame,
+
             x=0, y=0,
             ipath="assets/HomePage/SignIn.png",
             classname="homepagebg",
