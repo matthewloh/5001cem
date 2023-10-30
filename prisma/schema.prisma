@@ -1,7 +1,7 @@
 generator client {
-    provider             = "prisma-client-py"
-    recursive_type_depth = "-1"
-    interface            = "sync"
+  provider             = "prisma-client-py"
+  recursive_type_depth = "-1"
+  interface            = "sync"
 }
 
 datasource db {
@@ -131,32 +131,32 @@ model DoctorApptSchedule {
 }
 
 model Clinic {
-    id                 String            @id @default(cuid())
-    name               String
-    address            String
-    city               String
-    state              String
-    zip                String
-    phoneNum           String
-    clinicHrs          String?           @db.Text
-    clinicImg          Bytes?
-    admin              ClinicAdmin[]
-    doctor             Doctor[]
-    clinicRegistration ClinicEnrolment[]
+  id                 String            @id @default(cuid())
+  name               String
+  address            String
+  city               String
+  state              String
+  zip                String
+  phoneNum           String
+  clinicHrs          String?           @db.Text
+  clinicImg          Bytes?
+  admin              ClinicAdmin[]
+  doctor             Doctor[]
+  clinicRegistration ClinicEnrolment[]
 }
 
 model ClinicEnrolment {
-    createdAt       DateTime        @default(now())
-    updatedAt       DateTime        @updatedAt
-    status          EnrolmentStatus @default(PENDING)
-    clinicId        String
-    govRegId        String
-    clinic          Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-    govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id], onDelete: Cascade)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  status          EnrolmentStatus @default(PENDING)
+  clinicId        String
+  govRegId        String
+  clinic          Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  govRegDocSystem GovRegSystem    @relation(fields: [govRegId], references: [id], onDelete: Cascade)
 
-    @@id([clinicId, govRegId])
-    @@index([clinicId])
-    @@index([govRegId])
+  @@id([clinicId, govRegId])
+  @@index([clinicId])
+  @@index([govRegId])
 }
 
 model GovRegSystem {
@@ -242,18 +242,18 @@ enum EnrolmentStatus {
 }
 
 enum GovRegSystem_state {
-    JOHOR
-    KEDAH
-    KELANTAN
-    MELAKA
-    NEGERI_SEMBILAN
-    PAHANG
-    PERAK
-    PERLIS
-    PULAU_PINANG
-    SABAH
-    SARAWAK
-    SELANGOR
-    TERENGGANU
-    WILAYAH_PERSEKUTUAN
+  JOHOR
+  KEDAH
+  KELANTAN
+  MELAKA
+  NEGERI_SEMBILAN
+  PAHANG
+  PERAK
+  PERLIS
+  PULAU_PINANG
+  SABAH
+  SARAWAK
+  SELANGOR
+  TERENGGANU
+  WILAYAH_PERSEKUTUAN
 }

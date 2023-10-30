@@ -112,7 +112,6 @@ class AdminRegistrationForm(Frame):
         self.cliniczipVar = StringVar()
         self.cliniccontactnumberVar = StringVar()
         self.clinichrsVar = StringVar()
-        self.clinicidVar = StringVar()
 
     def loadSpecificSubmission(self, option: str):
         if option == self.OPT1STR:
@@ -254,7 +253,6 @@ class AdminRegistrationForm(Frame):
         self.clinicStateMenu.config(text=self.clinicStateVar.get())
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
         WD["clinichrsentry"].insert(0, self.clinichrsVar.get())
-        WD["clinicidentry"].insert(0, self.clinicidVar.get())
 
     def saveClinicInformation(self):
         prisma = self.prisma
@@ -281,7 +279,6 @@ class AdminRegistrationForm(Frame):
         State: {self.clinicStateVar.get()}
         Zip: {self.cliniczipVar.get()} 
         Hours: {self.clinichrsVar.get()}
-        ID: {self.clinicidVar.get()}
         """
         Messagebox.show_info(
             title="Clinic Information",
