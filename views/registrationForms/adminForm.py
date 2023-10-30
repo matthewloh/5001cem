@@ -217,7 +217,6 @@ class AdminRegistrationForm(Frame):
                 R: frame,
                 PH: "Clinic Hours"
             },
-
         }
         for p in param:
             CREATOR(**param[p])
@@ -242,8 +241,10 @@ class AdminRegistrationForm(Frame):
         WD["clinicnameentry"].delete(0, END)
         WD["clinicaddressentry"].delete(0, END)
         WD["cliniccontactnumberentry"].delete(0, END)
+        self.menuframe.grid()
+        self.menuframe.tkraise()
+        self.clinicStateMenu.config(text=self.clinicStateVar.get())
         WD["cliniccityentry"].delete(0, END)
-        WD["clinicstateentry"].delete(0, END)
         WD["cliniczipentry"].delete(0, END)
         WD["clinicnameentry"].insert(0, self.clinicnameVar.get())
         WD["clinicaddressentry"].insert(0, self.clinicaddressVar.get())
@@ -308,11 +309,15 @@ class AdminRegistrationForm(Frame):
             classname="inputformtext", root=frame, text=f"{option}",
             size=30, font=INTER
         )
-        bg = self.controller.labelCreator(
+        self.bg = self.controller.labelCreator(
             ipath="assets/Registration/Admin/UploadClinicImage.png", x=0, y=80,
             classname="clinicinfobg", root=frame
         )
-        bg.tk.call("lower", bg._w)
+        self.bg.tk.call("lower", self.bg._w)
+        try:
+            self.imageLabel.tk.call("raise", self.imageLabel._w)
+        except AttributeError:
+            pass
         self.uploadClinicImgBtn = self.controller.buttonCreator(
             ipath="assets/Registration/Admin/UploadImg.png", x=560, y=140,
             classname="uploadclinicimg", root=frame,

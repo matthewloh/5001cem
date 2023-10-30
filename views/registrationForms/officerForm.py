@@ -146,9 +146,6 @@ class OfficerRegistrationForm(Frame):
         entry.configure(foreground=BLACK)
         entry.configure(state=READONLY)
 
-    def loadSpecificSubmission(self, option: str):
-        print(option)
-
     def confirmSubmission(self):
         prisma = self.prisma
         WD = self.controller.widgetsDict
