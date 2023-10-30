@@ -34,12 +34,10 @@ class AdminManageAppointments(Frame):
         self.appointmentButtons()
         self.creationFrame.grid_remove()
         self.viewFrame.grid_remove()
-        self.KL = timezone("Asia/Kuala_Lumpur")
-        self.UTC = timezone("UTC")
 
     def createFrames(self):
-        self.timeSlotFrame = self.controller.frameCreator(
-            x=0, y=0, classname="timeslotframe", root=self, framewidth=1680, frameheight=1080
+        self.createAppointmentsFrame = self.controller.frameCreator(
+            x=0, y=0, classname="createframe", root=self, framewidth=1680, frameheight=1080
         )
         self.manageAppointmentsFrame = self.controller.frameCreator(
             x=0, y=0, classname="manageframe", root=self, framewidth=1680, frameheight=1080
@@ -47,18 +45,18 @@ class AdminManageAppointments(Frame):
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
-        self.timeSlotFrame.grid_remove()
+        self.createAppointmentsFrame.grid_remove()
         self.manageAppointmentsFrame.grid_remove()
 
     def appointmentImgLabels(self):
         self.bg = self.controller.labelCreator(
-            ipath="assets/Appointments/Homepage/AppointmentDashboard.png",
+            ipath="assets/Appointments/Homepage/AppointmentViewBg.png",
             x=0, y=0, classname="appointmenthomepage", root=self
         )
         self.imgLabels = [
-            ("assets/Appointments/Creation/TimeSlotBg.png",
-             0, 0, "creationimage", self.timeSlotFrame),
-            ("assets/Appointments/Management/AppointmentManagement.png",
+            ("assets/Appointments/Creation/CreationBg.png",
+             0, 0, "creationimage", self.createAppointmentsFrame),
+            ("assets/Appointments/Management/ManagementBg.png",
              0, 0, "manageimage", self.manageAppointmentsFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
@@ -66,44 +64,38 @@ class AdminManageAppointments(Frame):
     def appointmentButtons(self):
         d = {
             "appointmentButtons": [
-                "assets/Appointments/Homepage/Calendar.png",
                 "assets/Appointments/Homepage/CreateAppointments.png",
                 "assets/Appointments/Homepage/ManageAppointments.png",
-                "assets/Appointments/Creation/ReturnCreationButton.png",
-                "assets/Appointments/Creation/ReturnManagementButton.png"
+                "assets/Appointments/ReturnButton.png",
+                "assets/Appointments/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png"
             ]
         }
-        self.calendarButton = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][0],
-            x=60, y=810, classname="calendarbutton", root=self,
-            buttonFunction=lambda: [print('calendar')],
-        )
         self.creationButton = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][1],
-            x=580, y=810, classname="createbutton", root=self,
+            ipath=d["appointmentButtons"][0],
+            x=620, y=800, classname="createbutton", root=self,
             buttonFunction=lambda: [
-                self.timeSlotFrame.grid(), self.timeSlotFrame.tkraise()],
+                self.createAppointmentsFrame.grid(), self.createAppointmentsFrame.tkraise()],
         )
         self.managementButton = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][2],
-            x=1100, y=810, classname="managebutton", root=self,
+            ipath=d["appointmentButtons"][1],
+            x=1140, y=800, classname="managebutton", root=self,
             buttonFunction=lambda: [
                 self.manageAppointmentsFrame.grid(), self.manageAppointmentsFrame.tkraise()],
         )
         self.returncreationBtn = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][3],
-            x=40, y=80, classname="returncreation", root=self.timeSlotFrame,
-            buttonFunction=lambda: [self.timeSlotFrame.grid_remove()],
+            ipath=d["appointmentButtons"][2],
+            x=100, y=80, classname="returncreation", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [self.createAppointmentsFrame.grid_remove()],
         )
         self.returnmanagementBtn = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][4],
-            x=40, y=60, classname="returnmanagement", root=self.manageAppointmentsFrame,
+            ipath=d["appointmentButtons"][3],
+            x=40, y=80, classname="returnmanagement", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [self.manageAppointmentsFrame.grid_remove()],
         )
-
-        self.controller.buttonCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
-            x=1450, y=130, classname="viewAppointmentrefresh", root=self, 
+        self.refreshBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][4],
+            x=1450, y=120, classname="viewAppointmentrefresh", root=self, 
             buttonFunction=lambda:print("view appointment requests"), isPlaced=True
         )
 
@@ -117,13 +109,13 @@ class AdminManageAppointments(Frame):
             master=self, width=1540, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.viewAppointmentScrolledFrame.grid_propagate(False)
-        self.viewAppointmentScrolledFrame.place(x=60, y=280, width=1540, height=380)
+        self.viewAppointmentScrolledFrame.place(x=70, y=260, width=1520, height=420)
         initialcoordinates = (20,20)
         for appointment in exampleList:
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/srollbutton.png", x=x, y=y,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
                 classname=f"appointment{appointment}", root=self.viewAppointmentScrolledFrame,
                 text=appointment, size=30, font=INTER,
                 isPlaced=True,

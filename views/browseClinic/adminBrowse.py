@@ -36,7 +36,7 @@ class AdminBrowseClinic(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
+            ipath="assets/Dashboard/ClinicAdminAssets/ManageClinic/ManageClinicBg.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
 
@@ -62,7 +62,7 @@ class AdminBrowseClinic(Frame):
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/srollbutton.png", x=x, y=y,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
                 classname=f"manageClinic{manageClinic}", root=self.manageClinicScrolledFrame,
                 text=manageClinic, size=30, font=INTER,
                 isPlaced=True,
