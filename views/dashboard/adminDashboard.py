@@ -151,6 +151,30 @@ class ClinicAdminDashboard(Frame):
                 self.loadDoctorsBySpeciality(self.specialitySelected.get())],
             text="Select Speciality"
         )
+    
+    def loadDoctorsAndFilterByAppointment(self):
+        prisma = self.prisma
+        self.doctors = prisma.doctor.find_many(
+            include={
+                "user": True,
+            }
+        )
+        self.appointmentsAndDoctors = {}
+        for doctor in self.doctors:
+            if doctor.doctorApptSchedule not in self.appointmentsAndDoctors.keys():
+                self.appointmentsAndDoctors[doctor.doctorApptSchedule] = []
+            self.appointmentsAndDoctors[doctor.doctorApptSchedule].append(doctor)
+        self.doctorApptScheduleSelected = StringVar()
+        keyOptionsForMenuButton = list(self.appointmentsAndDoctors.keys())
+        self.doctorApptScheduleMenuButton = self.controller.menubuttonCreator(
+            x=140, y=640, classname="doctorApptSchedulemenubutton", root=self,
+            width=400, height=80, listofvalues=keyOptionsForMenuButton,
+            variable=self.specialitySelected,
+            command=lambda: [
+                self.loadDoctorsAndFilterByAppointment(self.doctorApptScheduleSelected.get())],
+            text="Select doctorApptSchedule"
+        )
+
 
     def loadDoctorsBySpeciality(self, option):
         doctors = self.specialitiesAndDoctors[option]
@@ -257,3 +281,5 @@ class ClinicAdminDashboard(Frame):
             initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
+
+    
