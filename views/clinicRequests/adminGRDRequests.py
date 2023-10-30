@@ -55,7 +55,7 @@ class AdminGRDRequest(Frame):
         prisma = self.prisma
         self.clinicstatusdetails = prisma.clinicenrolment.find_first(
             where={
-                "clinicId": "clo8tu3kq0003tkvgihvp739t",
+                "clinicId": "clobupwii0003vtq0ozxna6zy",
             },
             include={
                 "govRegDocSystem": True,

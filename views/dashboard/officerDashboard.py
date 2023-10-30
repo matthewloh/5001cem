@@ -1,6 +1,7 @@
 import calendar
 import datetime as dt
 import re,os
+import textwrap
 import threading
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
@@ -32,6 +33,8 @@ class GovOfficerDashboard(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.loadClinicsList()
+        self.loadClinicsStatusList()
 
     def createFrames(self):
         pass
@@ -67,80 +70,81 @@ class GovOfficerDashboard(Frame):
 
         self.clinicsMap.set_tile_server(
             "https://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}&s=Ga", max_zoom=22)
-
-        exampleList = []
-        contactList = []
-        addressList = []
-        statusList = []
-        [exampleList.append("Clinic " + str(i))
-         for i in range(30) if i % 2 == 0]
-        [contactList.append("Contact " + str(i))
-            for i in range(30) if i % 2 == 0]
-        [addressList.append("Address " + str(i))
-            for i in range(30) if i % 2 == 0]
-        [statusList.append("Status " + str(i))
-            for i in range(30) if i % 2 == 0]
         
-        # [statusList.append("CLOSED") if i % 2 == 0 else statusList.append("OPEN") 
-        #  for i in range(30)]
 
-        h = len(exampleList) * 120
+    def loadClinicsList(self):
+        prisma = self.prisma
+        clinicsList = prisma.clinicenrolment.find_many(
+            include={
+                "govRegDocSystem":True,
+                "clinic":True,
+            }
+        )
+        h = len(clinicsList) * 120
         if h < 600:
             h = 600
         self.exampleScrolledFrame = ScrolledFrame(
             master=self, width=750, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.exampleScrolledFrame.grid_propagate(False)
-        self.exampleScrolledFrame.place(x=900, y=314, width=750, height=620)
+        self.exampleScrolledFrame.place(x=888, y=314, width=750, height=620)
         initialcoordinates = (20, 10)
-        for thing, contactNo, address, status in zip(exampleList, contactList, addressList, statusList):
+
+        for clinic in clinicsList:
+            clinicid=clinic.clinicId
+            clinicName=clinic.clinic.name
+            contactNo=clinic.clinic.phoneNum
+            address=clinic.clinic.address
+            status=clinic.status
+            print(status)
+            
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
                 ipath=r"assets\Dashboard\cliniclistbg.png", x=x, y=y,
-                classname=f"clinic{thing}", root=self.exampleScrolledFrame,
-                text=thing, size=30, font=INTER,
+                classname=f"clinicname{clinicid}", root=self.exampleScrolledFrame,
+                text=clinicName, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets/Dashboard/clinicdetailsrectangle.png", x=x+200, y=y+15,
-                classname=f"contactNo{contactNo}", root=self.exampleScrolledFrame,
+                classname=f"contactNo{clinicid}", root=self.exampleScrolledFrame,
                 text=contactNo, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=x+400, y=y+15,
-                classname=f"address{address}", root=self.exampleScrolledFrame,
-                text=address, size=30, font=INTER,
-                isPlaced=True,
+                classname=f"address{clinicid}", root=self.exampleScrolledFrame,
+                text=address, size=10, font=INTER,
+                isPlaced=True
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicstatusrectanglebg.png", x=x+580, y=y+25,
-                classname=f"status{status}", root=self.exampleScrolledFrame,
-                text=status, size=28, font=INTER,
+                classname=f"status{clinicid}", root=self.exampleScrolledFrame,
+                text=status, size=22, font=INTER,
                 isPlaced=True,
             )
 
             initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
-
-        clinicStatusList = []
-        contactsList = []
-        docAvailableList = []
-        patientsList = []
-        [clinicStatusList.append("Clinic " + str(i))
-         for i in range(20) if i % 2 == 0]
-        [contactsList.append("Contact " + str(i))
-            for i in range(20) if i % 2 == 0]
-        [docAvailableList.append( str(i))
-            for i in range(20) if i % 2 == 0]
-        [patientsList.append("Patient " + str(i))
-            for i in range(20) if i % 2 == 0]
-        h = len(clinicStatusList) * 120
+    
+    def loadClinicsStatusList(self):
+        prisma =self.prisma 
+        clinicstatus = prisma.clinicenrolment.find_many(
+            where={
+                "status":"APPROVED"
+            }
+            ,include={
+                "clinic":True,
+                "govRegDocSystem":True
+            }
+        )
+       
+        h = len(clinicstatus) * 120
         if h < 150:
             h = 150
         self.clinicStatusScrolledFrame = ScrolledFrame(
@@ -149,34 +153,40 @@ class GovOfficerDashboard(Frame):
         self.clinicStatusScrolledFrame.grid_propagate(False)
         self.clinicStatusScrolledFrame.place(x=20, y=826, width=825, height=193)
         initialcoordinates = (10, 10)
-        for thing, contacts, docAvailable, patients in zip(clinicStatusList, contactsList, docAvailableList, patientsList):
+        for clinics in clinicstatus:
+            clinicIdManage = clinics.clinicId
+            clinicNameManage = clinics.clinic.name
+            clinicContact = clinics.clinic.phoneNum
+            clinicDocAvailable = "doctor "
+            clinicPatients = "patient"
+
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
                 ipath=r"assets\Dashboard\OfficerAssets\clinicsstatusbg.png", x=x, y=y,
-                classname=f"clinicstatus{thing}", root=self.clinicStatusScrolledFrame,
-                text=thing, size=18, font=INTER,
+                classname=f"clinicstatus{clinicIdManage}", root=self.clinicStatusScrolledFrame,
+                text=clinicNameManage, size=18, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\miniclinicsdetailsbg.png", x=240, y=y+15,
-                classname=f"contacts{contacts}", root=self.clinicStatusScrolledFrame,
-                text=contacts, size=18, font=INTER,
+                classname=f"contacts{clinicIdManage}", root=self.clinicStatusScrolledFrame,
+                text=clinicContact, size=18, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\miniclinicsdetailsbg.png", x=440, y=y+15,
-                classname=f"docAvailable{docAvailable}", root=self.clinicStatusScrolledFrame,
-                text=docAvailable, size=18, font=INTER,
+                classname=f"docAvailable{clinicIdManage}", root=self.clinicStatusScrolledFrame,
+                text=clinicDocAvailable, size=18, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\miniclinicsdetailsbg.png", x=650, y=y+15,
-                classname=f"patients{patients}", root=self.clinicStatusScrolledFrame,
-                text=patients, size=18, font=INTER,
+                classname=f"patients{clinicIdManage}", root=self.clinicStatusScrolledFrame,
+                text=clinicPatients, size=18, font=INTER,
                 isPlaced=True,
             )
 
