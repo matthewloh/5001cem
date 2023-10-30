@@ -66,11 +66,24 @@ class AdminManageAppointments(Frame):
             "appointmentButtons": [
                 "assets/Appointments/Homepage/CreateAppointments.png",
                 "assets/Appointments/Homepage/ManageAppointments.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
                 "assets/Appointments/ReturnButton.png",
+                "assets/Appointments/Creation/BookAppointmentBtn.png",
+                "assets/Appointments/Creation/BackBtn.png",
+                "assets/Appointments/Creation/NextBtn.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png"
+                "assets/Appointments/Management/ViewBtn.png",
+                "assets/Appointments/Management/AppointmentRefreshBtn.png",
+                "assets/Appointments/Management/CalendarRefreshBtn.png",
+                "assets/Appointments/Management/CancelBtn.png",
+                "assets/Appointments/Management/SubmitBtn.png",
+                "assets/Appointments/Management/CancelBtn.png",
+                "assets/Appointments/Management/DeleteBtn.png",
+                "assets/Appointments/Management/BackBtn.png",
+                "assets/Appointments/Management/NextBtn.png",
             ]
         }
+        #Appointment Dashboard
         self.creationButton = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][0],
             x=620, y=800, classname="createbutton", root=self,
@@ -83,20 +96,82 @@ class AdminManageAppointments(Frame):
             buttonFunction=lambda: [
                 self.manageAppointmentsFrame.grid(), self.manageAppointmentsFrame.tkraise()],
         )
-        self.returncreationBtn = self.controller.buttonCreator(
+        self.refreshBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],
+            x=1450, y=120, classname="viewAppointmentrefresh", root=self, 
+            buttonFunction=lambda:print("view appointment requests"), isPlaced=True
+        )
+        #Appointment Creation
+        self.returncreationBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][3],
             x=100, y=80, classname="returncreation", root=self.createAppointmentsFrame,
             buttonFunction=lambda: [self.createAppointmentsFrame.grid_remove()],
         )
+        self.bookappointmentBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][4],
+            x=740, y=920, classname="bookappointmentrefresh", root=self.createAppointmentsFrame, 
+            buttonFunction=lambda:[self.createAppointmentsFrame.grid()], isPlaced=True
+        )
+        self.backBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][5],
+            x=930, y=502, classname="backbutton", root=self.createAppointmentsFrame, 
+            buttonFunction=lambda:[self.createAppointmentsFrame.grid()], isPlaced=True
+        )
+        self.nextBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][6],
+            x=1020, y=502, classname="nextbutton", root=self.createAppointmentsFrame, 
+            buttonFunction=lambda:[self.createAppointmentsFrame.grid()], isPlaced=True
+        )
+        #Appointment Management
         self.returnmanagementBtn = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][3],
+            ipath=d["appointmentButtons"][7],
             x=40, y=80, classname="returnmanagement", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [self.manageAppointmentsFrame.grid_remove()],
         )
-        self.refreshBtn = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][4],
-            x=1450, y=120, classname="viewAppointmentrefresh", root=self, 
-            buttonFunction=lambda:print("view appointment requests"), isPlaced=True
+        self.viewBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][8],
+            x=420, y=240, classname="viewbutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.appointmentrefreshBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][9],
+            x=980, y=200, classname="appointmentrefreshbutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.calendarrefreshBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][10],
+            x=1540, y=180, classname="calendarrefreshbutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.cancelBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][11],
+            x=630, y=660, classname="cancelbutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.submitBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][12],
+            x=840, y=660, classname="submitbutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.cancelDeletionBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][13],
+            x=630, y=820, classname="canceldeletionbutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.deleteBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][14],
+            x=840, y=820, classname="deletebutton", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()],
+        )
+        self.backBtn2 = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][15],
+            x=1430, y=720, classname="backbutton2", root=self.manageAppointmentsFrame, 
+            buttonFunction=lambda:[self.manageAppointmentsFrame.grid()], isPlaced=True
+        )
+        self.nextBtn2 = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][16],
+            x=1520, y=720, classname="nextbutton2", root=self.manageAppointmentsFrame, 
+            buttonFunction=lambda:[self.manageAppointmentsFrame.grid()], isPlaced=True
         )
 
         exampleList = []
