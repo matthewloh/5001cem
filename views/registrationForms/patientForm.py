@@ -1,8 +1,9 @@
 from __future__ import annotations
-
 from datetime import datetime
+from tkinter import messagebox
 from ttkbootstrap.scrolled import ScrolledText
 from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
+from ttkbootstrap.toast import ToastNotification
 from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
@@ -53,8 +54,8 @@ class PatientRegistrationForm(Frame):
         self.OPT2STR = "Current Medications"
         self.OPT3STR = "Allergies"
         self.OPT4STR = "Family History"
-        self.OPT5STR = "Additional Biodata(eg. Past Surgeries)"
-        self.OPT6STR = "Input Height, Weight and Blood Type"
+        self.OPT5STR = "Additional Biodata"
+        self.OPT6STR = "Input Height, Weight\nand Blood Type"
         optList = [self.OPT1STR, self.OPT2STR, self.OPT3STR,
                    self.OPT4STR, self.OPT5STR, self.OPT6STR]
         # creating a button arrangement of two per row
@@ -66,7 +67,8 @@ class PatientRegistrationForm(Frame):
                 ipath="assets/Registration/Patient/PatientButtonOptionBg.png",
                 x=x, y=y, classname="formoption" + str(i + 1), root=self,
                 text=option, size=20, font=INTER,
-                buttonFunction=lambda o=option: self.loadInputForOption(o)
+                buttonFunction=lambda o=option: self.loadInputForOption(o),
+                yIndex=-2/3 if i == 5 else 0
             )
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
@@ -82,22 +84,65 @@ class PatientRegistrationForm(Frame):
             self.OPT4STR: StringVar(),
             self.OPT5STR: StringVar(),
         }
+        self.weight = DoubleVar()
+        self.height = DoubleVar()
+        self.bloodType = StringVar()
 
-    def loadInputForOption(self, option):
+    def loadInputForOption(self, option: str):
         if option == self.OPT6STR:
             # Ask user to input height and weight
-            self.weight = Querybox.get_float(
-                title="Input Weight", prompt="Input your weight in kg",
-                initialvalue=0, minvalue=0, maxvalue=200, parent=self.controller.widgetsDict["formoption6"]
+            self.inputframe.grid()
+            self.inputframe.tkraise()
+            self.loadInfoLabel(option)
+            self.controller.buttonCreator(
+                ipath="assets/Registration/Patient/Back.png", x=640, y=10,
+                classname="reg_backbutton", root=self.inputframe,
+                buttonFunction=lambda: [self.inputframe.grid_remove(),
+                                        self.entriesFrame.grid_remove()],
+                isPlaced=True
             )
-            self.height = Querybox.get_float(
-                title="Input Height", prompt="Input your height in cm",
-                initialvalue=0, minvalue=0, maxvalue=300, parent=self.controller.widgetsDict["formoption6"]
+            self.entriesFrame = self.controller.frameCreator(
+                x=0, y=80, framewidth=720, frameheight=700,
+                bg=WHITE, classname="weightheightbloodtypeframe", root=self.inputframe
             )
-            # Ask user to input blood type
-            self.bloodType = Querybox.get_string(
-                title="Input Blood Type", prompt="Input your blood type",
-                initialvalue="O+", parent=self.controller.widgetsDict["formoption6"]
+            PHWEIGHT = "Enter your weight in kg"
+            PHHEIGHT = "Enter your height in cm"
+            self.entriesFrame.tkraise()
+            self.entriesframebg = self.controller.labelCreator(
+                x=0, y=0, classname="weightheightbloodtypeframebg", root=self.entriesFrame,
+                ipath="assets/Registration/Patient/WeightHeightBloodTypeBG.png"
+            )
+            self.weightEntry = self.controller.ttkEntryCreator(
+                x=160, y=80, width=400, height=80,
+                classname="weightentry", root=self.entriesFrame,
+                placeholder=PHWEIGHT
+            )
+            self.heightEntry = self.controller.ttkEntryCreator(
+                x=160, y=220, width=400, height=80,
+                classname="heightentry", root=self.entriesFrame,
+                placeholder=PHHEIGHT
+            )
+            bloodTypes = [
+                "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"
+            ]
+            self.bloodTypeVar = StringVar()
+            self.controller.menubuttonCreator(
+                x=160, y=360, width=400, height=80,
+                root=self.entriesFrame, classname="bloodtypemenubutton",
+                text="Select your blood type", listofvalues=bloodTypes,
+                variable=self.bloodTypeVar, font=("Helvetica", 16),
+                command=lambda: [
+                    ToastNotification(title="Saved", bootstyle="success", duration=3000,
+                                      message=f"Saved {self.bloodTypeVar.get()}").show_toast()
+                ]
+            )
+            self.saveForWHB = self.controller.buttonCreator(
+                ipath="assets/Registration/Patient/WeightHeightBloodSave.png",
+                x=280, y=560, classname="weightheightbloodtypesavebutton",
+                root=self.entriesFrame,
+                buttonFunction=lambda: [
+                    self.validateSaveWeightHeightBloodType(),
+                ]
             )
             return
         self.loadInfoLabel(option)
@@ -106,7 +151,29 @@ class PatientRegistrationForm(Frame):
             self.inputTextSpace.insert("1.0", self.vars[option].get())
         self.configSaveClearButtons(option)
 
-    def configSaveClearButtons(self, option):
+    def validateSaveWeightHeightBloodType(self):
+        try:
+            weightFormatted = self.weightEntry.get().replace(" ", "").replace("kg", "")
+            float(weightFormatted)
+            heightFormatted = self.heightEntry.get().replace(" ", "").replace("cm", "")
+            float(heightFormatted)
+        except ValueError:
+            messagebox.showerror(
+                title="Invalid Input", message="Please enter a valid number for weight and height")
+            return
+        if self.bloodTypeVar.get() == "":
+            messagebox.showerror(
+                title="Invalid Input", message="Please select a blood type")
+            return
+        self.weight.set(float(weightFormatted))
+        self.height.set(float(heightFormatted))
+        self.bloodType.set(self.bloodTypeVar.get())
+        messagebox.showinfo(
+            title="Saved", message="Saved weight, height and blood type"),
+        self.entriesFrame.grid_remove(),
+        self.inputframe.grid_remove()
+
+    def configSaveClearButtons(self, option: str):
         BUTTONCREATOR = self.controller.buttonCreator
 
         BUTTONCREATOR(
@@ -124,7 +191,11 @@ class PatientRegistrationForm(Frame):
             ipath="assets/Registration/Patient/SaveText.png", x=400, y=680,
             classname="reg_savetext", root=self.inputframe,
             buttonFunction=lambda: [
-                self.vars[option].set(self.inputTextSpace.get("1.0", "end-1c"))],
+                self.vars[option].set(
+                    self.inputTextSpace.get("1.0", "end-1c")),
+                ToastNotification(title="Saved", bootstyle="success", duration=3000,
+                                  message=f"Saved {option}").show_toast()
+            ]
         )
 
     def createEditText(self):
@@ -141,17 +212,12 @@ class PatientRegistrationForm(Frame):
         infolabel = self.controller.textElement(
             ipath="assets/Registration/InputFormTextBG.png", x=0, y=0,
             classname="inputformtext", root=self.inputframe, text=f"Input your {option} here",
-            size=30, font=INTER
+            size=30, font=INTER,
+            yIndex=-2/3 if option == self.OPT6STR else 0
         )
 
     def confirmSubmission(self):
         prisma = self.prisma
-        WD = self.controller.widgetsDict
-        # get the values from the entry boxes
-        entries = (WD["regfullname"], WD["regemail"], WD["regnric"],
-                   WD["regrace"], WD["regcontactnumber"], WD["countryoforigin"],
-                   WD["regpassent"], WD["regconfpassent"], WD["regaddressline1"],
-                   WD["regaddressline2"], WD["regpostcode"])
         self.country, self.state, self.city = self.parent.country.get(
         ), self.parent.state.get(), self.parent.city.get()
         dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
@@ -161,17 +227,18 @@ class PatientRegistrationForm(Frame):
             data={
                 "user": {
                     "create": {
-                        "fullName": entries[0].get(),
-                        "email": entries[1].get(),
-                        "nric_passport": entries[2].get(),
+                        "fullName": self.parent.fullname.get(),
+                        "email": self.parent.email.get(),
+                        "nric_passport": self.parent.nric_passno.get(),
                         "dateOfBirth": dateObj,
-                        "contactNo": entries[4].get(),
-                        "password": self.parent.encryptPassword(entries[6].get()),
-                        "race": entries[3].get(),
-                        "countryOfOrigin": WD["countryoforigin"].get(),
-                        "addressLine1": WD["regaddressline1"].get(),
-                        "addressLine2": WD["regaddressline2"].get(),
-                        "postcode": WD["regpostcode"].get(),
+                        "contactNo": self.parent.contactnumber.get(),
+                        "password": self.parent.encryptPassword(self.parent.password.get()),
+                        "race": self.parent.race.get().upper().replace(" ", "_"),
+                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                        "countryOfOrigin": self.parent.countryoforigin.get(),
+                        "addressLine1": self.parent.addressline1.get(),
+                        "addressLine2": self.parent.addressline2.get(),
+                        "postcode": self.parent.postcode.get(),
                         "city": self.city,
                         "state": self.state,
                         "country": self.country,
@@ -180,9 +247,9 @@ class PatientRegistrationForm(Frame):
                 "healthRecord": {
                     "create": {
                         "allergies": self.vars[self.OPT3STR].get(),
-                        "bloodType": self.bloodType,
-                        "height": float(self.height),
-                        "weight": float(self.weight),
+                        "bloodType": self.bloodType.get(),
+                        "height": self.height.get(),
+                        "weight": self.weight.get(),
                         "currentMedication": self.vars[self.OPT2STR].get(),
                         "pastMedication": self.vars[self.OPT1STR].get(),
                         "pastSurgery": self.vars[self.OPT5STR].get(),

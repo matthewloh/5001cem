@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.mainDashboard import Dashboard
 import calendar
 import datetime as dt
 import re
@@ -24,14 +28,14 @@ from views.mainViewAppointments import MainViewAppointmentsInterface
 
 
 class ClinicAdminDashboard(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-
         self.prisma = self.controller.mainPrisma
+        self.user = self.parent.user
         self.createFrames()
         self.createElements()
         self.dashboardButtons()
@@ -195,7 +199,7 @@ class ClinicAdminDashboard(Frame):
                 x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
                 text=f"{doctor.user.fullName}", size=30, font=INTER,
                 isPlaced=True,
-                buttonFunction=lambda d = doctor: [print(d)]
+                buttonFunction=lambda d=doctor: [print(d)]
             )
             initialCoordinates = (
                 initialCoordinates[0], initialCoordinates[1] + 100

@@ -71,37 +71,90 @@ class RegistrationPage(Frame):
             (40, 420, 340, 60, self.frameref, "regpassent", "isPassword"),
             (420, 420, 340, 60, self.frameref, "regconfpassent", "isConfPass"),
             (40, 520, 340, 60, self.frameref, "countryoforigin"),
-            (420, 520, 340, 60, self.frameref, "regrace"),
             (40, 660, 340, 60, self.frameref, "regaddressline1"),
             (420, 660, 340, 60, self.frameref, "regaddressline2"),
             (160, 740, 220, 60, self.frameref, "regpostcode", "isPostcode"),
         ]
         for i in self.userRegEntries:
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
-        WD = self.controller.widgetsDict
+        EC = self.controller.ttkEntryCreator
+        self.fullname = EC(
+            x=40, y=120, width=720, height=60, root=self.frameref, classname="regfullname"
+        )
+        self.email = EC(
+            x=40, y=220, width=340, height=60, root=self.frameref, classname="regemail", validation="isEmail"
+        )
+        self.nric_passno = EC(
+            x=420, y=220, width=340, height=60, root=self.frameref, classname="regnric"
+        )
+        self.dateOfBirthEntry = self.controller.ttkEntryCreator(
+            x=40, y=320, width=260, height=60, root=self.frameref, classname="regbirthdate"
+        )
+        self.initDatePicker()
+        self.contactnumber = EC(
+            x=420, y=320, width=340, height=60, root=self.frameref, classname="regcontactnumber", validation="isContactNo"
+        )
+        self.password = EC(
+            x=40, y=420, width=340, height=60, root=self.frameref, classname="regpassent", validation="isPassword"
+        )
+        self.confirmpassword = EC(
+            x=420, y=420, width=340, height=60, root=self.frameref, classname="regconfpassent", validation="isConfPass"
+        )
+        self.countryoforigin = EC(
+            x=40, y=520, width=340, height=60, root=self.frameref, classname="countryoforigin"
+        )
+        self.addressline1 = EC(
+            x=40, y=660, width=340, height=60, root=self.frameref, classname="regaddressline1"
+        )
+        self.addressline2 = EC(
+            x=420, y=660, width=340, height=60, root=self.frameref, classname="regaddressline2"
+        )
+        self.postcode = EC(
+            x=160, y=740, width=220, height=60, root=self.frameref, classname="regpostcode", validation="isPostcode"
+        )
+        self.race, self.gender, self.country, self.state, self.city = StringVar(
+        ), StringVar(), StringVar(), StringVar(), StringVar()
 
+        # Race and Gender Menubuttons
+        self.races = ["Malay", "Chinese", "Indian", "Others"]
+        self.genders = ["Male", "Female", "Other", "Prefer not to say"]
+        self.raceMenuBtn = self.controller.menubuttonCreator(
+            x=420, y=520, width=160, height=60,
+            root=self.frameref, classname="reg_race",
+            text="Race", listofvalues=self.races,
+            variable=self.race, font=("Helvetica", 12),
+            command=lambda:
+                ToastNotification(title="Success", bootstyle="success", duration=3000,
+                                  message=f"Race Selected: {self.race.get()}").show_toast()
+        )
+        self.genderMenuBtn = self.controller.menubuttonCreator(
+            x=600, y=520, width=160, height=60,
+            root=self.frameref, classname="reg_gender",
+            text="Gender", listofvalues=self.genders,
+            variable=self.gender, font=("Helvetica", 12),
+            command=lambda:
+                ToastNotification(title="Success", bootstyle="success", duration=3000,
+                                  message=f"Gender Selected: {self.gender.get()}").show_toast()
+        )
+        self.seedDataBtn = self.controller.buttonCreator(
+            ipath="assets/Registration/Seed.png",
+            x=720, y=20, classname="seeddatabtn", root=self.frameref,
+            buttonFunction=lambda: self.seed_data()
+        )
+
+    def initDatePicker(self):
         self.datePicker = self.controller.buttonCreator(
             ipath="assets/Registration/DatePicker.png",
             x=320, y=320, classname="datepicker", root=self.frameref,
             buttonFunction=lambda: self.selectDate(self.datePicker)
         )
-        self.dateOfBirthEntry = self.controller.ttkEntryCreator(
-            x=40, y=320, width=260, height=60, root=self.frameref, classname="regbirthdate"
-        )
         self.dobMsg = "Select Date of Birth"
         self.dateOfBirthEntry.insert(0, self.dobMsg)
         self.dateOfBirthEntry.config(state=READONLY)
-        self.fullname, self.email, self.nric_passno = WD["regfullname"], WD["regemail"], WD["regnric"]
-        self.race, self.contactnumber, self.countryoforigin = WD[
-            "regrace"], WD["regcontactnumber"], WD["countryoforigin"]
-        self.password, self.confirmpassword = WD["regpassent"], WD["regconfpassent"]
-        self.addressline1, self.addressline2, self.postcode = WD[
-            "regaddressline1"], WD["regaddressline2"], WD["regpostcode"]
-        self.country, self.state, self.city = StringVar(), StringVar(), StringVar()
 
     def createCountryMenuBtns(self):
         list = {
-            "country": {
+            "reg_country": {
                 "pos": {"x": 540, "y": 740, "width": 220, "height": 60},
                 "listofvalues": ["Malaysia", "Others"],
                 "variable": self.country,
@@ -194,7 +247,7 @@ class RegistrationPage(Frame):
         if not self.country.get() == "Malaysia":
             return
         statelist = list(states_dict.keys())
-        self.controller.menubuttonCreator(
+        self.stateMenuButton = self.controller.menubuttonCreator(
             x=positions["state"]["x"], y=positions["state"]["y"], width=positions[
                 "state"]["width"], height=positions["state"]["height"],
             root=self.frameref, classname="state", text=f"Please Select State", listofvalues=statelist,
@@ -215,12 +268,12 @@ class RegistrationPage(Frame):
             "city": {"x": 540, "y": 820, "width": 220, "height": 60},
         }
         citieslist = list(states_dict[f"{state}"])
-        self.controller.menubuttonCreator(
+        self.cityMenuButton = self.controller.menubuttonCreator(
             x=positions["city"]["x"], y=positions["city"]["y"], width=positions[
                 "city"]["width"], height=positions["city"]["height"],
             root=self.frameref, classname="city", text=f"Please Select City", listofvalues=citieslist,
             variable=self.city, font=("Helvetica", 12),
-            command=lambda: [print(f"{self.city.get()}")]
+            command=lambda: [None]
         )
 
     def tupleToDict(self, tup):
@@ -230,6 +283,47 @@ class RegistrationPage(Frame):
             return dict(zip(["x", "y", "width", "height", "root", "classname", "validation"], tup))
         elif len(tup) == 8:
             return dict(zip(["x", "y", "width", "height", "root", "classname", "validation", "captchavar"], tup))
+
+    def seed_data(self):
+        WD = self.controller.widgetsDict
+        self.fullname.delete(0, END)
+        self.fullname.insert(0, "John Doe")
+        self.email.delete(0, END)
+        self.email.insert(0, f"johndoe{random.randint(0, 1000)}@gmail.com")
+        self.nric_passno.delete(0, END)
+        # 4 random digits
+        randomId = random.randint(1000, 9999)
+        self.nric_passno.insert(0, f"03020107{randomId}")
+        self.dateOfBirthEntry.configure(state=NORMAL)
+        self.dateOfBirthEntry.delete(0, END)
+        self.dateOfBirthEntry.insert(0, "01/01/2000")
+        self.dateOfBirthEntry.configure(state=READONLY)
+        self.contactnumber.delete(0, END)
+        self.contactnumber.insert(0, "0123456789")
+        self.password.delete(0, END)
+        self.password.insert(0, "Password_1")
+        self.confirmpassword.delete(0, END)
+        self.confirmpassword.insert(0, "Password_1")
+        self.countryoforigin.delete(0, END)
+        self.countryoforigin.insert(0, "Malaysia")
+        self.addressline1.delete(0, END)
+        self.addressline1.insert(0, "123, Jalan ABC")
+        self.addressline2.delete(0, END)
+        self.addressline2.insert(0, "Taman ABC")
+        self.postcode.delete(0, END)
+        self.postcode.insert(0, "12345")
+        self.raceMenuBtn.configure(text="Malay")
+        self.race.set("Malay")
+        self.genderMenuBtn.configure(text="Male")
+        self.gender.set("Male")
+        WD["reg_country"].configure(text="Malaysia")
+        self.country.set("Malaysia")
+        self.loadStateMenubuttons("Malaysia")
+        self.loadCityMButtons("Pulau Pinang")
+        self.stateMenuButton.configure(text="Pulau Pinang")
+        self.state.set("Pulau Pinang")
+        self.cityMenuButton.configure(text="Georgetown")
+        self.city.set("Georgetown")
 
     def loadAllDetailsForRegistration(self):
         prisma = self.prisma
@@ -436,84 +530,6 @@ class RegistrationPage(Frame):
     #         xpos=420, ypos=420, classname="imagecaptchachallenge",
     #         root=self.frameref
     #     )
-
-    def loadSchoolMenubuttons(self, instCode):
-        # remove all widgets and refresh options
-        for widgetname, widget in self.frameref.children.items():
-            if not widgetname.startswith("!la"):
-                if widgetname in ["schoolhostfr", "programmehostfr",
-                                  "course1hostfr", "course2hostfr", "course3hostfr", "course4hostfr"]:
-                    widget.grid_remove()
-        # reset variables
-        for var in [self.school, self.programme, self.course1, self.course2, self.course3, self.course4]:
-            var.set("")
-        positions = {
-            "school": {"x": 160, "y": 740, "width": 240, "height": 40},
-        }
-        schoollist = list(self.instDict[f"{instCode}"]["schools"].keys())
-        if schoollist == []:
-            schoollist = ["No Schools Found"]
-            self.school.set("")
-        self.controller.menubuttonCreator(
-            xpos=positions["school"]["x"], ypos=positions["school"]["y"], width=positions[
-                "school"]["width"], height=positions["school"]["height"],
-            root=self.frameref, classname="school", text=f"Select School", listofvalues=schoollist,
-            variable=self.school, font=("Helvetica", 10),
-            command=lambda: [self.loadProgrammeMButtons(
-                instCode, self.school.get())]
-        )
-
-    def loadProgrammeMButtons(self, instCode, schoolCode):
-        # remove all widgets and refresh options
-        if schoolCode == "No Schools Found":
-            return
-        for widgetname, widget in self.frameref.children.items():
-            if not widgetname.startswith("!la"):
-                if widgetname in ["programmehostfr",
-                                  "course1hostfr", "course2hostfr", "course3hostfr", "course4hostfr"]:
-                    widget.grid_remove()
-        # reset variables
-        for var in [self.programme, self.course1, self.course2, self.course3, self.course4]:
-            var.set("")
-        positions = {
-            "programme": {"x": 520, "y": 740, "width": 240, "height": 40},
-        }
-        programmeslist = list(
-            self.instDict[f"{instCode}"]["schools"][f"{schoolCode}"]["programmes"])
-        self.controller.menubuttonCreator(
-            xpos=positions["programme"]["x"], ypos=positions["programme"]["y"], width=positions[
-                "programme"]["width"], height=positions["programme"]["height"],
-            root=self.frameref, classname="programme", text=f"Select Programme", listofvalues=programmeslist,
-            variable=self.programme, font=("Helvetica", 10),
-            command=lambda: [self.loadModulesMButtons(
-                instCode, schoolCode, self.programme.get())]
-        )
-
-    def loadModulesMButtons(self, instCode, schoolCode, progCode):
-        vars = {
-            "course1": self.course1,
-            "course2": self.course2,
-            "course3": self.course3,
-            "course4": self.course4,
-        }
-        positions = {
-            "course1": {"x": 160, "y": 800, "width": 280, "height": 40},
-            "course2": {"x": 160, "y": 860, "width": 280, "height": 40},
-            "course3": {"x": 480, "y": 800, "width": 280, "height": 40},
-            "course4": {"x": 480, "y": 860, "width": 280, "height": 40},
-        }
-        moduleslist = list(self.instDict[f"{instCode}"]["schools"]
-                           [f"{schoolCode}"]["programmes"][f"{progCode}"]["modules"])
-        enumeratedModList = list(enumerate(moduleslist.copy(), 1))
-        for i, module in enumeratedModList:
-            self.controller.menubuttonCreator(
-                xpos=positions[f"course{i}"]["x"], ypos=positions[f"course{i}"]["y"], width=positions[
-                    f"course{i}"]["width"], height=positions[f"course{i}"]["height"],
-                root=self.frameref, classname=f"course{i}", text=f"Select Module {i}", listofvalues=moduleslist,
-                variable=vars[f"course{i}"], font=("Helvetica", 10),
-                command=lambda c=f"course{i}": [
-                    self.checkDuplicateModules(c, vars[c].get(), moduleslist)]
-            )
 
     def checkDuplicateModules(self, courseNum, course, originalModules):
         vars = {

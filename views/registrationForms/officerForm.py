@@ -20,6 +20,7 @@ from resource.basewindow import ElementCreator
 from datetime import datetime, timedelta
 import datetime as dt
 from pendulum import timezone
+from prisma.errors import RecordNotFoundError
 import tkintermapview
 
 
@@ -106,6 +107,8 @@ class OfficerRegistrationForm(Frame):
         for p in param:
             ENTCREATOR(**param[p])
         WD = self.controller.widgetsDict
+        WD["startofdutyentry"].configure(state=READONLY, foreground=BLACK)
+        WD["endofdutyentry"].configure(state=READONLY, foreground=BLACK)
         self.jurisdictionState = StringVar()
         self.controller.menubuttonCreator(
             x=340, y=200, width=420, height=60,
@@ -140,18 +143,13 @@ class OfficerRegistrationForm(Frame):
         entry.configure(state="normal")
         entry.delete(0, END)
         entry.insert(0, date)
-
-    def loadSpecificSubmission(self, option: str):
-        print(option)
+        entry.configure(foreground=BLACK)
+        entry.configure(state=READONLY)
 
     def confirmSubmission(self):
         prisma = self.prisma
         WD = self.controller.widgetsDict
         # get the values from the entry boxes
-        entries = (WD["regfullname"], WD["regemail"], WD["regnric"],
-                   WD["regrace"], WD["regcontactnumber"], WD["countryoforigin"],
-                   WD["regpassent"], WD["regconfpassent"], WD["regaddressline1"],
-                   WD["regaddressline2"], WD["regpostcode"])
         self.country, self.state, self.city = self.parent.country.get(
         ), self.parent.state.get(), self.parent.city.get()
         dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
@@ -159,33 +157,51 @@ class OfficerRegistrationForm(Frame):
         dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
         UTC = timezone("UTC")
         KL = timezone("Asia/Kuala_Lumpur")
+        try:
+            govRegSystem = prisma.govregsystem.find_first_or_raise(
+                where={
+                    "state": self.jurisdictionState.get().upper().replace(" ", "_"),
+                }
+            )
+        except RecordNotFoundError:
+            govRegSystem = prisma.govregsystem.create(
+                data={
+                    "state": self.jurisdictionState.get().upper().replace(" ", "_"),
+                }
+            )
         officer = prisma.govhealthofficer.create(
             data={
                 "user": {
                     "create": {
-                        "fullName": entries[0].get(),
-                        "email": entries[1].get(),
-                        "nric_passport": entries[2].get(),
+                        "fullName": self.parent.fullname.get(),
+                        "email": self.parent.email.get(),
+                        "nric_passport": self.parent.nric_passno.get(),
                         "dateOfBirth": dateObj,
-                        "contactNo": entries[4].get(),
-                        "password": self.parent.encryptPassword(entries[6].get()),
-                        "race": entries[3].get(),
-                        "countryOfOrigin": WD["countryoforigin"].get(),
-                        "addressLine1": WD["regaddressline1"].get(),
-                        "addressLine2": WD["regaddressline2"].get(),
-                        "postcode": WD["regpostcode"].get(),
+                        "contactNo": self.parent.contactnumber.get(),
+                        "password": self.parent.encryptPassword(self.parent.password.get()),
+                        "race": self.parent.race.get().upper().replace(" ", "_"),
+                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                        "countryOfOrigin": self.parent.countryoforigin.get(),
+                        "addressLine1": self.parent.addressline1.get(),
+                        "addressLine2": self.parent.addressline2.get(),
+                        "postcode": self.parent.postcode.get(),
                         "city": self.city,
                         "state": self.state,
                         "country": self.country,
                     }
                 },
                 "govRegId": WD["grdidentry"].get(),
-                "stateManaged": self.jurisdictionState.get().upper().replace(" ", "_"),
                 "startDate": KL.convert(
                     datetime.strptime(WD["startofdutyentry"].get(), "%d/%m/%Y")
                 ),
                 "endDate": KL.convert(
                     datetime.strptime(WD["endofdutyentry"].get(), "%d/%m/%Y")
-                )
+                ),
+                "systemSupervising": {
+                    "connect": {
+                        "id": govRegSystem.id
+                    }
+                }
             }
         )
+        
