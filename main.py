@@ -68,7 +68,7 @@ class Window(ElementCreator):
             ipath="assets/HomePage/SignInButton.png",
             x=1180, y=760,
             classname="loginbutton",
-            buttonFunction=self.signIn,
+            buttonFunction=self.signInThreaded,
         )
         self.signUpRedirectButton = self.buttonCreator(
             root=self.parentFrame,
@@ -91,6 +91,7 @@ class Window(ElementCreator):
         askOption.show()
         self.dashboard = Dashboard(parent=self.parentFrame, controller=self)
         self.frames[Dashboard] = self.dashboard
+        self.dashboard.user = None
         self.dashboard.grid(
             row=0, column=0, columnspan=96, rowspan=54, sticky=NSEW
         )
@@ -137,6 +138,7 @@ class Window(ElementCreator):
                     duration=3000,
                 )
                 toast.show_toast()
+                self.developerLogin()
                 return
             user = self.prisma.user.find_first(
                 where={"email": emailtext.lower()},

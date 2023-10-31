@@ -30,7 +30,6 @@ class AdminManagePatientRequests(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.patientImgLabels()
-        self.patientRequestButtons()
         self.createPatientList()
 
     def createFrames(self):
@@ -38,9 +37,35 @@ class AdminManagePatientRequests(Frame):
 
     def patientImgLabels(self):
         self.controller.labelCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/PatientList.png",
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/PatientRequestsBg.png",
             x=0, y=0, classname="patientrequests", root=self
         )
+
+        exampleList = []
+        [exampleList.append("Thing " + str(i))
+         for i in range(30) if i % 2 == 0]
+        h = len(exampleList) * 120
+        if h < 280:
+            h = 280
+        self.viewAppointmentScrolledFrame = ScrolledFrame(
+            master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.viewAppointmentScrolledFrame.grid_propagate(False)
+        self.viewAppointmentScrolledFrame.place(x=85, y=240, width=1500, height=280)
+        initialcoordinates = (20,20)
+        for appointment in exampleList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
+            self.controller.textElement(
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
+                classname=f"appointment{appointment}", root=self.viewAppointmentScrolledFrame,
+                text=appointment, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 120
+            )
 
     def createPatientList(self):
         prisma = self.prisma
@@ -49,23 +74,20 @@ class AdminManagePatientRequests(Frame):
                 "user": True,
             }
         )
-        patientLists = []
-        [patientLists.append("Thing " + str(i))
-         for i in range(30) if i % 2 == 0]
         h = len(patientLists) * 120
-        if h < 380:
-            h = 380
+        if h < 290:
+            h = 290
         self.patientScrolledFrame = ScrolledFrame(
-            master=self, width=1540, height=h, autohide=True, bootstyle="officer-bg"
+            master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.patientScrolledFrame.grid_propagate(False)
-        self.patientScrolledFrame.place(x=60, y=280, width=1540, height=380)
+        self.patientScrolledFrame.place(x=60, y=710, width=1540, height=290)
         initialcoordinates = (20,20)
         for patient in patientLists:
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/srollbutton.png", x=x, y=y,
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
                 classname=f"patientlistbg{patient.id}", root=self.patientScrolledFrame,
                 text=f"{patient.user.fullName}", size=30, font=INTER,
                 isPlaced=True,

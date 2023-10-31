@@ -30,6 +30,7 @@ class OfficerGRDRequests(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.loadClinicsRequests()
 
     def createFrames(self):
         pass
@@ -40,20 +41,18 @@ class OfficerGRDRequests(Frame):
             x=0, y=0, classname="grdrequestsbg", root=self
         )
 
-        exampleList = []
-        reg_idList = []
-        contactList = []
-        opHrsList = []
-        [exampleList.append("Clinic " + str(i))
-         for i in range(30) if i % 2 == 0]
-        [reg_idList.append("Reg_id " + str(i))
-         for i in range(30) if i % 2 == 0]
-        [contactList.append("Contact " + str(i))
-         for i in range(30) if i % 2 == 0]
-        [opHrsList.append("OpHrs " + str(i))
-         for i in range(30) if i % 2 == 0]
-
-        h = len(exampleList) * 120
+    def loadClinicsRequests(self):
+        prisma = self.prisma
+        clinicsrequests = prisma.clinicenrolment.find_many(
+            where={
+                "status":"PENDING"
+                },
+            include={
+                "clinic":True,
+                "govRegDocSystem":True
+                }   
+        )
+        h = len(clinicsrequests) * 120
         if h < 600:
             h = 600
         self.exampleScrolledFrame = ScrolledFrame(
@@ -62,47 +61,52 @@ class OfficerGRDRequests(Frame):
         self.exampleScrolledFrame.grid_propagate(False)
         self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
         initialcoordinates = (20, 20)
-        for thing, reg_id, contact, opHrs in zip(exampleList, reg_idList, contactList, opHrsList):
+        for requests in clinicsrequests:
+            clinicid = requests.clinicId
+            clinicName = requests.clinic.name
+            contact = requests.clinic.phoneNum
+            opHrs = requests.clinic.clinicHrs
+
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsbg.png", x=x, y=y,
-                classname=f"thing{thing}", root=self.exampleScrolledFrame,
-                text=thing, size=30, font=INTER,
+                classname=f"clinic{clinicid}", root=self.exampleScrolledFrame,
+                text=clinicName, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=340, y=y+15,
-                classname=f"reg_id{thing}", root=self.exampleScrolledFrame,
-                text=reg_id, size=30, font=INTER,
+                classname=f"reg_id{clinicid}", root=self.exampleScrolledFrame,
+                text=clinicid, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=540, y=y+15,
-                classname=f"contact{thing}", root=self.exampleScrolledFrame,
+                classname=f"contact{clinicid}", root=self.exampleScrolledFrame,
                 text=contact, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=780, y=y+15,
-                classname=f"opHrs{thing}", root=self.exampleScrolledFrame,
+                classname=f"opHrs{clinicid}", root=self.exampleScrolledFrame,
                 text=opHrs, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/OfficerAcceptClinic.png",
-                classname=f"acceptclinic{thing}", root=self.exampleScrolledFrame,
-                x=1055, y=y+20, buttonFunction=lambda t = thing: [print(f"acceptclinic {t}")],
+                classname=f"acceptclinic{clinicid}", root=self.exampleScrolledFrame,
+                x=1055, y=y+20, buttonFunction=lambda t = requests: [print(f"acceptclinic {clinicName}")],
                 isPlaced=True,
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/OfficerRejectClinic.png",
-                classname=f"rejectclinic{thing}", root=self.exampleScrolledFrame,
-                x=1055+216, y=y+20, buttonFunction=lambda t = thing: [print(f"rejectclinic {t}")],
+                classname=f"rejectclinic{clinicid}", root=self.exampleScrolledFrame,
+                x=1055+216, y=y+20, buttonFunction=lambda t = requests: [print(f"rejectclinic {clinicName}")],
                 isPlaced=True
             )
 
