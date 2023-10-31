@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  recursive_type_depth = "-1"
   interface            = "sync"
+  recursive_type_depth = "-1"
 }
 
 datasource db {
@@ -255,4 +255,11 @@ enum GovRegSystem_state {
   SELANGOR
   TERENGGANU
   WILAYAH_PERSEKUTUAN
+}
+
+enum User_gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
 }

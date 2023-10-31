@@ -105,25 +105,26 @@ class GovOfficerDashboard(Frame):
             )
 
     def loadClinicsIntoBottomFrame(self):
-        h = len(self.systemManaged.programmeRegistration) * 120
-        if h < 760:
-            h = 760
-        self.clinicsListFrame = ScrolledFrame(
-            master=self, width=780, height=h, autohide=True, bootstyle="officer-bg"
-        )
-        self.clinicsListFrame.grid_propagate(False)
-        self.clinicsListFrame.place(x=880, y=1040, width=780, height=760)
-        COORDS = (20, 20)
-        for clinicEnrolment in self.systemManaged.programmeRegistration:
-            clinic = clinicEnrolment.clinic
-            X = COORDS[0]
-            Y = COORDS[1]
-            R = self.clinicsListFrame
-            self.controller.labelCreator(
-                x=X, y=Y, classname=f"{clinic.id}_bg", root=R,
-                ipath="assets/Dashboard/OfficerAssets/clinicsstatusbg.png",
-                isPlaced=True,
-            )
+        # h = len(self.systemManaged.programmeRegistration) * 120
+        # if h < 760:
+        #     h = 760
+        # self.clinicsListFrame = ScrolledFrame(
+        #     master=self, width=780, height=h, autohide=True, bootstyle="officer-bg"
+        # )
+        # self.clinicsListFrame.grid_propagate(False)
+        # self.clinicsListFrame.place(x=880, y=1040, width=780, height=760)
+        # COORDS = (20, 20)
+        # for clinicEnrolment in self.systemManaged.programmeRegistration:
+        #     clinic = clinicEnrolment.clinic
+        #     X = COORDS[0]
+        #     Y = COORDS[1]
+        #     R = self.clinicsListFrame
+        #     self.controller.labelCreator(
+        #         x=X, y=Y, classname=f"{clinic.id}_bg", root=R,
+        #         ipath="assets/Dashboard/OfficerAssets/clinicsstatusbg.png",
+        #         isPlaced=True,
+        #     )
+        pass
 
     def loadSupervisedClinicsOnMap(self):
         self.loc = GoogleV3(api_key=os.getenv(
