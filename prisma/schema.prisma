@@ -20,13 +20,13 @@ model User {
   password         String?
   countryOfOrigin  String?
   race             String?
+  gender           Gender?            @default(PREFER_NOT_TO_SAY)
   addressLine1     String?
   addressLine2     String?
   city             String?
   state            String?
   postcode         String?
   country          String?
-  gender           User_gender?       @default(PREFER_NOT_TO_SAY)
   patient          Patient[]
   clinicAdmin      ClinicAdmin[]
   doctor           Doctor[]
@@ -34,14 +34,13 @@ model User {
 }
 
 model Patient {
-  id             String        @id @default(cuid())
-  userId         String
-  healthRecordId Int
-  user           User          @relation(fields: [userId], references: [id])
-  appointments   Appointment[]
+  id           String               @id @default(cuid())
+  userId       String
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  healthRecord PatientHealthRecord?
 
   @@index([userId])
-  @@index([healthRecordId])
 }
 
 model ClinicAdmin {
@@ -57,11 +56,11 @@ model ClinicAdmin {
 
 model Doctor {
   id                 String               @id @default(cuid())
+  employmentHistory  String?              @db.Text
+  educationHistory   String?              @db.Text
   speciality         Speciality?          @default(NONE)
   userId             String
   clinicId           String?
-  educationHistory   String?              @db.Text
-  employmentHistory  String?              @db.Text
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments       Appointment[]
   doctorApptSchedule DoctorApptSchedule[]
@@ -72,13 +71,13 @@ model Doctor {
 }
 
 model GovHealthOfficer {
-  id                String       @id @default(cuid())
+  id                String         @id @default(cuid())
   userId            String
-  govRegId          String       @unique
+  govRegId          String         @unique
   endDate           DateTime?
   startDate         DateTime
-  systemSupervising GovRegSystem @relation(fields: [govRegId], references: [id], onDelete: Cascade)
-  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  systemSupervising GovRegSystem[]
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -161,7 +160,7 @@ model ClinicEnrolment {
 model GovRegSystem {
   id                    String             @id @default(cuid())
   state                 GovRegSystem_state
-  supervisingOfficer    GovHealthOfficer?
+  supervisingOfficer    GovHealthOfficer[]
   programmeRegistration ClinicEnrolment[]
 }
 
@@ -175,6 +174,8 @@ model PatientHealthRecord {
   pastMedication    String? @db.Text
   pastSurgery       String? @db.Text
   weight            Float?  @db.Float
+  patient           Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId         String  @unique
 }
 
 model doctorPrescription {
@@ -194,13 +195,11 @@ model doctorPrescription {
   details   String
 }
 
-model GovHealthOfficerToGovRegSystem {
-  A String
-  B String
-
-  @@unique([A, B], map: "_GovHealthOfficerToGovRegSystem_AB_unique")
-  @@index([B], map: "_GovHealthOfficerToGovRegSystem_B_index")
-  @@map("_GovHealthOfficerToGovRegSystem")
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
 }
 
 enum Speciality {

@@ -261,7 +261,7 @@ class ElementCreator(ttk.Window):
                             buttonFunction=j[4])
         return frame
 
-    def entryCreator(self, x, y, width, height, root=None, classname=None, bg=WHITE, relief=FLAT, fg=BLACK, textvariable=None, pady=None, font=("Avenir Next Medium", 16)) -> Entry:
+    def entryCreator(self, x, y, width, height, root=None, classname=None, bg=WHITE, relief=FLAT, fg=BLACK, textvariable=None, pady=None, font=("Avenir Next Medium", 16), isPlaced=False) -> Entry:
         classname = classname.lower().replace(" ", "")
         columnarg = int(x / 20)
         rowarg = int(y / 20)
@@ -271,7 +271,9 @@ class ElementCreator(ttk.Window):
         entry = Entry(root, bg=bg, relief=SOLID, font=font, fg=fg, width=1,
                       name=classname, autostyle=False, textvariable=textvariable)
         entry.grid(
-            row=rowarg, column=columnarg, rowspan=heightspan, columnspan=widthspan, sticky=NSEW, pady=pady)
+            row=rowarg, column=columnarg, rowspan=heightspan, columnspan=widthspan, sticky=NSEW, pady=pady) if not isPlaced else entry.place(
+            x=x, y=y, width=width, height=height
+        )
         self.updateWidgetsDict(root=root)
         for widgetname, widget in root.children.items():
             if widgetname == classname.lower().replace(" ", ""):
@@ -334,7 +336,7 @@ class ElementCreator(ttk.Window):
         # print(themename, classname)
         menustyle = ttk.Style()
         menustyle.configure(
-            style=themename, font=("Helvetica", 10),
+            style=themename, font=("Helvetica", 16),
             background="#FFFFFF", foreground=BLACK,
             bordercolor="#78c2ad",
             relief="raised",
@@ -484,8 +486,8 @@ class ElementCreator(ttk.Window):
         heightspan = int(image.height()/20)
         columnarg = int(x/20)
         rowarg = int(y/20)
-        placedwidth = int(widthspan*20)
-        placedheight = int(heightspan*20)
+        placedwidth = int(image.width())
+        placedheight = int(image.height())
 
         if buttonFunction:
             if isPlaced:
@@ -513,6 +515,90 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         element.grid_propagate(False)
         return element
+
+    def scrolledTextCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None,
+                            bg="#f1feff", hasBorder=False, borderColor=BLACK, padding=0,
+                            text=None, font=("Inter", 12), fg=BLACK, isPlaced=True, isDisabled=False, isJustified=False, justification="center"):
+        """ 
+        Creates a scrolled text widget and returns it.\n
+        Uses the place geometry manager by default. Key styling options include enabling padding (disabled by defaut) between the host frame and the text widget, and whether or not the text is justified.\n
+        Customization of the border color is also enabled with the hasBorder and borderColor arguments.\n
+        Justification options include "left", "center", and "right", and is only enabled when isJustified is set to True by passing in justification.\n
+        Background is customized by setting bg which by default also sets the border color of the text to bg.\n
+
+        Args:
+            x (int): x position of the text
+            y (int): y position of the text
+            width (int): width of the text
+            height (int): height of the text
+            root (Frame): the root frame to place the text in.
+            classname (str): name of the text.
+            bg (str): background color of the text.
+            hasBorder (bool): whether or not the text has a border.
+            borderColor (str): color of the border.
+            padding (int): padding between the host frame and the text. Default is 0.
+            text (str): text to be displayed.
+            font (tuple): font and font size of the text widget.
+            fg (str): foreground color of the text.
+            isPlaced (bool): whether or not the text is placed.
+            isDisabled (bool): whether or not the text is disabled.
+            isJustified (bool): whether or not the text is justified.
+            justification (str): the justification of the text. Defaults to "center".
+
+        Returns:
+            ScrolledText: the scrolled text object placed in the root container, note the inner text must be accessed via the .text attribute.
+
+        Usage: 
+            self.controller.scrolledTextCreator(
+                x=0, y=0, width=100, height=100, root=validtkinterparent (Frame, Canvas), classname = "classname",
+                bg=WHITE, hasBorder=False, # borderColor=BLACK, 
+                text="This is the text to be displayed", font=("Inter", 12), fg=BLACK, 
+                isPlaced=True, isDisabled=False, isJustified=False, # justification="center"
+            ) 
+            clinicname = self.controller.scrolledTextCreator(
+                x=X+20, y=Y, width=180, height=100, root=R, classname=f"{clinic.id}_name",
+                bg="#f1feff", hasBorder=False,
+                text=clinic.name, font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True,
+            )
+        """
+        classname = classname.lower().replace(" ", "")
+        columnarg = int(x / 20)
+        rowarg = int(y / 20)
+        widthspan = int(width / 20)
+        heightspan = int(height / 20)
+        scrolledText = ScrolledText(
+            master=root, width=width, height=height,
+            autohide=True, bootstyle="bg-round",
+            padding=padding
+        )
+        scrolledText.text.config(
+            bg=bg, font=font, wrap=WORD, fg=fg
+        )
+        scrolledText.text.insert(1.0, text)
+        scrolledText.text.config(state=DISABLED)
+        if hasBorder:
+            scrolledText.text.config(highlightbackground=borderColor)
+        else:
+            scrolledText.text.config(
+                highlightbackground=bg, highlightthickness=0, border=0, borderwidth=0)
+        if isJustified:
+            scrolledText.text.tag_configure("center", justify=justification)
+            scrolledText.text.tag_add("center", 1.0, "end")
+        if isPlaced:
+            scrolledText.place(
+                x=x, y=y, width=width, height=height
+            )
+        else:
+            scrolledText.grid(
+                row=rowarg, column=columnarg, rowspan=heightspan,
+                columnspan=widthspan, sticky=NSEW
+            )
+        if isDisabled:
+            scrolledText.text.config(state=DISABLED)
+        self.updateWidgetsDict(root=root)
+        self.widgetsDict[classname] = scrolledText
+        return scrolledText
 
     def show_frame(self, cont):
         frame = self.frames[cont]
