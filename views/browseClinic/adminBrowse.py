@@ -36,6 +36,38 @@ class AdminBrowseClinic(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorDashboard.png",
+            ipath=r"assets\Dashboard\PatientAssets\PatientPrimaryPanelBG.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
+
+        self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
+            x=1385, y=135, classname="manageclinicrefresh", root=self, 
+            buttonFunction=lambda:print("manage clinic requests"), isPlaced=True
+        )
+
+        exampleList = []
+        [exampleList.append("Thing " + str(i))
+         for i in range(30) if i % 2 == 0]
+        h = len(exampleList) * 120
+        if h < 640:
+            h = 640
+        self.manageClinicScrolledFrame = ScrolledFrame(
+            master=self, width=1540, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.manageClinicScrolledFrame.grid_propagate(False)
+        self.manageClinicScrolledFrame.place(x=60, y=280, width=1540, height=640)
+        initialcoordinates = (20,20)
+        for manageClinic in exampleList:
+            x = initialcoordinates[0]
+            y = initialcoordinates[1]
+            self.controller.textElement(
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/srollbutton.png", x=x, y=y,
+                classname=f"manageClinic{manageClinic}", root=self.manageClinicScrolledFrame,
+                text=manageClinic, size=30, font=INTER,
+                isPlaced=True,
+            )
+
+            initialcoordinates = (
+                initialcoordinates[0], initialcoordinates[1] + 120
+            )

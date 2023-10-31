@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.mainDashboard import Dashboard
 import calendar
 import datetime as dt
 import re
@@ -24,14 +28,14 @@ from views.mainViewAppointments import MainViewAppointmentsInterface
 
 
 class ClinicAdminDashboard(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-
         self.prisma = self.controller.mainPrisma
+        self.user = self.parent.user
         self.createFrames()
         self.createElements()
         self.dashboardButtons()
@@ -177,7 +181,7 @@ class ClinicAdminDashboard(Frame):
                 x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
                 text=f"{doctor.user.fullName}", size=30, font=INTER,
                 isPlaced=True,
-                buttonFunction=lambda d = doctor: [print(d)]
+                buttonFunction=lambda d=doctor: [print(d)]
             )
             initialCoordinates = (
                 initialCoordinates[0], initialCoordinates[1] + 100
@@ -187,9 +191,7 @@ class ClinicAdminDashboard(Frame):
         d = {
             "adminDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/AddDoctor.png",
-                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/DeleteDoctor.png",
-                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Refresh.png",
-                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Refresh.png"
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/DeleteDoctor.png"
             ]
         }
         self.addDoctor = self.controller.buttonCreator(
@@ -204,16 +206,6 @@ class ClinicAdminDashboard(Frame):
             buttonFunction=lambda: [
                 self.deleteListsFrame.grid(), self.deleteListsFrame.tkraise()],
         )
-        self.refresh1button = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][2],
-            x=1480, y=60, classname="refresh1", root=self,
-            buttonFunction=lambda: [print('refresh')],
-        )
-        self.refresh2button = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][3],
-            x=1480, y=580, classname="refresh2", root=self,
-            buttonFunction=lambda: [print('refresh')],
-        )
 
     def createDoctorList(self):
         prisma = self.prisma
@@ -227,7 +219,7 @@ class ClinicAdminDashboard(Frame):
             h = 375
 
         self.doctorsScrolledFrame = ScrolledFrame(
-            master=self, width=920, height=h, autohide=True, bootstyle="bg-round")
+            master=self, width=920, height=h, autohide=True, bootstyle="officer-bg")
         self.doctorsScrolledFrame.place(
             x=680, y=145, width=920, height=375
         )
@@ -236,7 +228,7 @@ class ClinicAdminDashboard(Frame):
             x = initialCoordinates[0]
             y = initialCoordinates[1]
             self.controller.textElement(
-                ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/ListButton.png",
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrolldashboardbutton.png",
                 x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
                 text=f"{doctor.user.fullName}", size=30, font=INTER,
                 isPlaced=True,

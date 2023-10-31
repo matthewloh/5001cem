@@ -4,7 +4,7 @@ import re
 import threading
 from tkinter import *
 from tkinter import messagebox
-from prisma.models import Appointment
+from prisma.models import User
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -57,6 +57,9 @@ class Dashboard(Frame):
         self.controller.settingsUnpacker(self.staticImgLabels, "label")
         self.controller.settingsUnpacker(self.staticBtns, "button")
 
+    def setUser(self, user: User):
+        self.user = user
+
     def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
         if patient:
             self.primarypanel = PatientDashboard(
@@ -78,7 +81,7 @@ class Dashboard(Frame):
             x=20, y=300, classname="dashboardchip", root=self,
             buttonFunction=lambda: self.unloadStackedFrames(),
         )
-        
+
     def unloadStackedFrames(self):
         self.primarypanel.unloadStackedFrames()
         self.primarypanel.tkraise()
