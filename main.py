@@ -1,3 +1,4 @@
+import os
 import threading
 from tkinter import *
 import bcrypt
@@ -45,15 +46,23 @@ class Window(ElementCreator):
             x=1140, y=440,
             width=600, height=80,
             classname="emailentry",
-            placeholder="Email",
+            # placeholder="Email",
         )
         self.loginPasswordEntry = self.ttkEntryCreator(
             root=self.parentFrame,
             x=1140, y=600,
             width=600, height=80,
             classname="passwordentry",
-            validation="isPassword" 
+            validation="isPassword"
         )
+        try:
+            LOGIN_EMAIL = os.getenv("LOGIN_EMAIL")
+            LOGIN_PASSWORD = os.getenv("LOGIN_PASSWORD")
+            self.loginEmailEntry.insert(0, LOGIN_EMAIL)
+            self.loginPasswordEntry.insert(0, LOGIN_PASSWORD)
+        except Exception as e:
+            print("Error loading login credentials from .env file")
+            print(e)
         self.loginButton = self.buttonCreator(
             root=self.parentFrame,
             ipath="assets/HomePage/SignInButton.png",
