@@ -53,7 +53,7 @@ class AdminBrowseClinic(Frame):
         if h < 640:
             h = 640
         self.manageClinicScrolledFrame = ScrolledFrame(
-            master=self, width=1540, height=h, autohide=True, bootstyle="officer-bg"
+            master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.manageClinicScrolledFrame.grid_propagate(False)
         self.manageClinicScrolledFrame.place(x=60, y=280, width=1540, height=640)

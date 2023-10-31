@@ -81,7 +81,7 @@ class AdminManagePatientRequests(Frame):
         if h < 290:
             h = 290
         self.patientScrolledFrame = ScrolledFrame(
-            master=self, width=1540, height=h, autohide=True, bootstyle="officer-bg"
+            master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.patientScrolledFrame.grid_propagate(False)
         self.patientScrolledFrame.place(x=60, y=710, width=1540, height=290)

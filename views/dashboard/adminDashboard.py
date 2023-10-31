@@ -182,9 +182,9 @@ class ClinicAdminDashboard(Frame):
         if h < 375:
             h = 375
         self.doctorsScrolledFrame = ScrolledFrame(
-            master=self, width=920, height=h, autohide=True, bootstyle="officer-bg")
+            master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
-            x=680, y=145, width=920, height=375
+            x=680, y=145, width=920, height=370
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
@@ -238,7 +238,7 @@ class ClinicAdminDashboard(Frame):
             h = 375
 
         self.doctorsScrolledFrame = ScrolledFrame(
-            master=self, width=920, height=h, autohide=True, bootstyle="officer-bg")
+            master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
             x=680, y=145, width=920, height=375
         )

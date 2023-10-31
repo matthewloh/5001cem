@@ -181,7 +181,7 @@ class AdminManageAppointments(Frame):
         if h < 380:
             h = 380
         self.viewAppointmentScrolledFrame = ScrolledFrame(
-            master=self, width=1540, height=h, autohide=True, bootstyle="officer-bg"
+            master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.viewAppointmentScrolledFrame.grid_propagate(False)
         self.viewAppointmentScrolledFrame.place(x=70, y=260, width=1520, height=420)
