@@ -74,9 +74,6 @@ class AdminManagePatientRequests(Frame):
                 "user": True,
             }
         )
-        patientLists = []
-        [patientLists.append("Thing " + str(i))
-         for i in range(30) if i % 2 == 0]
         h = len(patientLists) * 120
         if h < 290:
             h = 290

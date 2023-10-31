@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  recursive_type_depth = "-1"
   interface            = "sync"
+  recursive_type_depth = "-1"
 }
 
 datasource db {
@@ -34,14 +34,12 @@ model User {
 }
 
 model Patient {
-  id             String        @id @default(cuid())
-  userId         String
-  healthRecordId Int
-  user           User          @relation(fields: [userId], references: [id])
-  appointments   Appointment[]
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  appointments Appointment[]
 
   @@index([userId])
-  @@index([healthRecordId])
 }
 
 model ClinicAdmin {
@@ -175,6 +173,7 @@ model PatientHealthRecord {
   pastMedication    String? @db.Text
   pastSurgery       String? @db.Text
   weight            Float?  @db.Float
+  patientId         String  @unique
 }
 
 model doctorPrescription {
