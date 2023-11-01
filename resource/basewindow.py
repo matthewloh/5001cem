@@ -1,7 +1,8 @@
 # from ctypes import windll
+import io
 import threading
 from tkinter import FLAT, NSEW, Frame, Label
-from prisma import Prisma
+from prisma import Base64, Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -518,7 +519,8 @@ class ElementCreator(ttk.Window):
 
     def scrolledTextCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None,
                             bg="#f1feff", hasBorder=False, borderColor=BLACK, padding=0,
-                            text=None, font=("Inter", 12), fg=BLACK, isPlaced=True, isDisabled=False, isJustified=False, justification="center"):
+                            text=None, font=("Inter", 12), fg=BLACK, isPlaced=True, isDisabled=False, isJustified=False, justification="center",
+                            hasVbar=True, hasHbar=False):
         """ 
         Creates a scrolled text widget and returns it.\n
         Uses the place geometry manager by default. Key styling options include enabling padding (disabled by defaut) between the host frame and the text widget, and whether or not the text is justified.\n
@@ -570,13 +572,12 @@ class ElementCreator(ttk.Window):
         scrolledText = ScrolledText(
             master=root, width=width, height=height,
             autohide=True, bootstyle="bg-round",
-            padding=padding
+            padding=padding, vbar=hasVbar, hbar=hasHbar,
         )
         scrolledText.text.config(
             bg=bg, font=font, wrap=WORD, fg=fg
         )
         scrolledText.text.insert(1.0, text)
-        scrolledText.text.config(state=DISABLED)
         if hasBorder:
             scrolledText.text.config(highlightbackground=borderColor)
         else:
@@ -596,9 +597,22 @@ class ElementCreator(ttk.Window):
             )
         if isDisabled:
             scrolledText.text.config(state=DISABLED)
+        else:
+            scrolledText.text.config(state=NORMAL)
         self.updateWidgetsDict(root=root)
         self.widgetsDict[classname] = scrolledText
         return scrolledText
+
+    def threadCreator(self, target, daemon=True):
+        t = threading.Thread(target=target)
+        t.daemon = daemon
+        t.start()
+
+    def decodingBase64Data(self, b64):
+        decoded = Base64.decode(b64)
+        dataBytesIO = io.BytesIO(decoded)
+        im = Image.open(dataBytesIO)
+        return im
 
     def show_frame(self, cont):
         frame = self.frames[cont]
