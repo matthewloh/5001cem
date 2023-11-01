@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from views.mainDashboard import Dashboard
+
 import calendar
 import datetime as dt
-import re
 import os
+import re
 import threading
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
