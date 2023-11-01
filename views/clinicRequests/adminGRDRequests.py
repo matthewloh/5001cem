@@ -30,6 +30,7 @@ class AdminGRDRequest(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.loadClinicRequestStatus()
 
     def createFrames(self):
         pass
@@ -40,34 +41,94 @@ class AdminGRDRequest(Frame):
             x=0, y=0, classname="grdrequestsbg", root=self
         )
 
+        
+
         self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/adminrefreshbtn.png",
-            x=1391, y=136, classname="grdrequestsrefresh", root=self, 
+            x=680+440, y=351+84, classname="grdrequestsrefresh", root=self, 
             buttonFunction=lambda:print("refresh grd requests"), isPlaced=True
         )
 
-        exampleList = []
-        [exampleList.append("Thing " + str(i))
-         for i in range(30) if i % 2 == 0]
-        h = len(exampleList) * 120
-        if h < 600:
-            h = 600
-        self.exampleScrolledFrame = ScrolledFrame(
-            master=self, width=1420, height=h, autohide=True, bootstyle="officer-bg"
-        )
-        self.exampleScrolledFrame.grid_propagate(False)
-        self.exampleScrolledFrame.place(x=100, y=310, width=1450, height=620)
-        initialcoordinates = (20,20)
-        for request in exampleList:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/admingrdrequestsbg.png", x=x, y=y,
-                classname=f"request{request}", root=self.exampleScrolledFrame,
-                text=request, size=30, font=INTER,
-                isPlaced=True,
-            )
+        
 
-            initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
-            )
+    def loadClinicRequestStatus(self):
+        prisma = self.prisma
+        self.clinicstatusdetails = prisma.clinicenrolment.find_first(
+            where={
+                "clinicId": "clobupwii0003vtq0ozxna6zy",
+            },
+            include={
+                "govRegDocSystem": True,
+                 "clinic": True,
+            },    
+        )
+
+        clinicName = self.clinicstatusdetails.clinic.name
+        createdAt = datetime.strptime(str(self.clinicstatusdetails.createdAt)[:19], '%Y-%m-%d %H:%M:%S')
+        updatedAt = datetime.strptime(str(self.clinicstatusdetails.updatedAt)[:19], '%Y-%m-%d %H:%M:%S')
+        status = self.clinicstatusdetails.status
+
+        self.controller.textElement(
+            ipath="assets/Dashboard/ClinicAdminAssets/clinicstatusfields.png",
+            x=240+440, y=351+84, classname="grdstatusclinicname", root=self,
+            text=clinicName, size=22, font=INTER,
+            isPlaced=True
+        )
+
+        self.controller.textElement(
+            ipath="assets/Dashboard/ClinicAdminAssets/clinicstatusfields.png",
+            x=240+440, y=451+84, classname="grdstatuscreatedat", root=self,
+            text=str(createdAt), size=22, font=INTER,
+            isPlaced=True
+        )
+
+        self.controller.textElement(
+            ipath="assets/Dashboard/ClinicAdminAssets/clinicstatusfields.png",
+            x=240+440, y=551+84, classname="grdstatusupdatedat", root=self,
+            text=str(updatedAt), size=22, font=INTER,
+            isPlaced=True
+        )
+
+        self.controller.textElement(
+            ipath="assets/Dashboard/ClinicAdminAssets/clinicstatusfields.png",
+            x=240+440, y=651+84, classname="grdstatustext", root=self,
+            text=status, size=22, font=INTER,
+            isPlaced=True
+        )
+
+        if status == "ACCEPTED":
+            statusimg = "assets/Dashboard/ClinicAdminAssets/clinicaccepted.png"
+            statustext="Request accepted"
+            statusdes="Your GRD request has been accepted.\nYou can now add doctors to your clinic."
+
+        elif status == "REJECTED":
+            statusimg="assets\Dashboard\ClinicAdminAssets\clinicrejected.png"
+            statustext="Request rejected"
+            statusdes="Your GRD request has been rejected.\nPlease contact the GRD for more info."
+
+        else: 
+            statusimg="assets\Dashboard\ClinicAdminAssets\clinicpending.png"
+            statustext="Request pending"
+            statusdes="Your GRD request is still pending. Check\nback again later for updates."
+
+        self.grdrequeststatus = self.controller.labelCreator(
+            ipath=statusimg,
+            x=350+440, y=77+84, classname="grdrequeststatus", root=self, isPlaced=True
+        )
+
+        self.grdstatustext = self.controller.textElement(
+            ipath="assets/Dashboard/ClinicAdminAssets/requeststatustextbg.png",
+            x=290+440, y=177+84, classname="grdstatus",text=statustext, 
+            size=24, font=INTERBOLD,
+            root=self, isPlaced=True,
+            xoffset=-0.5
+        )
+
+        self.grdstatusdesc = self.controller.textElement(
+            ipath="assets/Dashboard/ClinicAdminAssets/requeststatusdesc.png",
+            x=182+440, y=220+84, classname="grdstatusdesc",
+            text=statusdes,
+            size=22, font=INTER,
+            root=self, isPlaced=True,
+            yIndex=-1
+        )

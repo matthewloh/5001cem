@@ -5,7 +5,7 @@ from tkinter import filedialog
 from typing import TYPE_CHECKING
 
 from prisma import Base64
-
+from views.citystatesdict import states_dict
 if TYPE_CHECKING:
     from views.registration import RegistrationPage
 import calendar
@@ -20,6 +20,7 @@ from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
 from ttkbootstrap.dialogs.dialogs import DatePickerDialog
+from prisma.errors import RecordNotFoundError
 from resource.basewindow import gridGenerator
 from resource.static import *
 from resource.basewindow import ElementCreator
@@ -107,7 +108,7 @@ class AdminRegistrationForm(Frame):
         self.clinicnameVar = StringVar()
         self.clinicaddressVar = StringVar()
         self.cliniccityVar = StringVar()
-        self.clinicstateVar = StringVar()
+        self.clinicStateVar = StringVar()
         self.cliniczipVar = StringVar()
         self.cliniccontactnumberVar = StringVar()
         self.clinichrsVar = StringVar()
@@ -145,7 +146,7 @@ class AdminRegistrationForm(Frame):
         )
         bg.tk.call("lower", bg._w)
         vars = [self.clinicnameVar, self.clinicaddressVar, self.cliniccityVar,
-                self.clinicstateVar, self.cliniczipVar, self.cliniccontactnumberVar
+                self.clinicStateVar, self.cliniczipVar, self.cliniccontactnumberVar
                 ]
         if any([var.get() != "" for var in vars]):
             self.loadClinicInformationInput()
@@ -198,15 +199,6 @@ class AdminRegistrationForm(Frame):
                 R: frame,
                 PH: "Clinic City"
             },
-            "clinicstate": {
-                X: 40,
-                Y: 480,
-                W: 300,
-                H: 80,
-                CN: "clinicstateentry",
-                R: frame,
-                PH: "Clinic State"
-            },
             "cliniczip": {
                 X: 380,
                 Y: 480,
@@ -225,25 +217,41 @@ class AdminRegistrationForm(Frame):
                 R: frame,
                 PH: "Clinic Hours"
             },
-            
         }
         for p in param:
             CREATOR(**param[p])
+        self.clinicStateVar = StringVar()
+        states = list(states_dict.keys())
+        self.menuframe = self.controller.frameCreator(
+            x=40, y=480, framewidth=300, frameheight=80,
+            bg=WHITE, classname="clinicstateframe", root=frame
+        )
+        self.clinicStateMenu = self.controller.menubuttonCreator(
+            x=0, y=0, width=300, height=80,
+            root=self.menuframe, classname="reg_clinicstate",
+            text=f"State", listofvalues=states,
+            variable=self.clinicStateVar, font=("Helvetica", 12),
+            command=lambda:
+                ToastNotification(title="Success", bootstyle="success", duration=3000,
+                                  message=f"State Selected: {self.clinicStateVar.get()}").show_toast()
+        )
 
     def loadClinicInformationInput(self):
         WD = self.controller.widgetsDict
         WD["clinicnameentry"].delete(0, END)
         WD["clinicaddressentry"].delete(0, END)
         WD["cliniccontactnumberentry"].delete(0, END)
+        self.menuframe.grid()
+        self.menuframe.tkraise()
+        self.clinicStateMenu.config(text=self.clinicStateVar.get())
         WD["cliniccityentry"].delete(0, END)
-        WD["clinicstateentry"].delete(0, END)
         WD["cliniczipentry"].delete(0, END)
         WD["clinicnameentry"].insert(0, self.clinicnameVar.get())
         WD["clinicaddressentry"].insert(0, self.clinicaddressVar.get())
         WD["cliniccontactnumberentry"].insert(
             0, self.cliniccontactnumberVar.get())
         WD["cliniccityentry"].insert(0, self.cliniccityVar.get())
-        WD["clinicstateentry"].insert(0, self.clinicstateVar.get())
+        self.clinicStateMenu.config(text=self.clinicStateVar.get())
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
         WD["clinichrsentry"].insert(0, self.clinichrsVar.get())
 
@@ -258,20 +266,18 @@ class AdminRegistrationForm(Frame):
             WD["cliniccontactnumberentry"].get())
         self.cliniccityVar.set(
             WD["cliniccityentry"].get())
-        self.clinicstateVar.set(
-            WD["clinicstateentry"].get())
         self.cliniczipVar.set(
             WD["cliniczipentry"].get())
         self.clinichrsVar.set(
             WD["clinichrsentry"].get())
-    
+
         msg = f"""
         Clinic Information Saved!
         Name: {self.clinicnameVar.get()}
         Address: {self.clinicaddressVar.get()}
         Contact Number: {self.cliniccontactnumberVar.get()}
         City: {self.cliniccityVar.get()}
-        State: {self.clinicstateVar.get()}
+        State: {self.clinicStateVar.get()}
         Zip: {self.cliniczipVar.get()} 
         Hours: {self.clinichrsVar.get()}
         """
@@ -280,9 +286,6 @@ class AdminRegistrationForm(Frame):
             message=msg,
             parent=self.inputframe
         )
-
-
-        
 
     def loadCloseAndSaveButtons(self):
         self.closebutton.grid()
@@ -295,6 +298,10 @@ class AdminRegistrationForm(Frame):
         for widgetname, widget in self.inputframe.children.items():
             if widgetname.endswith("hostfr"):
                 widget.grid_remove()
+        try:
+            self.menuframe.grid_remove()
+        except AttributeError:
+            pass
         self.inputframe.grid()
         self.inputframe.tkraise()
         infolabel = self.controller.textElement(
@@ -302,11 +309,15 @@ class AdminRegistrationForm(Frame):
             classname="inputformtext", root=frame, text=f"{option}",
             size=30, font=INTER
         )
-        bg = self.controller.labelCreator(
+        self.bg = self.controller.labelCreator(
             ipath="assets/Registration/Admin/UploadClinicImage.png", x=0, y=80,
             classname="clinicinfobg", root=frame
         )
-        bg.tk.call("lower", bg._w)
+        self.bg.tk.call("lower", self.bg._w)
+        try:
+            self.imageLabel.tk.call("raise", self.imageLabel._w)
+        except AttributeError:
+            pass
         self.uploadClinicImgBtn = self.controller.buttonCreator(
             ipath="assets/Registration/Admin/UploadImg.png", x=560, y=140,
             classname="uploadclinicimg", root=frame,
@@ -446,12 +457,7 @@ class AdminRegistrationForm(Frame):
 
     def confirmSubmission(self):
         prisma = self.prisma
-        WD = self.controller.widgetsDict
         # get the values from the entry boxes
-        entries = (WD["regfullname"], WD["regemail"], WD["regnric"],
-                   WD["regrace"], WD["regcontactnumber"], WD["countryoforigin"],
-                   WD["regpassent"], WD["regconfpassent"], WD["regaddressline1"],
-                   WD["regaddressline2"], WD["regpostcode"])
         self.country, self.state, self.city = self.parent.country.get(
         ), self.parent.state.get(), self.parent.city.get()
         dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
@@ -461,17 +467,18 @@ class AdminRegistrationForm(Frame):
             data={
                 "user": {
                     "create": {
-                        "fullName": entries[0].get(),
-                        "email": entries[1].get(),
-                        "nric_passport": entries[2].get(),
+                        "fullName": self.parent.fullname.get(),
+                        "email": self.parent.email.get(),
+                        "nric_passport": self.parent.nric_passno.get(),
                         "dateOfBirth": dateObj,
-                        "contactNo": entries[4].get(),
-                        "password": self.parent.encryptPassword(entries[6].get()),
-                        "race": entries[3].get(),
-                        "countryOfOrigin": WD["countryoforigin"].get(),
-                        "addressLine1": WD["regaddressline1"].get(),
-                        "addressLine2": WD["regaddressline2"].get(),
-                        "postcode": WD["regpostcode"].get(),
+                        "contactNo": self.parent.contactnumber.get(),
+                        "password": self.parent.encryptPassword(self.parent.password.get()),
+                        "race": self.parent.race.get().upper().replace(" ", "_"),
+                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                        "countryOfOrigin": self.parent.countryoforigin.get(),
+                        "addressLine1": self.parent.addressline1.get(),
+                        "addressLine2": self.parent.addressline2.get(),
+                        "postcode": self.parent.postcode.get(),
                         "city": self.city,
                         "state": self.state,
                         "country": self.country,
@@ -482,7 +489,7 @@ class AdminRegistrationForm(Frame):
                         "name": self.clinicnameVar.get(),
                         "address": self.clinicaddressVar.get(),
                         "city": self.cliniccityVar.get(),
-                        "state": self.clinicstateVar.get(),
+                        "state": self.clinicStateVar.get().upper().replace(" ", "_"),
                         "zip": self.cliniczipVar.get(),
                         "clinicImg": self.getBase64Data(),
                         "phoneNum": self.cliniccontactnumberVar.get(),
@@ -494,19 +501,21 @@ class AdminRegistrationForm(Frame):
                 "clinic": True,
             }
         )
-        govRegSystem = prisma.govregsystem.find_first(
-            where={
-                "state": self.state.upper(),
-            }
-        )
-        govRegSystem = prisma.govregsystem.create(
-            data={
-                "state": self.state.upper(),
-            }
-        )
+        try:
+            govRegSystem = prisma.govregsystem.find_first_or_raise(
+                where={
+                    "state": self.state.upper().replace(" ", "_")
+                }
+            )
+        except RecordNotFoundError:
+            govRegSystem = prisma.govregsystem.create(
+                data={
+                    "state": self.state.upper().replace(" ", "_")
+                }
+            )
         clinicEnrolment = prisma.clinicenrolment.create(
             data={
-                "clinic" : {
+                "clinic": {
                     "connect": {
                         "id": clinicAdmin.clinic.id
                     }
@@ -518,5 +527,5 @@ class AdminRegistrationForm(Frame):
                 },
                 "status": "PENDING"
             }
-            
+
         )

@@ -32,6 +32,7 @@ class OfficerBrowseClinic(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.loadManageClinics()
 
     def createFrames(self):
         pass
@@ -42,25 +43,21 @@ class OfficerBrowseClinic(Frame):
             x=0, y=0, classname="browseclinicbg", root=self
         )
 
-        exampleList = []
-        reg_idList = []
-        contactList = []
-        opHrsList = []
-        addressList = []
-        [exampleList.append("Thing " + str(i)) 
-         for i in range(30) if i % 2 == 0]
-        [reg_idList.append("Reg_id " + str(i)) 
-         for i in range(30) if i % 2 == 0]
-        [contactList.append("Contact " + str(i)) 
-         for i in range(30) if i % 2 == 0]
-        [opHrsList.append("OpHrs " + str(i)) 
-         for i in range(30) if i % 2 == 0]
-        [addressList.append("Address " + str(i))
-            for i in range(30) if i % 2 == 0]
+    def loadManageClinics(self):
+        prisma = self.prisma
+        manageclinics = prisma.clinicenrolment.find_many(
+            where={
+                "status":"APPROVED"
+            },
+            include={
+                "clinic":True,
+                "govRegDocSystem":True
+            }
+        )
         
         
         
-        h = len(exampleList) * 120
+        h = len(manageclinics) * 120
         if h < 600:
             h = 600
         self.exampleScrolledFrame = ScrolledFrame(
@@ -69,54 +66,61 @@ class OfficerBrowseClinic(Frame):
         self.exampleScrolledFrame.grid_propagate(False)
         self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
         initialcoordinates = (20, 20)
-        for thing, reg_id, contact, opHr, addr in zip(exampleList, reg_idList, contactList, opHrsList, addressList):
+
+        for clinics in manageclinics:
+            clinicName = clinics.clinic.name
+            clinicId = clinics.clinicId
+            contact = clinics.clinic.phoneNum
+            opHrs = clinics.clinic.clinicHrs
+            addr = clinics.clinic.address
+
             x = initialcoordinates[0]
             y = initialcoordinates[1]
             self.controller.textElement(
                 ipath="assets/Dashboard/clinicdetailsbg.png", x=x, y=y,
-                classname=f"thing{thing}", root=self.exampleScrolledFrame,
-                text=thing, size=30, font=INTER,
+                classname=f"name{clinicId}", root=self.exampleScrolledFrame,
+                text=clinicName, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=320, y=y+15,
-                classname=f"reg_id{reg_id}", root=self.exampleScrolledFrame,
-                text=reg_id, size=30, font=INTER,
+                classname=f"clinicid{clinicId}", root=self.exampleScrolledFrame,
+                text=clinicId, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=520, y=y+15,
-                classname=f"contact{contact}", root=self.exampleScrolledFrame,
+                classname=f"contact{clinicId}", root=self.exampleScrolledFrame,
                 text=contact, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=760, y=y+15,
-                classname=f"opHr{opHr}", root=self.exampleScrolledFrame,
-                text=opHr, size=30, font=INTER,
+                classname=f"opHr{clinicId}", root=self.exampleScrolledFrame,
+                text=opHrs, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.textElement(
                 ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=1000, y=y+15,
-                classname=f"addr{addr}", root=self.exampleScrolledFrame,
+                classname=f"addr{clinicId}", root=self.exampleScrolledFrame,
                 text=addr, size=30, font=INTER,
                 isPlaced=True,
             )
 
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
-                classname=f"hideindicator{thing}", root=self.exampleScrolledFrame,
-                x=1300, y=y+20, buttonFunction=lambda t = thing: [print(f"hide {t}")],
+                classname=f"hideindicator{clinicId}", root=self.exampleScrolledFrame,
+                x=1300, y=y+20, buttonFunction=lambda t = clinicId: [print(f"hide {t}")],
                 isPlaced=True,
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/dustbin.png",
-                classname=f"dustbin{thing}", root=self.exampleScrolledFrame,
-                x=1380, y=y+20, buttonFunction=lambda t = thing: [print(f"delete {t}")],
+                classname=f"dustbin{clinicId}", root=self.exampleScrolledFrame,
+                x=1380, y=y+20, buttonFunction=lambda t = clinicId: [print(f"delete {t}")],
                 isPlaced=True
             )
             initialcoordinates = (
