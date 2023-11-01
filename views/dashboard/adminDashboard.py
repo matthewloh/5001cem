@@ -39,8 +39,9 @@ class ClinicAdminDashboard(Frame):
         self.createFrames()
         self.createElements()
         self.dashboardButtons()
-        self.createList()
         self.loadDoctorsAndFilterBySpeciality()
+        self.loadDoctorsAndFilterByAppointment()
+        self.createList()
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -121,7 +122,7 @@ class ClinicAdminDashboard(Frame):
 
     def unloadStackedFrames(self):
         self.ListFrame.grid_remove()
-       
+
     def createElements(self):
         self.bg = self.controller.labelCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/Homepage.png",
@@ -155,7 +156,7 @@ class ClinicAdminDashboard(Frame):
                 self.loadDoctorsBySpeciality(self.specialitySelected.get())],
             text="Select Speciality"
         )
-    
+
     def loadDoctorsAndFilterByAppointment(self):
         prisma = self.prisma
         self.doctors = prisma.doctor.find_many(
@@ -167,7 +168,8 @@ class ClinicAdminDashboard(Frame):
         for doctor in self.doctors:
             if doctor.doctorApptSchedule not in self.appointmentsAndDoctors.keys():
                 self.appointmentsAndDoctors[doctor.doctorApptSchedule] = []
-            self.appointmentsAndDoctors[doctor.doctorApptSchedule].append(doctor)
+            self.appointmentsAndDoctors[doctor.doctorApptSchedule].append(
+                doctor)
         self.doctorApptScheduleSelected = StringVar()
         keyOptionsForMenuButton = list(self.appointmentsAndDoctors.keys())
         self.doctorApptScheduleMenuButton = self.controller.menubuttonCreator(
@@ -176,9 +178,8 @@ class ClinicAdminDashboard(Frame):
             variable=self.specialitySelected,
             command=lambda: [
                 self.loadDoctorsAndFilterByAppointment(self.doctorApptScheduleSelected.get())],
-            text="Select doctorApptSchedule"
+            text="Select Time Schedules"
         )
-
 
     def loadDoctorsBySpeciality(self, option):
         doctors = self.specialitiesAndDoctors[option]
@@ -248,11 +249,11 @@ class ClinicAdminDashboard(Frame):
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
-            x = initialCoordinates[0]
-            y = initialCoordinates[1]
+            X = initialCoordinates[0]
+            Y = initialCoordinates[1]
             self.controller.textElement(
                 ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrolldashboardbutton.png",
-                x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
+                x=X, y=Y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
                 text=f"{doctor.user.fullName}", size=30, font=INTER,
                 isPlaced=True,
                 buttonFunction=lambda: [print(doctor)]
@@ -271,19 +272,59 @@ class ClinicAdminDashboard(Frame):
             master=self.ListFrame, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.ListScrolledFrame.grid_propagate(False)
-        self.ListScrolledFrame.place(x=80, y=280, width=1500, height=650)
-        initialcoordinates = (20,20)
+        self.ListScrolledFrame.place(x=60, y=280, width=1520, height=650)
+        initialcoordinates = (20, 20)
         for list in exampleList:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
+            X = initialcoordinates[0]
+            Y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
                 classname=f"list{list}", root=self.ListScrolledFrame,
-                text=list, size=30, font=INTER,
+                text="", size=30, font=INTER,
                 isPlaced=True,
             )
-            initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
-            )
-
     
+        d = {
+            "scrollButton": [
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+            ]
+        }
+        self.viewdoctorbutton = self.controller.buttonCreator(
+            ipath=d["scrollButton"][0],
+            x=X+1280, y=Y+30, classname=f"viewbutton{list}", root=self.ListScrolledFrame,
+                buttonFunction=lambda: [print('view')],
+                isPlaced=True
+        )
+        self.deletedoctorbutton = self.controller.buttonCreator(
+            ipath=d["scrollButton"][1],
+            x=X+1360, y=Y+30, classname=f"deletebutton{list}", root=self.ListScrolledFrame,
+                buttonFunction=lambda: [print('delete')],
+                isPlaced=True
+        )
+            
+        doctorName = ScrolledText(master=self.ListScrolledFrame, width=200, height=60,
+                              autohide=True, bootstyle="bg-round" , padding=0 
+        )  
+        doctorName.text.config(
+            bg="#f1feff", font=("Inter",12), wrap=WORD, fg=BLACK
+        )
+        doctorName.text.insert(1.0, doctor.user.fullName)
+        doctorName.text.config(state=DISABLED)
+        doctorName.place(x= X+30, y=Y+30,width=200, height=60 )
+
+        doctorSpeciality = ScrolledText(master=self.ListScrolledFrame, width=200, height=60,
+                              autohide=True, bootstyle="bg-round" , padding=0 
+        )  
+        doctorSpeciality.text.config(
+            bg="#f1feff", font=("Inter",12), wrap=WORD, fg=BLACK
+        )
+        doctorSpeciality.text.insert(1.0, doctor.speciality.user.fullName)
+        doctorSpeciality.text.config(state=DISABLED)
+        doctorSpeciality.place(x= X+290, y=Y+30,width=200, height=60 )
+
+        initialcoordinates = (
+            initialcoordinates[0], initialcoordinates[1] + 120
+        )
+
+       

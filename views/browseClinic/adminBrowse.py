@@ -59,15 +59,34 @@ class AdminBrowseClinic(Frame):
         self.manageClinicScrolledFrame.place(x=60, y=280, width=1540, height=640)
         initialcoordinates = (20,20)
         for manageClinic in exampleList:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
+            X = initialcoordinates[0]
+            Y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
                 classname=f"manageClinic{manageClinic}", root=self.manageClinicScrolledFrame,
                 text=manageClinic, size=30, font=INTER,
                 isPlaced=True,
-            )
-
-            initialcoordinates = (
+            )   
+        
+        d = {
+            "clinicButton": [
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+            ]
+        }
+        self.viewClinicbutton = self.controller.buttonCreator(
+            ipath=d["clinicButton"][0],
+            x=X+1280, y=Y+30, classname=f"viewbutton{manageClinic}", root=self.manageClinicScrolledFrame,
+                buttonFunction=lambda: [print('clinicview')],
+                isPlaced=True
+        )
+        self.deleteClinicbutton = self.controller.buttonCreator(
+            ipath=d["clinicButton"][1],
+            x=X+1360, y=Y+30, classname=f"deletebutton{manageClinic}", root=self.manageClinicScrolledFrame,
+                buttonFunction=lambda: [print('clinicdelete')],
+                isPlaced=True
+        )
+        
+        initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )

@@ -187,15 +187,33 @@ class AdminManageAppointments(Frame):
         self.viewAppointmentScrolledFrame.place(x=70, y=260, width=1520, height=420)
         initialcoordinates = (20,20)
         for appointment in exampleList:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
+            X = initialcoordinates[0]
+            Y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
                 classname=f"appointment{appointment}", root=self.viewAppointmentScrolledFrame,
                 text=appointment, size=30, font=INTER,
                 isPlaced=True,
             )
-
+            d = {
+            "appointmentButton": [
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+            ]
+            }
+            self.viewbutton = self.controller.buttonCreator(
+            ipath=d["appointmentButton"][0],
+            x=X+1280, y=Y+30, classname=f"viewbutton{appointment}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda: [print('view')],
+                isPlaced=True
+            )
+            self.deletebutton = self.controller.buttonCreator(
+            ipath=d["appointmentButton"][1],
+            x=X+1360, y=Y+30, classname=f"deletebutton{appointment}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda: [print('delete')],
+                isPlaced=True
+            )
             initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
+        

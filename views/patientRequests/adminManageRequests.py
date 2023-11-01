@@ -51,22 +51,41 @@ class AdminManagePatientRequests(Frame):
             master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.viewAppointmentScrolledFrame.grid_propagate(False)
-        self.viewAppointmentScrolledFrame.place(x=85, y=240, width=1500, height=280)
+        self.viewAppointmentScrolledFrame.place(x=60, y=240, width=1500, height=280)
         initialcoordinates = (20,20)
-        for appointment in exampleList:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
+        for request in exampleList:
+            X = initialcoordinates[0]
+            Y = initialcoordinates[1]
             self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
-                classname=f"appointment{appointment}", root=self.viewAppointmentScrolledFrame,
-                text=appointment, size=30, font=INTER,
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
+                classname=f"request{request}", root=self.viewAppointmentScrolledFrame,
+                text=request, size=30, font=INTER,
                 isPlaced=True,
-            )
+            )   
 
-            initialcoordinates = (
+        d = {
+            "requestButton": [
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/accept.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/reject.png",
+            ]
+        }
+        self.acceptbutton = self.controller.buttonCreator(
+            ipath=d["requestButton"][0],
+            x=X+1060, y=Y+30, classname=f"acceptbutton{request}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda: [print('accept')],
+                isPlaced=True
+        )
+        self.rejectbutton = self.controller.buttonCreator(
+            ipath=d["requestButton"][1],
+            x=X+1260, y=Y+30, classname=f"rejectbutton{request}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda: [print('reject')],
+                isPlaced=True
+        )
+
+        initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
-
+        
     def createPatientList(self):
         prisma = self.prisma
         patientLists = prisma.patient.find_many(

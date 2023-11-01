@@ -20,13 +20,13 @@ model User {
   password         String?
   countryOfOrigin  String?
   race             String?
-  gender           Gender?            @default(PREFER_NOT_TO_SAY)
   addressLine1     String?
   addressLine2     String?
   city             String?
   state            String?
   postcode         String?
   country          String?
+  gender           Gender?            @default(PREFER_NOT_TO_SAY)
   patient          Patient[]
   clinicAdmin      ClinicAdmin[]
   doctor           Doctor[]
@@ -56,11 +56,11 @@ model ClinicAdmin {
 
 model Doctor {
   id                 String               @id @default(cuid())
-  employmentHistory  String?              @db.Text
-  educationHistory   String?              @db.Text
   speciality         Speciality?          @default(NONE)
   userId             String
   clinicId           String?
+  educationHistory   String?              @db.Text
+  employmentHistory  String?              @db.Text
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments       Appointment[]
   doctorApptSchedule DoctorApptSchedule[]
@@ -174,8 +174,8 @@ model PatientHealthRecord {
   pastMedication    String? @db.Text
   pastSurgery       String? @db.Text
   weight            Float?  @db.Float
-  patient           Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
   patientId         String  @unique
+  patient           Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model doctorPrescription {
@@ -193,6 +193,15 @@ model doctorPrescription {
   time      String
   duration  String
   details   String
+}
+
+model GovHealthOfficerToGovRegSystem {
+  A String
+  B String
+
+  @@unique([A, B], map: "_GovHealthOfficerToGovRegSystem_AB_unique")
+  @@index([B], map: "_GovHealthOfficerToGovRegSystem_B_index")
+  @@map("_GovHealthOfficerToGovRegSystem")
 }
 
 enum Gender {
@@ -255,11 +264,4 @@ enum GovRegSystem_state {
   SELANGOR
   TERENGGANU
   WILAYAH_PERSEKUTUAN
-}
-
-enum User_gender {
-  MALE
-  FEMALE
-  OTHER
-  PREFER_NOT_TO_SAY
 }
