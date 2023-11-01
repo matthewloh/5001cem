@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.dashboard.officerDashboard import GovOfficerDashboard
 from abc import ABC, abstractmethod
 import calendar
 import re
@@ -22,17 +26,17 @@ import tkintermapview
 
 
 class OfficerBrowseClinic(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: GovOfficerDashboard, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="browseclinicpanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-        
+        self.user = self.parent.user
         self.prisma = self.controller.mainPrisma
+        
         self.createFrames()
         self.createElements()
-        self.loadManageClinics()
 
     def createFrames(self):
         pass
@@ -43,90 +47,101 @@ class OfficerBrowseClinic(Frame):
             x=0, y=0, classname="browseclinicbg", root=self
         )
 
-    def loadManageClinics(self):
-        prisma = self.prisma
-        manageclinics = prisma.clinicenrolment.find_many(
-            where={
-                "status":"APPROVED"
-            },
-            include={
-                "clinic":True,
-                "govRegDocSystem":True
-            }
-        )
-        
-        
-        
-        h = len(manageclinics) * 120
+        self.initializeManageClinicsSystem()
+        self.loadManageClinicsFrame()
+
+    def loadManageClinicsFrame(self):
+        h = len(self.manageClinics.programmeRegistration) * 120
         if h < 600:
             h = 600
-        self.exampleScrolledFrame = ScrolledFrame(
+        self.manageClinicsFrame = ScrolledFrame(
             master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
-        self.exampleScrolledFrame.grid_propagate(False)
-        self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
-        initialcoordinates = (20, 20)
+        self.manageClinicsFrame.grid_propagate(False)
+        self.manageClinicsFrame.place(x=80, y=280, width=1500, height=620)
+        COORDS = (20, 20)
 
-        for clinics in manageclinics:
-            clinicName = clinics.clinic.name
-            clinicId = clinics.clinicId
-            contact = clinics.clinic.phoneNum
-            opHrs = clinics.clinic.clinicHrs
-            addr = clinics.clinic.address
-
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath="assets/Dashboard/clinicdetailsbg.png", x=x, y=y,
-                classname=f"name{clinicId}", root=self.exampleScrolledFrame,
-                text=clinicName, size=30, font=INTER,
+        for clinicEnrolment in self.manageClinics.programmeRegistration:
+            clinic = clinicEnrolment.clinic
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.manageClinicsFrame
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{clinic.id}_bg", root=R,
+                ipath="assets\Dashboard\clinicdetailsbg.png",
                 isPlaced=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=320, y=y+15,
-                classname=f"clinicid{clinicId}", root=self.exampleScrolledFrame,
-                text=clinicId, size=30, font=INTER,
-                isPlaced=True,
+            clinicName = self.controller.scrolledTextCreator(
+                x=60, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_name",
+                bg="#f1feff", hasBorder=False, text=clinic.name,
+                font=("Inter", 14), fg=BLACK, 
+                isDisabled=True, isJustified=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=520, y=y+15,
-                classname=f"contact{clinicId}", root=self.exampleScrolledFrame,
-                text=contact, size=30, font=INTER,
-                isPlaced=True,
+            clinicId = self.controller.scrolledTextCreator(
+                x=290, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_id",
+                bg="#f1feff", hasBorder=False, text=clinic.id,
+                font=("Inter", 14), fg=BLACK, 
+                isDisabled=True, isJustified=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=760, y=y+15,
-                classname=f"opHr{clinicId}", root=self.exampleScrolledFrame,
-                text=opHrs, size=30, font=INTER,
-                isPlaced=True,
+            clinicPhone = self.controller.scrolledTextCreator(
+                x=540, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_phone",
+                bg="#f1feff", hasBorder=False, text=clinic.phoneNum,
+                font=("Inter", 14), fg=BLACK, 
+                isDisabled=True, isJustified=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=1000, y=y+15,
-                classname=f"addr{clinicId}", root=self.exampleScrolledFrame,
-                text=addr, size=30, font=INTER,
-                isPlaced=True,
+            clinicHrs = self.controller.scrolledTextCreator(
+                x=780, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_hrs",
+                bg="#f1feff", hasBorder=False, text=clinic.clinicHrs,
+                font=("Inter", 14), fg=BLACK, 
+                isDisabled=True, isJustified=True,
+            )
+
+            clinicAddress = self.controller.scrolledTextCreator(
+                x=1020, y=Y+20, width=240, height=60, root=R, classname=f"{clinic.id}_address",
+                bg="#f1feff", hasBorder=False, text=clinic.address,
+                font=("Inter", 14), fg=BLACK, 
+                isDisabled=True, isJustified=True,
             )
 
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
-                classname=f"hideindicator{clinicId}", root=self.exampleScrolledFrame,
-                x=1300, y=y+20, buttonFunction=lambda t = clinicId: [print(f"hide {t}")],
+                classname=f"hideindicator{clinic.id}", root=R,
+                x=1300, y=Y+20, buttonFunction=lambda t = clinic.id: [print(f"hide {t}")],
                 isPlaced=True,
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/dustbin.png",
-                classname=f"dustbin{clinicId}", root=self.exampleScrolledFrame,
-                x=1380, y=y+20, buttonFunction=lambda t = clinicId: [print(f"delete {t}")],
+                classname=f"dustbin{clinic.id}", root=R,
+                x=1380, y=Y+20, buttonFunction=lambda t = clinic.id: [print(f"delete {t}")],
                 isPlaced=True
             )
-            initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
+            COORDS = (
+                COORDS[0], COORDS[1] + 120
             )
 
+    def initializeManageClinicsSystem(self):
+        prisma = self.prisma
+        self.manageClinics = prisma.govregsystem.find_first(
+            where={
+                "supervisingOfficer": {"some": {"userId": self.user.id}},
+            },
+            include={
+                "programmeRegistration":{
+                                            "where": {
+                                                "status": "APPROVED"
+                                            },
+                                            "include": {
+                                                "clinic": True
+                                            }
+                                        }
+            }
+            
+        )
+         
     
 
     # def loadClinicsRequests(self):

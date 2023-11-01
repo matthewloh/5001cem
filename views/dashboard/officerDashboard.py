@@ -27,7 +27,7 @@ from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
 
 
-class GovOfficerDashboard(Frame):
+class  GovOfficerDashboard(Frame):
     def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
@@ -52,6 +52,8 @@ class GovOfficerDashboard(Frame):
         )
 
         self.initializeGovRegSystem()
+        self.initializeApprovedClinicDetails()
+        self.initializeApprovedDoctorDetails()
         self.loadSupervisedClinicsOnMap()
         self.loadClinicsIntoSideFrame()
         self.loadClinicsIntoBottomFrame()
@@ -74,7 +76,7 @@ class GovOfficerDashboard(Frame):
             self.controller.labelCreator(
                 x=X, y=Y, classname=f"{clinic.id}_bg", root=R,
                 ipath="assets/Dashboard/OfficerAssets/clinicsstatusbg.png",
-                isPlaced=True,
+                isPlaced=True, bg="#f1feff"
             )
             clinicname = self.controller.scrolledTextCreator(
                 x=X+20, y=Y, width=180, height=100, root=R, classname=f"{clinic.id}_name",
@@ -96,7 +98,7 @@ class GovOfficerDashboard(Frame):
             )
             clinicStatus = self.controller.buttonCreator(
                 x=X+660, y=Y+20, classname=f"{clinic.id}_status", root=R,
-                ipath="assets/Dashboard/OfficerAssets/Approved.png" if clinicEnrolment.status == "APPROVED" else "assets/Dashboard/OfficerAssets/Pending.png",
+                ipath="assets/Dashboard/OfficerAssets/approved.png" if clinicEnrolment.status == "APPROVED" else "assets/Dashboard/OfficerAssets/pending.png",
                 buttonFunction=lambda c=clinic: [self.updateClinicStatus(c)],
                 isPlaced=True
             )
@@ -105,26 +107,75 @@ class GovOfficerDashboard(Frame):
             )
 
     def loadClinicsIntoBottomFrame(self):
-        # h = len(self.systemManaged.programmeRegistration) * 120
-        # if h < 760:
-        #     h = 760
-        # self.clinicsListFrame = ScrolledFrame(
-        #     master=self, width=780, height=h, autohide=True, bootstyle="officer-bg"
-        # )
-        # self.clinicsListFrame.grid_propagate(False)
-        # self.clinicsListFrame.place(x=880, y=1040, width=780, height=760)
-        # COORDS = (20, 20)
-        # for clinicEnrolment in self.systemManaged.programmeRegistration:
-        #     clinic = clinicEnrolment.clinic
-        #     X = COORDS[0]
-        #     Y = COORDS[1]
-        #     R = self.clinicsListFrame
-        #     self.controller.labelCreator(
-        #         x=X, y=Y, classname=f"{clinic.id}_bg", root=R,
-        #         ipath="assets/Dashboard/OfficerAssets/clinicsstatusbg.png",
-        #         isPlaced=True,
-        #     )
-        pass
+        h = len(self.approvedClinics.programmeRegistration) * 120
+        if h < 185:
+            h = 185
+        self.clinicStatusFrame = ScrolledFrame(
+            master=self, width=840, height=h, autohide=True, bootstyle="officer-bg"
+        )
+        self.clinicStatusFrame.grid_propagate(False)
+        self.clinicStatusFrame.place(x=20, y=820, width=840, height=185)
+        COORDS = (20, 20)
+        for clinicEnrolment in self.approvedClinics.programmeRegistration:
+            clinic = clinicEnrolment.clinic
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.clinicStatusFrame
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{clinic.id}_statusname", root=R,
+                ipath="assets/Dashboard/OfficerAssets/clinicstatusrectangle.png",
+                isPlaced=True,
+            )
+            clinicname = self.controller.scrolledTextCreator(
+                x=X+20, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_name",
+                bg="#f1feff", hasBorder=False,
+                text=clinic.name, font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True,
+
+            )
+            clinicContact = self.controller.scrolledTextCreator(
+                x=X+210, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_phone_num",
+                bg="#f1feff", hasBorder=False,
+                text=clinic.phoneNum, font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True
+
+            )
+            # clinicDoctor = self.controller.scrolledTextCreator(
+            #     x=X+420, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_doctor",
+            #     bg="#f1feff", hasBorder=False,
+            #     text=(self.doctorDetails.user.fullName), font=("Inter", 12), fg=BLACK,
+            #     isDisabled=True, isJustified=True, 
+            # )
+
+            clinicPatients = self.controller.scrolledTextCreator(
+                x=X+620, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_patients",
+                bg="#f1feff", hasBorder=False,
+                text="patient", font=("Inter", 12), fg=BLACK,
+                isDisabled=True, isJustified=True,
+            )
+
+            COORDS = (
+                COORDS[0], COORDS[1] + 75
+            )
+
+        for  user in self.doctorDetails.user:
+            X = 20
+            Y = 20
+            R = self.clinicStatusFrame
+            clinicDoctor = self.controller.scrolledTextCreator(
+                x=X+420, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_doctor",
+                bg="#f1feff", hasBorder=False,
+                text=str(user.count), font=("Inter", 12), fg=BLACK,
+                isDisabled=True, isJustified=True, 
+            )
+
+            COORDS = (
+                X, Y + 75
+            )
+            
+
+
+
 
     def loadSupervisedClinicsOnMap(self):
         self.loc = GoogleV3(api_key=os.getenv(
@@ -154,9 +205,51 @@ class GovOfficerDashboard(Frame):
                 "supervisingOfficer": {"some": {"userId": self.user.id}}
             },
             include={
-                "programmeRegistration": {"include": {"clinic": True}}
+                "programmeRegistration": {
+                "include": 
+                {
+                    "clinic": True
+                    }
+                }
             }
         )
+
+    def initializeApprovedClinicDetails(self):
+        self.approvedClinics = self.prisma.govregsystem.find_first(
+            where={
+                "supervisingOfficer": {"some": {"userId": self.user.id}}
+            },
+            include={
+                "programmeRegistration": {
+                "where":{
+                    "status":"APPROVED"
+                },
+                "include": 
+                {
+                    "clinic": True
+                    }
+                }
+            }
+        )
+
+        self.doctorDetails = self.prisma.doctor.find_first(
+            where={
+                "clinic": {"is":{"state":self.systemManaged.state,
+                                 "clinicRegistration":{
+                                     "some":{"status":"APPROVED"}
+                                 }}},
+            },
+            include={"clinic":True, "user":True}
+        )
+        
+    
+    def initializeApprovedDoctorDetails(self):
+        pass
+        
+            
+        
+        # for clinic in self.doctorDetails.:
+        #     clinics  = clinic.
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
