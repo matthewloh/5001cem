@@ -1,5 +1,5 @@
-# from ctypes import windll
 import io
+import sys
 import threading
 from tkinter import FLAT, NSEW, Frame, Label
 from prisma import Base64, Prisma
@@ -16,14 +16,21 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 # More information on the ctypes library can be found here:
 # https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
 # https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-# GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
-# SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
+# Check if operating system is windows
+
+if sys.platform == "win32":
+    # If it is, import the ctypes library
+    from ctypes import windll
+    # GetWindowLongPtrW is a function that gets the window's parent
+    GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
+    # SetWindowLongPtrW is a function that sets the window's
+    SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
 
 
-# def get_handle(root) -> int:
-#     root.update_idletasks()
-#     # This gets the window's parent same as `ctypes.windll.user32.GetParent`
-#     return GetWindowLongPtrW(root.winfo_id(), GWLP_HWNDPARENT)
+def get_handle(root) -> int:
+    root.update_idletasks()
+    # This gets the window's parent same as `ctypes.windll.user32.GetParent`
+    return GetWindowLongPtrW(root.winfo_id(), GWLP_HWNDPARENT)
 
 
 # user32 = windll.user32
@@ -638,19 +645,19 @@ class ElementCreator(ttk.Window):
     #     colorkey = win32api.RGB(red, green, blue)
     #     return colorkey
 
-    # def togglethewindowbar(self) -> None:
-    #     self.deletethewindowbar() if self.state() == "normal" else self.showthewindowbar()
+    def togglethewindowbar(self) -> None:
+        self.deletethewindowbar() if self.state() == "normal" else self.showthewindowbar()
 
-    # def deletethewindowbar(self) -> None:
-    #     hwnd: int = get_handle(self)
-    #     style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
-    #     style &= ~(WS_CAPTION | WS_THICKFRAME)
-    #     SetWindowLongPtrW(hwnd, GWL_STYLE, style)
-    #     self.state("zoomed")
+    def deletethewindowbar(self) -> None:
+        hwnd: int = get_handle(self)
+        style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
+        style &= ~(WS_CAPTION | WS_THICKFRAME)
+        SetWindowLongPtrW(hwnd, GWL_STYLE, style)
+        self.state("zoomed")
 
-    # def showthewindowbar(self) -> None:
-    #     hwnd: int = get_handle(self)
-    #     style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
-    #     style |= WS_CAPTION | WS_THICKFRAME
-    #     SetWindowLongPtrW(hwnd, GWL_STYLE, style)
-    #     self.state("normal")
+    def showthewindowbar(self) -> None:
+        hwnd: int = get_handle(self)
+        style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
+        style |= WS_CAPTION | WS_THICKFRAME
+        SetWindowLongPtrW(hwnd, GWL_STYLE, style)
+        self.state("normal")
