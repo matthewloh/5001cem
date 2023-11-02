@@ -153,7 +153,7 @@ class PatientBrowseClinic(Frame):
         )
         self.clinicsListFrame.place(x=880, y=260, width=780, height=760)
         COORDS = (20, 20)
-        FONT = ("Inter Bold", 16)
+        FONT = ("Inter", 14)
         for clinic in self.approvedClinics:
             X = COORDS[0]
             Y = COORDS[1]
@@ -179,7 +179,7 @@ class PatientBrowseClinic(Frame):
             clinicDistance = self.controller.scrolledTextCreator(
                 x=X+460, y=Y, width=120, height=100, root=R, classname=f"{clinic.id}_distance",
                 bg="#f1feff", hasBorder=False,
-                text=dist, font=("Inter Bold", 24), fg=BLACK,
+                text=dist, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified=True
             )
             loadClinic = self.controller.buttonCreator(
@@ -193,7 +193,7 @@ class PatientBrowseClinic(Frame):
             )
 
     def loadClinicsIntoBottomFrame(self):
-        h = len(self.approvedClinics) * 80
+        h = len(self.approvedClinics) * 100
         h = 180 if h < 180 else h
         self.bottomClinicsListFrame = ScrolledFrame(
             master=self, width=840, height=h, autohide=True, bootstyle="bg-rounded"
@@ -204,38 +204,38 @@ class PatientBrowseClinic(Frame):
             X = COORDS[0]
             Y = COORDS[1]
             R = self.bottomClinicsListFrame
-            FONT = ("Inter Bold", 16)
+            FONT = ("Inter", 16)
             self.controller.labelCreator(
                 x=X, y=Y, classname=f"{clinic.id}_bottom_bg", root=R,
                 ipath="assets/BrowseClinic/Patient/BottomRow.png",
                 isPlaced=True,
             )
             clinicname = self.controller.scrolledTextCreator(
-                x=X+20, y=Y, width=120, height=60, root=R, classname=f"{clinic.id}_name_bottom",
+                x=X+20, y=Y, width=120, height=80, root=R, classname=f"{clinic.id}_name_bottom",
                 bg="#f1feff", hasBorder=False,
                 text=clinic.name, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
-            specialities = [doctor.speciality for doctor in clinic.doctor]
+            specialities = [doctor.speciality.title() for doctor in clinic.doctor]
             specialityText = ", ".join(specialities) if len(
                 specialities) > 0 else "No doctors yet, check back soon!"
             clinicSpecialities = self.controller.scrolledTextCreator(
-                x=X+180, y=Y, width=140, height=60, root=R, classname=f"{clinic.id}_specialities_bottom",
+                x=X+180, y=Y, width=180, height=80, root=R, classname=f"{clinic.id}_specialities_bottom",
                 bg="#f1feff", hasBorder=False,
-                text=specialityText, font=FONT, fg=BLACK,
+                text=specialityText, font=("Inter", 12), fg=BLACK,
                 isDisabled=True, isJustified=True
             )
             doctorNum = len(clinic.doctor)
             clinicDoctors = self.controller.scrolledTextCreator(
-                x=X+400, y=Y, width=80, height=60, root=R, classname=f"{clinic.id}_doctors_bottom",
+                x=X+400, y=Y, width=80, height=80, root=R, classname=f"{clinic.id}_doctors_bottom",
                 bg="#f1feff", hasBorder=False,
                 text=doctorNum, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified=True
             )
             clinicHours = self.controller.scrolledTextCreator(
-                x=X+520, y=Y, width=200, height=60, root=R, classname=f"{clinic.id}_hours_bottom",
+                x=X+520, y=Y, width=200, height=80, root=R, classname=f"{clinic.id}_hours_bottom",
                 bg="#f1feff", hasBorder=False,
-                text=f"{clinic.clinicHrs}", font=FONT, fg=BLACK,
+                text=f"{clinic.clinicHrs}", font=("Inter", 12), fg=BLACK,
                 isDisabled=True, isJustified=True
             )
             self.controller.buttonCreator(
@@ -246,7 +246,7 @@ class PatientBrowseClinic(Frame):
                 isPlaced=True
             )
             COORDS = (
-                COORDS[0], COORDS[1] + 80
+                COORDS[0], COORDS[1] + 100
             )
 
     def loadClinic(self, clinic: Clinic):
@@ -287,10 +287,11 @@ class PatientBrowseClinic(Frame):
 
     def loadCreateAppointmentRequestForm(self):
         self.formScrolledFrame = ScrolledFrame(
-            master=self.loadedClinicFrame, width=720, height=1240, autohide=True, bootstyle="bg-rounded"
+            master=self.loadedClinicFrame, width=720, height=1260, autohide=True, bootstyle="bg-rounded"
         )
         self.formScrolledFrame.place(x=900, y=120, width=720, height=900)
         clinic = self.viewedClinic
+        FONT = ("Inter Medium", 12)
         R = self.formScrolledFrame
         PAR = "patient_appointment_request"
         Q1 = "Where would you like to have your consultation?"
@@ -301,13 +302,13 @@ class PatientBrowseClinic(Frame):
         self.consultationLocationTitle = self.controller.scrolledTextCreator(
             x=0, y=0, width=720, height=40, root=R, classname=f"{PAR}_location_title",
             bg="#ecf2ff", hasBorder=False,
-            text=Q1, font=("Inter Medium", 18), fg=BLACK,
+            text=Q1, font=FONT, fg=BLACK,
             isDisabled=True, isJustified=True
         )
         self.consultationLocationText = self.controller.scrolledTextCreator(
             x=180, y=40, width=520, height=120, root=R, classname=f"{PAR}_location_text",
             bg=WHITE, hasBorder=BLACK,
-            text="", font=("Inter Medium", 18), fg=BLACK,
+            text="", font=FONT, fg=BLACK,
             isDisabled=False, isJustified=True
         )
         self.whichLocation = IntVar()
@@ -362,7 +363,7 @@ class PatientBrowseClinic(Frame):
         self.consultationDateTitle = self.controller.scrolledTextCreator(
             x=0, y=180, width=720, height=60, root=R, classname=f"{PAR}_date_title",
             bg="#ecf2ff", hasBorder=False,
-            text=Q2, font=("Inter Medium", 18), fg=BLACK,
+            text=Q2, font=FONT, fg=BLACK,
             isDisabled=True, isJustified=True
         )
         self.consultationDatePickerBtn = self.controller.buttonCreator(
@@ -376,7 +377,7 @@ class PatientBrowseClinic(Frame):
         self.consultationDateText = self.controller.scrolledTextCreator(
             x=180, y=240, width=520, height=100, root=R, classname=f"{PAR}_date_text",
             bg=WHITE, hasBorder=BLACK,
-            text="", font=("Inter Medium", 18), fg=BLACK,
+            text="", font=FONT, fg=BLACK,
             isDisabled=False, isJustified=True, 
         )
         self.consultationDateText.text.insert(END, "Choose a date")
@@ -384,50 +385,50 @@ class PatientBrowseClinic(Frame):
         self.consultationTimeTitle = self.controller.scrolledTextCreator(
             x=0, y=360, width=720, height=60, root=R, classname=f"{PAR}_time_title",
             bg="#ecf2ff", hasBorder=False,
-            text=Q3, font=("Inter Medium", 18), fg=BLACK,
+            text=Q3, font=FONT, fg=BLACK,
             isDisabled=True, isJustified=True
         )
         self.consultationStartTimeText = self.controller.scrolledTextCreator(
-            x=0, y=400, width=180, height=60, root=R, classname=f"{PAR}_start_time_text",
+            x=0, y=420, width=180, height=60, root=R, classname=f"{PAR}_start_time_text",
             bg="#78aeff",
-            text="Start Time", font=("Inter Medium", 18), fg=WHITE,
+            text="Start Time", font=FONT, fg=WHITE,
             isDisabled=True, isJustified=True,
             hasVbar=False
         )
         self.consultationEndTimeText = self.controller.scrolledTextCreator(
-            x=0, y=460, width=180, height=60, root=R, classname=f"{PAR}_end_time_text",
+            x=0, y=480, width=180, height=60, root=R, classname=f"{PAR}_end_time_text",
             bg="#ffb3bd",
-            text="End Time", font=("Inter Medium", 18), fg=WHITE,
+            text="End Time", font=FONT, fg=WHITE,
             isDisabled=True, isJustified=True,
             hasVbar=False
         )
         # TODO: Add time picker
         self.consultationPreferredSpecialityTitle = self.controller.scrolledTextCreator(
-            x=0, y=540, width=720, height=60, root=R, classname=f"{PAR}_speciality_title",
+            x=0, y=560, width=720, height=60, root=R, classname=f"{PAR}_speciality_title",
             bg="#ecf2ff", hasBorder=False,
-            text=Q4, font=("Inter Medium", 18), fg=BLACK,
-            isDisabled=True, isJustified=True, justification="left"
+            text=Q4, font=FONT, fg=BLACK,
+            isDisabled=True, isJustified=True,
         )
         self.consultationPreferredSpecialityText = self.controller.scrolledTextCreator(
-            x=0, y=600, width=700, height=120, root=R, classname=f"{PAR}_speciality_text",
+            x=0, y=620, width=700, height=120, root=R, classname=f"{PAR}_speciality_text",
             bg=WHITE, hasBorder=BLACK,
-            text="", font=("Inter Medium", 18), fg=BLACK,
+            text="", font=FONT, fg=BLACK,
             isDisabled=False, isJustified=True, justification="left"
         )
         self.consultationPurposeTitle = self.controller.scrolledTextCreator(
-            x=0, y=740, width=720, height=180, root=R, classname=f"{PAR}_purpose_title",
+            x=0, y=760, width=720, height=180, root=R, classname=f"{PAR}_purpose_title",
             bg="#ecf2ff", hasBorder=False,
-            text=Q5, font=("Inter Medium", 18), fg=BLACK,
+            text=Q5, font=FONT, fg=BLACK,
             isDisabled=True, isJustified=True
         )
         self.consultationPurposeText = self.controller.scrolledTextCreator(
-            x=0, y=920, width=700, height=180, root=R, classname=f"{PAR}_purpose_text",
+            x=0, y=940, width=700, height=180, root=R, classname=f"{PAR}_purpose_text",
             bg=WHITE, hasBorder=BLACK,
-            text="", font=("Inter Medium", 18), fg=BLACK,
+            text="", font=FONT, fg=BLACK,
             isDisabled=False, isJustified=True, justification="left",
         )
         self.requestSubmitButton = self.controller.buttonCreator(
-            x=40, y=1120, classname=f"{PAR}_submit", root=R,
+            x=40, y=1140, classname=f"{PAR}_submit", root=R,
             ipath="assets/BrowseClinic/Patient/BrowseSingleClinic/TermsButton.png",
             buttonFunction=lambda: [
                 self.submitAppointmentRequest()
