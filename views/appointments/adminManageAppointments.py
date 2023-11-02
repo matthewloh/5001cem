@@ -17,7 +17,6 @@ from datetime import datetime, timedelta
 import datetime as dt
 from pendulum import timezone
 import tkintermapview
-from tkwebview2.tkwebview2 import WebView2, have_runtime, install_runtime
 
 
 class AdminManageAppointments(Frame):

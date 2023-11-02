@@ -102,7 +102,6 @@ class PatientViewAppointments(Frame):
             x=44, y=234, width=758, height=759)
         initCoords = (10, 10)
         for a in appointments:
-            #a.fullname.userId
             bg = self.controller.labelCreator(
                 ipath="assets/Dashboard/PatientAssets/PatientListButton/PatientAppointmentClinicList.png",
                 x=initCoords[0], y=initCoords[1], classname=f"appointmentbg{a}", root=self.appointmentViewClinicListScrolledFrame,
@@ -118,7 +117,6 @@ class PatientViewAppointments(Frame):
             x=908, y=241, width=644, height=272)
         initCoords = (25, 25)
         for a in appointments:
-            #a.fullname.userId
             bg = self.controller.labelCreator(
                 ipath="assets/Dashboard/PatientAssets/PatientListButton/PatientAppointmentDoctorList.png",
                 x=initCoords[0], y=initCoords[1], classname=f"appointmentbg1{a}", root=self.appointmentViewDcotorListScrolledFrame,

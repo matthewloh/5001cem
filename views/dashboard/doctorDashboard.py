@@ -70,23 +70,7 @@ class DoctorDashboard(Frame):
         #         }
         #     }
         # )
-        appointments = [1, 2, 3, 4, 5, 6, 7]
-        h = len(appointments) * 120
-        if h < 620:
-            h = 620
-        self.appointmentScrolledFrame = ScrolledFrame(
-            master=self, width=1500, height=h, bootstyle="bg-round", autohide=True
-        )
-        self.appointmentScrolledFrame.place(
-            x=80, y=320, width=1500, height=620)
-        initCoords = (20, 20)
-        for a in appointments:
-            bg = self.controller.labelCreator(
-                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DoctorPatientDetailsButton.png",
-                x=initCoords[0], y=initCoords[1], classname=f"UpcomingAppointment{a}", root=self.appointmentScrolledFrame,
-                isPlaced=True,
-            )
-            initCoords = (initCoords[0], initCoords[1] + 120)
+        
 
 
     def loadAssets(self):
