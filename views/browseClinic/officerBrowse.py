@@ -11,6 +11,7 @@ from tkinter import messagebox
 from prisma.models import Appointment
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
+from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
 from ttkbootstrap.dialogs.dialogs import DatePickerDialog
@@ -94,31 +95,35 @@ class OfficerBrowseClinic(Frame):
             )
 
             clinicHrs = self.controller.scrolledTextCreator(
-                x=780, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_hrs",
+                x=780, y=Y+20, width=220, height=60, root=R, classname=f"{clinic.id}_hrs",
                 bg="#f1feff", hasBorder=False, text=clinic.clinicHrs,
                 font=("Inter", 14), fg=BLACK, 
                 isDisabled=True, isJustified=True,
             )
 
             clinicAddress = self.controller.scrolledTextCreator(
-                x=1020, y=Y+20, width=240, height=60, root=R, classname=f"{clinic.id}_address",
+                x=1020, y=Y+20, width=260, height=60, root=R, classname=f"{clinic.id}_address",
                 bg="#f1feff", hasBorder=False, text=clinic.address,
                 font=("Inter", 14), fg=BLACK, 
                 isDisabled=True, isJustified=True,
             )
 
-            self.controller.buttonCreator(
+            hidebtn = self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
                 classname=f"hideindicator{clinic.id}", root=R,
                 x=1300, y=Y+20, buttonFunction=lambda t = clinic.id: [print(f"hide {t}")],
                 isPlaced=True,
             )
-            self.controller.buttonCreator(
+            ToolTip(hidebtn, f"Hide {clinic.name}")
+
+            deletebtn = self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/dustbin.png",
                 classname=f"dustbin{clinic.id}", root=R,
                 x=1380, y=Y+20, buttonFunction=lambda t = clinic.id: [print(f"delete {t}")],
                 isPlaced=True
             )
+            ToolTip(deletebtn, f"Delete {clinic.name}")
+            
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )

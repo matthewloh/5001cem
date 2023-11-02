@@ -30,7 +30,7 @@ from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
 
 
-class  GovOfficerDashboard(Frame):
+class GovOfficerDashboard(Frame):
     def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
@@ -56,10 +56,10 @@ class  GovOfficerDashboard(Frame):
 
         self.initializeGovRegSystem()
         self.initializeApprovedClinicDetails()
-        self.initializeApprovedDoctorDetails()
         self.loadSupervisedClinicsOnMap()
         self.loadClinicsIntoSideFrame()
         self.loadClinicsIntoBottomFrame()
+        self.loadClinicsSearchBar()
 
     def loadClinicsIntoSideFrame(self):
         h = len(self.systemManaged.programmeRegistration) * 120
@@ -143,13 +143,13 @@ class  GovOfficerDashboard(Frame):
                 isDisabled=True, isJustified=True
 
             )
-            # clinicDoctor = self.controller.scrolledTextCreator(
-            #     x=X+420, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_doctor",
-            #     bg="#f1feff", hasBorder=False,
-            #     text=(self.doctorDetails.user.fullName), font=("Inter", 12), fg=BLACK,
-            #     isDisabled=True, isJustified=True, 
-            # )
-
+            numOfDoctors = len(clinic.doctor) if not clinic.doctor == None else 0
+            clinicNumOfDoctors = self.controller.scrolledTextCreator(
+                x=X+420, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_num_of_doctors",
+                bg="#f1feff", hasBorder=False,
+                text=f"{numOfDoctors} doctor(s)", font=("Inter", 12), fg=BLACK,
+                isDisabled=True, isJustified=True,
+            )
             clinicPatients = self.controller.scrolledTextCreator(
                 x=X+620, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_patients",
                 bg="#f1feff", hasBorder=False,
@@ -161,23 +161,26 @@ class  GovOfficerDashboard(Frame):
                 COORDS[0], COORDS[1] + 75
             )
 
-        for  user in self.doctorDetails.user:
-            X = 20
-            Y = 20
-            R = self.clinicStatusFrame
-            clinicDoctor = self.controller.scrolledTextCreator(
-                x=X+420, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_doctor",
-                bg="#f1feff", hasBorder=False,
-                text=str(user.count), font=("Inter", 12), fg=BLACK,
-                isDisabled=True, isJustified=True, 
-            )
+    def loadClinicsSearchBar(self):
+        clinicsSearchBar = self.controller.buttonCreator(
+            x=1241, y=19, classname="officer_search_bar", root=self,
+            ipath="assets/Dashboard/OfficerAssets/officersearchbar.png",
+            isPlaced=True, buttonFunction=lambda: [self.loadClinicsEntry()]
+        )
+    
+    def loadClinicsEntry(self):
+        clinicsSearchEntry = self.controller.ttkEntryCreator(
+            x=1241, y=19, width=419, height=70, root=self,
+            classname="officer_search_entry", placeholder="Search",
+            isPlaced=True, font=("Inter", 14), fg=BLACK,
+            bgcolor="#f1feff"
+        )
+        clinicsSearchEntry.bind("<Return>", lambda e: [self.searchFromSearchBar(clinicsSearchEntry.get())])  
+        clinicsSearchEntry.bind("<FocusIn>", lambda e: [clinicsSearchEntry.delete(0, END)] if clinicsSearchEntry.get() == "Search" else None)
+        clinicsSearchEntry.bind("<FocusOut>", lambda e: [clinicsSearchEntry.grid_forget(), self.loadClinicsSearchBar()])
 
-            COORDS = (
-                X, Y + 75
-            )
-            
 
-
+        
 
 
     def loadSupervisedClinicsOnMap(self):
@@ -209,13 +212,14 @@ class  GovOfficerDashboard(Frame):
             },
             include={
                 "programmeRegistration": {
-                "include": 
-                {
-                    "clinic": True
+                    "include":
+                    {
+                        "clinic": True
                     }
                 }
             }
         )
+        
 
     def initializeApprovedClinicDetails(self):
         self.approvedClinics = self.prisma.govregsystem.find_first(
@@ -224,35 +228,52 @@ class  GovOfficerDashboard(Frame):
             },
             include={
                 "programmeRegistration": {
-                "where":{
-                    "status":"APPROVED"
-                },
-                "include": 
-                {
-                    "clinic": True
+                    "where": {
+                        "status": "APPROVED"
+                    },
+                    "include":
+                    {
+                        "clinic": {
+                            "include": {
+                                "doctor": True
+                            }
+                        }
                     }
                 }
             }
         )
 
-        self.doctorDetails = self.prisma.doctor.find_first(
+    def searchFromSearchBar(self, query:str):
+        if query == "" or query == "Search":
+            messagebox.showerror("Error", "Please enter a search request")
+            
+            return
+        query = query.lower()
+        
+        self.systemManaged = self.prisma.govregsystem.find_first(
             where={
-                "clinic": {"is":{"state":self.systemManaged.state,
-                                 "clinicRegistration":{
-                                     "some":{"status":"APPROVED"}
-                                 }}},
+                "supervisingOfficer": {"some": {"userId": self.user.id}}
             },
-            include={"clinic":True, "user":True}
+            include={
+                "programmeRegistration": {
+                    "where":{
+                        "clinic":{
+                            "is":{
+                                "name":{"contains": query}
+                            }
+                        }
+                    }
+                    ,"include":
+                    {
+                        "clinic": True
+                    }
+                }
+            }
         )
         
-    
-    def initializeApprovedDoctorDetails(self):
-        pass
+        self.loadClinicsIntoSideFrame()
         
             
-        
-        # for clinic in self.doctorDetails.:
-        #     clinics  = clinic.
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
