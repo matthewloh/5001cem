@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.dashboard.adminDashboard import ClinicAdminDashboard
 from abc import ABC, abstractmethod
 import calendar
 import re
@@ -20,13 +24,13 @@ import tkintermapview
 
 
 class AdminBrowseClinic(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: ClinicAdminDashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="browseclinicpanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-        
+        self.user = self.parent.user
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -42,8 +46,8 @@ class AdminBrowseClinic(Frame):
 
         self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
-            x=1385, y=135, classname="manageclinicrefresh", root=self, 
-            buttonFunction=lambda:print("manage clinic requests"), isPlaced=True
+            x=1385, y=135, classname="manageclinicrefresh", root=self,
+            buttonFunction=lambda: print("manage clinic requests"), isPlaced=True
         )
 
         exampleList = []
@@ -56,8 +60,9 @@ class AdminBrowseClinic(Frame):
             master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.manageClinicScrolledFrame.grid_propagate(False)
-        self.manageClinicScrolledFrame.place(x=60, y=280, width=1540, height=640)
-        initialcoordinates = (20,20)
+        self.manageClinicScrolledFrame.place(
+            x=60, y=280, width=1540, height=640)
+        initialcoordinates = (20, 20)
         for manageClinic in exampleList:
             x = initialcoordinates[0]
             y = initialcoordinates[1]
@@ -71,3 +76,6 @@ class AdminBrowseClinic(Frame):
             initialcoordinates = (
                 initialcoordinates[0], initialcoordinates[1] + 120
             )
+
+    def getClinicInfo(self):
+        pass
