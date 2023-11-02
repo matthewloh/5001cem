@@ -42,6 +42,7 @@ class ClinicAdminDashboard(Frame):
         self.loadDoctorsAndFilterBySpeciality()
         self.loadDoctorsAndFilterByAppointment()
         self.createList()
+        self.addAnddeleteList()
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -115,13 +116,13 @@ class ClinicAdminDashboard(Frame):
             self.grdRequests.loadRoleAssets(clinicAdmin=True)
 
     def createFrames(self):
-        self.ListFrame = self.controller.frameCreator(
+        self.doctorListFrame = self.controller.frameCreator(
             x=0, y=0, classname="listframe", root=self, framewidth=1680, frameheight=1080
         )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
-        self.ListFrame.grid_remove()
+        self.doctorListFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
@@ -129,8 +130,8 @@ class ClinicAdminDashboard(Frame):
             x=0, y=0, classname="homepage", root=self
         )
         self.imgLabels = [
-            ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/Add&DeleteBg.png",
-             0, 0, "listimage", self.ListFrame)
+            ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/DoctorListManagement.png",
+             0, 0, "listimage", self.doctorListFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
@@ -209,26 +210,26 @@ class ClinicAdminDashboard(Frame):
     def dashboardButtons(self):
         d = {
             "adminDashboard": [
-                "assets/Dashboard/ClinicAdminAssets/Add&DeleteList/Add&DeleteDoctor.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Add&DeleteDoctor.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png"
+                "assets/Dashboard/ClinicAdminAssets/Add&DeleteList/AddDoctor.png"
             ]
         }
         self.Listbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][0],
             x=140, y=440, classname="listbutton", root=self,
             buttonFunction=lambda: [
-                self.ListFrame.grid(), self.ListFrame.tkraise()],
+                self.doctorListFrame.grid(), self.doctorListFrame.tkraise()],
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
-            x=60, y=40, classname="returnbutton", root=self.ListFrame,
-            buttonFunction=lambda: [self.ListFrame.grid_remove()],
+            x=60, y=40, classname="returnbutton", root=self.doctorListFrame,
+            buttonFunction=lambda: [self.doctorListFrame.grid_remove()],
         )
-        self.Refreshbutton = self.controller.buttonCreator(
+        self.Addbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][2],
-            x=1400, y=140, classname="refreshbutton", root=self.ListFrame,
-            buttonFunction=lambda: [print('refresh')],
+            x=1540, y=40, classname="addbutton", root=self.doctorListFrame,
+            buttonFunction=lambda: [print('add')],
         )
 
     def createList(self):
@@ -245,7 +246,7 @@ class ClinicAdminDashboard(Frame):
         self.doctorsScrolledFrame = ScrolledFrame(
             master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
-            x=680, y=145, width=920, height=375
+            x=680, y=150, width=900, height=350
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
@@ -262,69 +263,80 @@ class ClinicAdminDashboard(Frame):
                 initialCoordinates[0], initialCoordinates[1] + 100
             )
 
-        exampleList = []
-        [exampleList.append("Thing " + str(i))
-         for i in range(30) if i % 2 == 0]
-        h = len(exampleList) * 120
+    def addAnddeleteList(self):
+        prisma = self.prisma
+        doctors = prisma.doctor.find_many(
+            include={
+                "user": True,
+            }
+        )
+        h = len(doctors) * 120
         if h < 650:
             h = 650
         self.ListScrolledFrame = ScrolledFrame(
-            master=self.ListFrame, width=1500, height=h, autohide=True, bootstyle="officer-bg"
+            master=self.doctorListFrame, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.ListScrolledFrame.grid_propagate(False)
         self.ListScrolledFrame.place(x=60, y=280, width=1520, height=650)
-        initialcoordinates = (20, 20)
-        for list in exampleList:
-            X = initialcoordinates[0]
-            Y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
-                classname=f"list{list}", root=self.ListScrolledFrame,
-                text="", size=30, font=INTER,
+        COORDS = (20, 20)
+        for doctor in doctors:
+            doctor.user.fullName
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.ListScrolledFrame
+            FONT = ("Inter", 12)
+            self.controller.labelCreator(
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png",
+                x=X, y=Y, classname=f"doctorlist{doctor.id}", root=R,
                 isPlaced=True,
             )
-    
-        d = {
-            "scrollButton": [
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
-            ]
-        }
-        self.viewdoctorbutton = self.controller.buttonCreator(
-            ipath=d["scrollButton"][0],
-            x=X+1280, y=Y+30, classname=f"viewbutton{list}", root=self.ListScrolledFrame,
+
+            d = {
+                "scrollButton": [
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+                ]
+            }
+            self.viewdoctorbutton = self.controller.buttonCreator(
+                ipath=d["scrollButton"][0],
+                x=X+1280, y=Y+30, classname=f"viewbutton{doctor.id}", root=R,
                 buttonFunction=lambda: [print('view')],
                 isPlaced=True
-        )
-        self.deletedoctorbutton = self.controller.buttonCreator(
-            ipath=d["scrollButton"][1],
-            x=X+1360, y=Y+30, classname=f"deletebutton{list}", root=self.ListScrolledFrame,
+            )
+            self.deletedoctorbutton = self.controller.buttonCreator(
+                ipath=d["scrollButton"][1],
+                x=X+1360, y=Y+30, classname=f"deletebutton{doctor.id}", root=R,
                 buttonFunction=lambda: [print('delete')],
                 isPlaced=True
-        )
-            
-        doctorName = ScrolledText(master=self.ListScrolledFrame, width=200, height=60,
-                              autohide=True, bootstyle="bg-round" , padding=0 
-        )  
-        doctorName.text.config(
-            bg="#f1feff", font=("Inter",12), wrap=WORD, fg=BLACK
-        )
-        doctorName.text.insert(1.0, doctor.user.fullName)
-        doctorName.text.config(state=DISABLED)
-        doctorName.place(x= X+30, y=Y+30,width=200, height=60 )
-
-        doctorSpeciality = ScrolledText(master=self.ListScrolledFrame, width=200, height=60,
-                              autohide=True, bootstyle="bg-round" , padding=0 
-        )  
-        doctorSpeciality.text.config(
-            bg="#f1feff", font=("Inter",12), wrap=WORD, fg=BLACK
-        )
-        doctorSpeciality.text.insert(1.0, doctor.speciality.user.fullName)
-        doctorSpeciality.text.config(state=DISABLED)
-        doctorSpeciality.place(x= X+290, y=Y+30,width=200, height=60 )
-
-        initialcoordinates = (
-            initialcoordinates[0], initialcoordinates[1] + 120
-        )
-
-       
+            )
+            doctorName = self.controller.scrolledTextCreator(
+                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{doctor.id}_name",
+                bg="#f1feff", hasBorder=False,
+                text=doctor.user.fullName, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            doctorSpeciality = self.controller.scrolledTextCreator(
+                x=X+290, y=Y+30, width=260, height=60, root=R, classname = f"{doctor.id}_speciality",
+                bg="#f1feff", hasBorder=False,
+                text=doctor.speciality, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False                           
+            )
+            doctorUserID = self.controller.scrolledTextCreator(
+                x=X+610, y=Y+25, width=200, height=65, root=R, classname = f"{doctor.id}_userId",
+                bg="#f1feff", hasBorder=False,
+                text=doctor.userId, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False                           
+            )
+            doctorClinicID = self.controller.scrolledTextCreator(
+                x=X+880, y=Y+25, width=200, height=65, root=R, classname = f"{doctor.id}_clinicId",
+                bg="#f1feff", hasBorder=False,
+                text=doctor.clinicId, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False                           
+            )
+            COORDS = (
+                COORDS[0], COORDS[1] + 120
+            )

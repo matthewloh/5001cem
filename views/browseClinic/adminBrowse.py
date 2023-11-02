@@ -30,6 +30,7 @@ class AdminBrowseClinic(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.manageClinic()
 
     def createFrames(self):
         pass
@@ -46,10 +47,14 @@ class AdminBrowseClinic(Frame):
             buttonFunction=lambda:print("manage clinic requests"), isPlaced=True
         )
 
-        exampleList = []
-        [exampleList.append("Thing " + str(i))
-         for i in range(30) if i % 2 == 0]
-        h = len(exampleList) * 120
+    def manageClinic(self):
+        prisma = self.prisma
+        clinics = prisma.clinic.find_many(
+            include={
+                "name": True,
+            }
+        )
+        h = len(clinics) * 120
         if h < 640:
             h = 640
         self.manageClinicScrolledFrame = ScrolledFrame(
@@ -57,36 +62,44 @@ class AdminBrowseClinic(Frame):
         )
         self.manageClinicScrolledFrame.grid_propagate(False)
         self.manageClinicScrolledFrame.place(x=60, y=280, width=1540, height=640)
-        initialcoordinates = (20,20)
-        for manageClinic in exampleList:
-            X = initialcoordinates[0]
-            Y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
-                classname=f"manageClinic{manageClinic}", root=self.manageClinicScrolledFrame,
-                text=manageClinic, size=30, font=INTER,
+        COORDS = (20,20)
+        for clinic in clinics:
+            clinic.name
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.manageClinicScrolledFrame
+            FONT = ("Inter", 12)
+            self.controller.labelCreator(
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", 
+                x=X, y=Y, classname=f"manageClinic{clinic.id}", root=R,
                 isPlaced=True,
             )   
         
-        d = {
-            "clinicButton": [
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
-            ]
-        }
-        self.viewClinicbutton = self.controller.buttonCreator(
-            ipath=d["clinicButton"][0],
-            x=X+1280, y=Y+30, classname=f"viewbutton{manageClinic}", root=self.manageClinicScrolledFrame,
+            d = {
+                "clinicButton": [
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+                ]
+            }
+            self.viewClinicbutton = self.controller.buttonCreator(
+                ipath=d["clinicButton"][0],
+                x=X+1280, y=Y+30, classname=f"viewclinic{clinic.id}", root=R,
                 buttonFunction=lambda: [print('clinicview')],
                 isPlaced=True
-        )
-        self.deleteClinicbutton = self.controller.buttonCreator(
-            ipath=d["clinicButton"][1],
-            x=X+1360, y=Y+30, classname=f"deletebutton{manageClinic}", root=self.manageClinicScrolledFrame,
+            )
+            self.deleteClinicbutton = self.controller.buttonCreator(
+                ipath=d["clinicButton"][1],
+                x=X+1360, y=Y+30, classname=f"deleteclinic{clinic.id}", root=R,
                 buttonFunction=lambda: [print('clinicdelete')],
                 isPlaced=True
-        )
-        
-        initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
+            )
+            clinicName = self.controller.scrolledTextCreator(
+                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{clinic.id}_name",
+                bg="#f1feff", hasBorder=False,
+                text=clinic.name, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            COORDS = (
+                COORDS[0], COORDS[1] + 120
             )

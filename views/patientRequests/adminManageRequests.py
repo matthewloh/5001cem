@@ -51,7 +51,7 @@ class AdminManagePatientRequests(Frame):
             master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.viewAppointmentScrolledFrame.grid_propagate(False)
-        self.viewAppointmentScrolledFrame.place(x=60, y=240, width=1500, height=280)
+        self.viewAppointmentScrolledFrame.place(x=60, y=240, width=1540, height=290)
         initialcoordinates = (20,20)
         for request in exampleList:
             X = initialcoordinates[0]
@@ -88,12 +88,12 @@ class AdminManagePatientRequests(Frame):
         
     def createPatientList(self):
         prisma = self.prisma
-        patientLists = prisma.patient.find_many(
+        patients = prisma.patient.find_many(
             include={
                 "user": True,
             }
         )
-        h = len(patientLists) * 120
+        h = len(patients) * 120
         if h < 290:
             h = 290
         self.patientScrolledFrame = ScrolledFrame(
@@ -101,19 +101,40 @@ class AdminManagePatientRequests(Frame):
         )
         self.patientScrolledFrame.grid_propagate(False)
         self.patientScrolledFrame.place(x=60, y=710, width=1540, height=290)
-        initialcoordinates = (20,20)
-        for patient in patientLists:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
-                classname=f"patientlistbg{patient.id}", root=self.patientScrolledFrame,
-                text=f"{patient.user.fullName}", size=30, font=INTER,
-                isPlaced=True,
-                buttonFunction=lambda: [print(patient)]
+        COORDS = (20,20)
+        for patient in patients:
+            patient.user.fullName
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.patientScrolledFrame
+            FONT = ("Inter", 12)
+            self.controller.labelCreator(
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", 
+                x=X, y=Y, classname=f"patientlist{patient.id}", root=R,
+                isPlaced=True,  
             )
-
-            initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
+            patientName = self.controller.scrolledTextCreator(
+                x = X+50, y=Y+35, width=200, height=60, root=R, classname = f"{patient.id}_name",
+                bg="#f1feff", hasBorder=False,
+                text=patient.user.fullName, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            patientUserID = self.controller.scrolledTextCreator(
+                x=X+300, y=Y+35, width=200, height=65, root=R, classname = f"{patient.id}_userId",
+                bg="#f1feff", hasBorder=False,
+                text=patient.userId, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False                           
+            )
+            patientHealthRecord = self.controller.scrolledTextCreator(
+                x=X+580, y=Y+25, width=200, height=60, root=R, classname = f"{patient.id}_healthRecord",
+                bg="#f1feff", hasBorder=False,
+                text=patient.healthRecord, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False                           
+            )
+            COORDS = (
+                COORDS[0], COORDS[1] + 120
             )
             
