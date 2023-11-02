@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  interface            = "sync"
   recursive_type_depth = "-1"
+  interface            = "sync"
 }
 
 datasource db {
@@ -83,25 +83,24 @@ model GovHealthOfficer {
 }
 
 model Appointment {
-  id              Int            @id @default(autoincrement())
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  title           String
-  desc            String
-  startTime       DateTime
-  endTime         DateTime
-  completedAt     DateTime?
-  editedAt        DateTime?      @default(now())
-  status          ApptStatus     @default(PENDING)
-  docAccepted     Boolean        @default(false)
-  patientAccepted Boolean        @default(false)
-  docAcceptAt     DateTime?
-  patientAcceptAt DateTime?
-  patientId       String
-  doctorId        String
-  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor          Doctor         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  prescription    Prescription[]
+  id               Int            @id @default(autoincrement())
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  startTime        DateTime
+  endTime          DateTime
+  completedAt      DateTime?
+  editedAt         DateTime?      @default(now())
+  status           ApptStatus     @default(PENDING)
+  docAccepted      Boolean        @default(false)
+  patientAccepted  Boolean        @default(false)
+  docAcceptAt      DateTime?
+  patientAcceptAt  DateTime?
+  patientId        String?
+  doctorId         String?
+  specialityWanted Speciality     @default(NONE)
+  patient          Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor           Doctor?        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  prescription     Prescription[]
 
   @@index([patientId])
   @@index([doctorId])

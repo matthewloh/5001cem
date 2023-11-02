@@ -66,7 +66,11 @@ class PatientDashboard(Frame):
         self.browseClinic = self.controller.buttonCreator(
             ipath=d["patient"][0],
             x=20, y=380, classname="browseclinic_chip", root=self.parent,
-            buttonFunction=lambda: [self.loadBrowseClinic()],
+            buttonFunction=lambda: [
+                self.controller.threadCreator(
+                    target=self.loadBrowseClinic
+                )
+            ],
         )
         self.viewPatients = self.controller.buttonCreator(
             ipath=d["patient"][1],

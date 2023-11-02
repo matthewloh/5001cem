@@ -1,8 +1,8 @@
 import os
+import sys
 import threading
 from tkinter import *
 import bcrypt
-# from ctypes import windll
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.tooltip import ToolTip
@@ -23,7 +23,9 @@ from resource.basewindow import ElementCreator, gridGenerator
 
 load_dotenv()
 
-# user32 = windll.user32
+if sys.platform == "win32":
+    from ctypes import windll
+    user32 = windll.user32
 
 
 class Window(ElementCreator):
@@ -206,16 +208,18 @@ class Window(ElementCreator):
         self.registrationPage.tkraise()
 
     def initializeWindow(self):
-        # windll.shcore.SetProcessDpiAwareness(1)
-        # quarterofscreenwidth = int(int(user32.GetSystemMetrics(0) / 2) / 4)
-        # quarterofscreenheight = int(int(user32.GetSystemMetrics(1) / 2) / 4)
+        if sys.platform == "win32":
+            quarterofscreenwidth = int(int(user32.GetSystemMetrics(0) / 2) / 4)
+            quarterofscreenheight = int(
+                int(user32.GetSystemMetrics(1) / 2) / 4)
+            if self.winfo_screenwidth() <= 1920 and self.winfo_screenheight() <= 1080:
+                self.geometry(f"1920x1080+0+0")
+            elif self.winfo_screenwidth() > 1920 and self.winfo_screenheight() > 1080:
+                self.geometry(
+                    f"1920x1080+{quarterofscreenwidth}+{quarterofscreenheight}")
+        else:
+            self.geometry("1920x1080")
         gridGenerator(self, 1, 1, NICEPURPLE)
-        # if self.winfo_screenwidth() <= 1920 and self.winfo_screenheight() <= 1080:
-        #     self.geometry(f"1920x1080+0+0")
-        # elif self.winfo_screenwidth() > 1920 and self.winfo_screenheight() > 1080:
-        #     self.geometry(
-        #         f"1920x1080+{quarterofscreenwidth}+{quarterofscreenheight}")
-        self.geometry("1920x1080")
         self.title("Call a Doctor Desktop App")
         self.resizable(False, False)
         self.bind("<Escape>", lambda e: self.destroy())
@@ -225,7 +229,6 @@ class Window(ElementCreator):
         gridGenerator(self.parentFrame, 96, 54, "#ecf2ff")
         self.bg = self.labelCreator(
             root=self.parentFrame,
-
             x=0, y=0,
             ipath="assets/HomePage/SignIn.png",
             classname="homepagebg",

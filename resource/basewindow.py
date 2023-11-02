@@ -1,7 +1,8 @@
-# from ctypes import windll
+import io
+import sys
 import threading
 from tkinter import FLAT, NSEW, Frame, Label
-from prisma import Prisma
+from prisma import Base64, Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -15,14 +16,21 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 # More information on the ctypes library can be found here:
 # https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowlongptrw
 # https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-# GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
-# SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
+# Check if operating system is windows
+
+if sys.platform == "win32":
+    # If it is, import the ctypes library
+    from ctypes import windll
+    # GetWindowLongPtrW is a function that gets the window's parent
+    GetWindowLongPtrW = windll.user32.GetWindowLongPtrW
+    # SetWindowLongPtrW is a function that sets the window's
+    SetWindowLongPtrW = windll.user32.SetWindowLongPtrW
 
 
-# def get_handle(root) -> int:
-#     root.update_idletasks()
-#     # This gets the window's parent same as `ctypes.windll.user32.GetParent`
-#     return GetWindowLongPtrW(root.winfo_id(), GWLP_HWNDPARENT)
+def get_handle(root) -> int:
+    root.update_idletasks()
+    # This gets the window's parent same as `ctypes.windll.user32.GetParent`
+    return GetWindowLongPtrW(root.winfo_id(), GWLP_HWNDPARENT)
 
 
 # user32 = windll.user32
@@ -518,7 +526,8 @@ class ElementCreator(ttk.Window):
 
     def scrolledTextCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None,
                             bg="#f1feff", hasBorder=False, borderColor=BLACK, padding=0,
-                            text=None, font=("Inter", 12), fg=BLACK, isPlaced=True, isDisabled=False, isJustified=False, justification="center"):
+                            text=None, font=("Inter", 12), fg=BLACK, isPlaced=True, isDisabled=False, isJustified=False, justification="center",
+                            hasVbar=True, hasHbar=False):
         """ 
         Creates a scrolled text widget and returns it.\n
         Uses the place geometry manager by default. Key styling options include enabling padding (disabled by defaut) between the host frame and the text widget, and whether or not the text is justified.\n
@@ -570,13 +579,12 @@ class ElementCreator(ttk.Window):
         scrolledText = ScrolledText(
             master=root, width=width, height=height,
             autohide=True, bootstyle="bg-round",
-            padding=padding
+            padding=padding, vbar=hasVbar, hbar=hasHbar,
         )
         scrolledText.text.config(
             bg=bg, font=font, wrap=WORD, fg=fg
         )
         scrolledText.text.insert(1.0, text)
-        scrolledText.text.config(state=DISABLED)
         if hasBorder:
             scrolledText.text.config(highlightbackground=borderColor)
         else:
@@ -596,9 +604,22 @@ class ElementCreator(ttk.Window):
             )
         if isDisabled:
             scrolledText.text.config(state=DISABLED)
+        else:
+            scrolledText.text.config(state=NORMAL)
         self.updateWidgetsDict(root=root)
         self.widgetsDict[classname] = scrolledText
         return scrolledText
+
+    def threadCreator(self, target, daemon=True):
+        t = threading.Thread(target=target)
+        t.daemon = daemon
+        t.start()
+
+    def decodingBase64Data(self, b64):
+        decoded = Base64.decode(b64)
+        dataBytesIO = io.BytesIO(decoded)
+        im = Image.open(dataBytesIO)
+        return im
 
     def show_frame(self, cont):
         frame = self.frames[cont]
@@ -624,19 +645,19 @@ class ElementCreator(ttk.Window):
     #     colorkey = win32api.RGB(red, green, blue)
     #     return colorkey
 
-    # def togglethewindowbar(self) -> None:
-    #     self.deletethewindowbar() if self.state() == "normal" else self.showthewindowbar()
+    def togglethewindowbar(self) -> None:
+        self.deletethewindowbar() if self.state() == "normal" else self.showthewindowbar()
 
-    # def deletethewindowbar(self) -> None:
-    #     hwnd: int = get_handle(self)
-    #     style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
-    #     style &= ~(WS_CAPTION | WS_THICKFRAME)
-    #     SetWindowLongPtrW(hwnd, GWL_STYLE, style)
-    #     self.state("zoomed")
+    def deletethewindowbar(self) -> None:
+        hwnd: int = get_handle(self)
+        style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
+        style &= ~(WS_CAPTION | WS_THICKFRAME)
+        SetWindowLongPtrW(hwnd, GWL_STYLE, style)
+        self.state("zoomed")
 
-    # def showthewindowbar(self) -> None:
-    #     hwnd: int = get_handle(self)
-    #     style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
-    #     style |= WS_CAPTION | WS_THICKFRAME
-    #     SetWindowLongPtrW(hwnd, GWL_STYLE, style)
-    #     self.state("normal")
+    def showthewindowbar(self) -> None:
+        hwnd: int = get_handle(self)
+        style: int = GetWindowLongPtrW(hwnd, GWL_STYLE)
+        style |= WS_CAPTION | WS_THICKFRAME
+        SetWindowLongPtrW(hwnd, GWL_STYLE, style)
+        self.state("normal")
