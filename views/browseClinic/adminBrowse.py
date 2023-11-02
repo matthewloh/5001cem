@@ -100,6 +100,7 @@ class AdminBrowseClinic(Frame):
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
+            
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
