@@ -36,6 +36,7 @@ model User {
 model Patient {
   id            String               @id @default(cuid())
   userId        String
+  speciality    Speciality?          @default(NONE)
   contactNo     String?
   email         String?
   user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
