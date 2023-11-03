@@ -181,16 +181,16 @@ class AdminManageAppointments(Frame):
 
     def appointmentList(self):
         prisma =self.prisma
-        manageappointments = prisma.appointment.find_many(
+        appointments = prisma.appointmentrequest.find_many(
             where={
-                "status":"APPROVED"
-            },
-            include={
-                "patient":True,
-                "doctor":True
+                "clinicadmin":{
+                    "some":{
+                        "userId":self.user.id
+                    }
+                }
             }
-        )
-        h = len(manageappointments) * 120
+        )           
+        h = len(appointments) * 120
         if h < 380:
             h = 380
         self.viewAppointmentScrolledFrame = ScrolledFrame(
@@ -199,8 +199,8 @@ class AdminManageAppointments(Frame):
         self.viewAppointmentScrolledFrame.grid_propagate(False)
         self.viewAppointmentScrolledFrame.place(x=70, y=260, width=1520, height=420)
         COORDS = (20,20)
-        for appointment in manageappointments:
-            startTime= appointment.startTime
+        for appointment in appointments:
+            createdAt = appointment.createdAt
             X = COORDS[0]
             Y = COORDS[1]
             R = self.viewAppointmentScrolledFrame
@@ -230,10 +230,10 @@ class AdminManageAppointments(Frame):
                 isPlaced=True
             )
 
-            startTime = self.controller.scrolledTextCreator(
-                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{appointment.id}_name",
+            createdAt = self.controller.scrolledTextCreator(
+                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{appointment.id}_createdAt",
                 bg="#f1feff", hasBorder=False,
-                text=appointment.startTime, font=FONT, fg=BLACK,
+                text=appointment.createdAt, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
