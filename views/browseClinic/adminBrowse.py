@@ -8,6 +8,7 @@ import re
 import threading
 from tkinter import *
 from tkinter import messagebox
+from views.citystatesdict import states_dict
 from prisma.models import Appointment
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
@@ -36,6 +37,7 @@ class AdminBrowseClinic(Frame):
         self.createElements()
         self.createButton()
         self.manageClinic()
+        self.addDoctorButtons()
 
     def createFrames(self):
         self.addDoctorFrame = self.controller.frameCreator(
@@ -72,7 +74,7 @@ class AdminBrowseClinic(Frame):
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
-            x=60, y=60, classname="clinicreturnbutton", root=self.addDoctorFrame,
+            x=60, y=40, classname="clinicreturnbutton", root=self.addDoctorFrame,
             buttonFunction=lambda: [self.addDoctorFrame.grid_remove()],
         )
         self.addClinicbutton = self.controller.buttonCreator(
@@ -176,6 +178,90 @@ class AdminBrowseClinic(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+   
+    def addDoctorButtons(self):
+        self.closebutton = self.controller.buttonCreator(
+            ipath="assets/Registration/Close.png", x=100, y=820,
+            classname="reg_closebutton", root=self.addDoctorFrame,
+            buttonFunction=lambda: [print('remain')]
+        )
+        self.savebutton = self.controller.buttonCreator(
+            ipath="assets/Registration/Save.png", x=400, y=820,
+            classname="reg_savebutton", root=self.addDoctorFrame,
+            buttonFunction=lambda: [print('test')]
+        )
+    
+    def createClinicInfoEntries(self):
+        CREATOR = self.controller.ttkEntryCreator
+        X, Y, W, H, R, CN, PH = "x", "y", "width", "height", "root", "classname", "placeholder"
+        param = {
+            "clinicname": {
+                X: 40,
+                Y: 40,
+                W: 640,
+                H: 80,
+                CN: "clinicnameentry",
+                R: self,
+                PH: "Clinic Name"
+            },
+            "clinicaddress": {
+                X: 40,
+                Y: 160,
+                W: 640,
+                H: 80,
+                CN: "clinicaddressentry",
+                R: self,
+                PH: "Clinic Address"
+            },
+            "cliniccontactnumber": {
+                X: 40,
+                Y: 280,
+                W: 300,
+                H: 80,
+                CN: "cliniccontactnumberentry",
+                R: self,
+                PH: "Clinic Contact Number"
+            },
+            "cliniccity": {
+                X: 380,
+                Y: 280,
+                W: 300,
+                H: 80,
+                CN: "cliniccityentry",
+                R: self,
+                PH: "Clinic City"
+            },
+            "cliniczip": {
+                X: 380,
+                Y: 400,
+                W: 300,
+                H: 80,
+                CN: "cliniczipentry",
+                R: self,
+                PH: "Clinic Zip"
+            },
+        }
+        for p in param:
+            CREATOR(**param[p])
+        self.clinicStateVar = StringVar()
+        states = list(states_dict.keys())
+        self.menuframe = self.controller.frameCreator(
+            x=40, y=400, framewidth=300, frameheight=80,
+            bg=WHITE, classname="clinicstateframe", root=self
+        )
+        self.clinicStateMenu = self.controller.menubuttonCreator(
+            x=0, y=0, width=300, height=80,
+            root=self.menuframe, classname="reg_clinicstate",
+            text=f"State", listofvalues=states,
+            variable=self.clinicStateVar, font=("Helvetica", 12),
+            command=lambda:
+                ToastNotification(title="Success", bootstyle="success", duration=3000,
+                                  message=f"State Selected: {self.clinicStateVar.get()}").show_toast()
+        )
+        self.startTimeVar = StringVar()
+        self.startTimeVar.set("12:00AM")
+        self.endTimeVar = StringVar()
+        self.endTimeVar.set("12:00PM")
+        self.loadClinicHoursMenu()
 
-    def getClinicInfo(self):
-        pass
+  
