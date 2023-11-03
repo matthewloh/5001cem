@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.dashboard.adminDashboard import ClinicAdminDashboard
 from abc import ABC, abstractmethod
 import calendar
 import re
@@ -20,13 +24,13 @@ import tkintermapview
 
 
 class AdminManagePatientRequests(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: ClinicAdminDashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="requestspanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-
+        self.user = self.parent.user
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.patientImgLabels()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from views.mainDashboard import Dashboard
+    from views.dashboard.adminDashboard import ClinicAdminDashboard
 import calendar
 import datetime as dt
 import re
@@ -28,7 +28,7 @@ from views.mainViewAppointments import MainViewAppointmentsInterface
 
 
 class ClinicAdminDashboard(Frame):
-    def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
+    def __init__(self, parent: ClinicAdminDashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
         self.parent = parent
@@ -223,7 +223,7 @@ class ClinicAdminDashboard(Frame):
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
-            x=60, y=40, classname="returnbutton", root=self.doctorListFrame,
+            x=60, y=40, classname="doctorreturnbutton", root=self.doctorListFrame,
             buttonFunction=lambda: [self.doctorListFrame.grid_remove()],
         )
         self.Addbutton = self.controller.buttonCreator(
@@ -309,6 +309,7 @@ class ClinicAdminDashboard(Frame):
                 buttonFunction=lambda: [print('delete')],
                 isPlaced=True
             )
+            
             doctorName = self.controller.scrolledTextCreator(
                 x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{doctor.id}_name",
                 bg="#f1feff", hasBorder=False,
