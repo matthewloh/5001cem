@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  recursive_type_depth = "-1"
   interface            = "sync"
+  recursive_type_depth = "-1"
 }
 
 datasource db {
@@ -34,21 +34,23 @@ model User {
 }
 
 model Patient {
-  id           String               @id @default(cuid())
-  userId       String
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  appointments Appointment[]
-  healthRecord PatientHealthRecord?
+  id              String               @id @default(cuid())
+  userId          String
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+  healthRecord    PatientHealthRecord?
+  madeAppRequests AppointmentRequest[]
 
   @@index([userId])
 }
 
 model ClinicAdmin {
-  id       String  @id @default(cuid())
-  userId   String
-  clinicId String?
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  id             String               @id @default(cuid())
+  userId         String
+  clinicId       String?
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic         Clinic?              @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  requestManaged AppointmentRequest[]
 
   @@index([userId])
   @@index([clinicId])
@@ -83,27 +85,48 @@ model GovHealthOfficer {
 }
 
 model Appointment {
-  id               Int            @id @default(autoincrement())
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  startTime        DateTime
-  endTime          DateTime
-  completedAt      DateTime?
-  editedAt         DateTime?      @default(now())
-  status           ApptStatus     @default(PENDING)
-  docAccepted      Boolean        @default(false)
-  patientAccepted  Boolean        @default(false)
-  docAcceptAt      DateTime?
-  patientAcceptAt  DateTime?
-  patientId        String?
-  doctorId         String?
-  specialityWanted Speciality     @default(NONE)
-  patient          Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor           Doctor?        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  prescription     Prescription[]
+  id              Int            @id @default(autoincrement())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  startTime       DateTime
+  endTime         DateTime
+  completedAt     DateTime?
+  editedAt        DateTime?      @default(now())
+  status          ApptStatus     @default(PENDING)
+  docAccepted     Boolean        @default(false)
+  patientAccepted Boolean        @default(false)
+  docAcceptAt     DateTime?
+  patientAcceptAt DateTime?
+  patientId       String?
+  doctorId        String?
+  patient         Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          Doctor?        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  prescription    Prescription[]
 
   @@index([patientId])
   @@index([doctorId])
+}
+
+model AppointmentRequest {
+  id               Int          @id @default(autoincrement())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  location         String
+  preferredDate    String
+  preferredTime    String
+  specialityWanted Speciality   @default(NONE)
+  additionalInfo   String?      @db.Text
+  reqStatus        ApptStatus   @default(PENDING)
+  clinicId         String?
+  patientId        String?
+  adminId          String?
+  clinic           Clinic?      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient          Patient?     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  approvedBy       ClinicAdmin? @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([adminId])
+  @@index([clinicId])
 }
 
 model Prescription {
@@ -128,18 +151,19 @@ model DoctorApptSchedule {
 }
 
 model Clinic {
-  id                 String            @id @default(cuid())
+  id                 String               @id @default(cuid())
   name               String
   address            String
   city               String
   state              String
   zip                String
   phoneNum           String
-  clinicHrs          String?           @db.Text
+  clinicHrs          String?              @db.Text
   clinicImg          Bytes?
   admin              ClinicAdmin[]
   doctor             Doctor[]
   clinicRegistration ClinicEnrolment[]
+  appRequests        AppointmentRequest[]
 }
 
 model ClinicEnrolment {
@@ -194,14 +218,6 @@ model doctorPrescription {
   details   String
 }
 
-model BookingAppointment {
-  id                 Int     @id @default(autoincrement())
-  AppName            String
-  SelectedSpeciality String?
-  AppContact         String
-  AppEmail           String
-}
-
 model GovHealthOfficerToGovRegSystem {
   A String
   B String
@@ -209,6 +225,14 @@ model GovHealthOfficerToGovRegSystem {
   @@unique([A, B], map: "_GovHealthOfficerToGovRegSystem_AB_unique")
   @@index([B], map: "_GovHealthOfficerToGovRegSystem_B_index")
   @@map("_GovHealthOfficerToGovRegSystem")
+}
+
+model BookingAppointment {
+  id                 Int     @id @default(autoincrement())
+  AppName            String
+  SelectedSpeciality String?
+  AppContact         String
+  AppEmail           String
 }
 
 enum Gender {
@@ -271,4 +295,26 @@ enum GovRegSystem_state {
   SELANGOR
   TERENGGANU
   WILAYAH_PERSEKUTUAN
+}
+
+enum AppointmentRequest_specialityWanted {
+  GENERAL_PRACTICE
+  DERMATOLOGY
+  CARDIOLOGY
+  GYNAECOLOGY
+  NEUROLOGY
+  OPHTHALMOLOGY
+  ORTHOPAEDICS
+  PAEDIATRICS
+  UROLOGY
+  OTHER
+  NONE
+}
+
+enum AppointmentRequest_reqStatus {
+  PENDING
+  CONFIRMED
+  ONGOING
+  CANCELLED
+  COMPLETED
 }

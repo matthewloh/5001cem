@@ -208,15 +208,6 @@ class AdminRegistrationForm(Frame):
                 R: frame,
                 PH: "Clinic Zip"
             },
-            "clinichrs": {
-                X: 40,
-                Y: 600,
-                W: 300,
-                H: 80,
-                CN: "clinichrsentry",
-                R: frame,
-                PH: "Clinic Hours"
-            },
         }
         for p in param:
             CREATOR(**param[p])
@@ -235,6 +226,51 @@ class AdminRegistrationForm(Frame):
                 ToastNotification(title="Success", bootstyle="success", duration=3000,
                                   message=f"State Selected: {self.clinicStateVar.get()}").show_toast()
         )
+        self.startTimeVar = StringVar()
+        self.startTimeVar.set("12:00AM")
+        self.endTimeVar = StringVar()
+        self.endTimeVar.set("12:00PM")
+        self.loadClinicHoursMenu()
+
+    def loadClinicHoursMenu(self):
+        start_time = datetime.strptime("12:00AM", HUMANTIME)
+        end_time = datetime.strptime("12:00PM", HUMANTIME)
+        time_slots = [start_time +
+                      timedelta(minutes=30 * i) for i in range(24 * 2)]
+        time_slots_str = [ts.strftime(HUMANTIME) for ts in time_slots]
+        self.startTimeHostFrame = self.controller.frameCreator(
+            x=80, y=600, framewidth=240, frameheight=80,
+            bg=WHITE, classname="starttimehostfr", root=self.inputframe
+        )
+        self.startTimeMenu = self.controller.menubuttonCreator(
+            x=0, y=0, width=240, height=80, root=self.startTimeHostFrame,
+            classname="reg_clinichrs", text="Start Time", listofvalues=time_slots_str,
+            variable=self.startTimeVar, font=("Helvetica", 12),
+            command=lambda:
+            [self.validateDateVars()],
+        )
+        self.endTimeHostFrame = self.controller.frameCreator(
+            x=400, y=600, framewidth=240, frameheight=80,
+            bg=WHITE, classname="endtimehostfr", root=self.inputframe
+        )
+        self.endTimeMenu = self.controller.menubuttonCreator(
+            x=0, y=0, width=240, height=80, root=self.endTimeHostFrame,
+            classname="reg_clinichrs", text="End Time", listofvalues=time_slots_str,
+            variable=self.endTimeVar, font=("Helvetica", 12),
+            command=lambda:
+                [self.validateDateVars()]
+        )
+        self.startTimeMenu.config(text=self.startTimeVar.get())
+        self.endTimeMenu.config(text=self.endTimeVar.get())
+
+    def validateDateVars(self):
+        start = datetime.strptime(self.startTimeVar.get(), HUMANTIME)
+        end = datetime.strptime(self.endTimeVar.get(), HUMANTIME)
+        diff = timedelta(hours=end.hour, minutes=end.minute) - \
+            timedelta(hours=start.hour, minutes=start.minute)
+        # TODO: add validation for clinic hours
+        self.clinichrsVar.set(
+            f"{self.startTimeVar.get()} - {self.endTimeVar.get()}")
 
     def loadClinicInformationInput(self):
         WD = self.controller.widgetsDict
@@ -253,7 +289,8 @@ class AdminRegistrationForm(Frame):
         WD["cliniccityentry"].insert(0, self.cliniccityVar.get())
         self.clinicStateMenu.config(text=self.clinicStateVar.get())
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
-        WD["clinichrsentry"].insert(0, self.clinichrsVar.get())
+        self.startTimeMenu.config(text=self.startTimeVar.get())
+        self.endTimeMenu.config(text=self.endTimeVar.get())
 
     def saveClinicInformation(self):
         prisma = self.prisma
@@ -269,7 +306,7 @@ class AdminRegistrationForm(Frame):
         self.cliniczipVar.set(
             WD["cliniczipentry"].get())
         self.clinichrsVar.set(
-            WD["clinichrsentry"].get())
+            f"{self.startTimeVar.get()} - {self.endTimeVar.get()}")
 
         msg = f"""
         Clinic Information Saved!

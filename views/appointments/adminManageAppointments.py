@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.dashboard.adminDashboard import ClinicAdminDashboard
 from abc import ABC, abstractmethod
 import calendar
 import re
@@ -21,17 +25,18 @@ from tkwebview2.tkwebview2 import WebView2, have_runtime, install_runtime
 
 
 class AdminManageAppointments(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: ClinicAdminDashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="appointmentspanel")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-
+        self.user = self.parent.user
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.appointmentImgLabels()
         self.appointmentButtons()
+        self.appointmentList()
         self.creationFrame.grid_remove()
         self.viewFrame.grid_remove()
 
@@ -174,10 +179,18 @@ class AdminManageAppointments(Frame):
             buttonFunction=lambda:[self.manageAppointmentsFrame.grid()], isPlaced=True
         )
 
-        exampleList = []
-        [exampleList.append("Thing " + str(i))
-         for i in range(30) if i % 2 == 0]
-        h = len(exampleList) * 120
+    def appointmentList(self):
+        prisma =self.prisma
+        appointments = prisma.appointmentrequest.find_many(
+            where={
+                "clinicadmin":{
+                    "some":{
+                        "userId":self.user.id
+                    }
+                }
+            }
+        )           
+        h = len(appointments) * 120
         if h < 380:
             h = 380
         self.viewAppointmentScrolledFrame = ScrolledFrame(
@@ -185,17 +198,47 @@ class AdminManageAppointments(Frame):
         )
         self.viewAppointmentScrolledFrame.grid_propagate(False)
         self.viewAppointmentScrolledFrame.place(x=70, y=260, width=1520, height=420)
-        initialcoordinates = (20,20)
-        for appointment in exampleList:
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=x, y=y,
-                classname=f"appointment{appointment}", root=self.viewAppointmentScrolledFrame,
-                text=appointment, size=30, font=INTER,
+        COORDS = (20,20)
+        for appointment in appointments:
+            createdAt = appointment.createdAt
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.viewAppointmentScrolledFrame
+            FONT = ("Inter", 12)
+            self.controller.labelCreator(
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
+                classname=f"appointmentlist{appointment.id}", root=R,
                 isPlaced=True,
             )
 
-            initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
+            d = {
+            "appointmentButton": [
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+            ]
+            }
+            self.viewbutton = self.controller.buttonCreator(
+            ipath=d["appointmentButton"][0],
+            x=X+1280, y=Y+30, classname=f"viewbutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda: [print('view')],
+                isPlaced=True
             )
+            self.deletebutton = self.controller.buttonCreator(
+            ipath=d["appointmentButton"][1],
+            x=X+1360, y=Y+30, classname=f"deletebutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda: [print('delete')],
+                isPlaced=True
+            )
+
+            createdAt = self.controller.scrolledTextCreator(
+                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{appointment.id}_createdAt",
+                bg="#f1feff", hasBorder=False,
+                text=appointment.createdAt, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+
+            COORDS = (
+                COORDS[0], COORDS[1] + 120
+            )
+        

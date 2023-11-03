@@ -37,7 +37,7 @@ def get_handle(root) -> int:
 # eventId = None
 
 
-def gridGenerator(root: Frame, width, height, color, overriderelief: bool = False, relief: str = FLAT, name=None):
+def gridGenerator(root: Frame, width=None, height=None, color="#dee8e0", overriderelief: bool = False, relief: str = FLAT, name=None):
     for x in range(width):
         root.columnconfigure(x, weight=1, uniform="row")
         if height > width:
@@ -234,7 +234,7 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         return label
 
-    def frameCreator(self, x, y, framewidth, frameheight, root=None, classname=None, bg=LIGHTYELLOW, relief=FLAT, imgSettings=None, isPlaced=False) -> Frame:
+    def frameCreator(self, x, y, framewidth, frameheight, root=None, classname=None, bg="#dee8e0", relief=FLAT, imgSettings=None, isPlaced=False) -> Frame:
         classname = classname.replace(" ", "").lower()
         widthspan = int(framewidth / 20)
         heightspan = int(frameheight / 20)
@@ -255,7 +255,7 @@ class ElementCreator(ttk.Window):
         # example = [("Assets\Dashboard\Top Bar.png", 0, 0, "stringwhatever"),] -> 0 ('Assets\\Dashboard\\Top Bar.png', 0, 0, 'stringwhatever')
         for widgetname, widget in root.children.items():
             if widgetname == classname:
-                gridGenerator(widget, widthspan, heightspan, WHITE)
+                gridGenerator(widget, widthspan, heightspan, bg)
                 widget.grid_propagate(False)
                 if imgSettings:
                     for i, j in listofimages:
@@ -327,7 +327,7 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         return canvas
 
-    def menubuttonCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), text=None, variable=None, listofvalues=None, command=None) -> ttk.Menubutton:
+    def menubuttonCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), text=None, variable=None, listofvalues=None, command=None, isPlaced=False) -> ttk.Menubutton:
         """
         Takes in arguments x, y, width, height, from Figma, creates a frame,\n
         and places a menubutton inside of it. The menubutton is then returned into the global dict of widgets.\n
@@ -363,7 +363,8 @@ class ElementCreator(ttk.Window):
             menustyle.map(themename, foreground=[('active', BLACK), ("disabled", BLACK)],
                           background=[('active', "#ffe3bd"), ("disabled", "#ffe3bd")])
         self.frameCreator(x, y, width, height, root,
-                          classname=f"{classname}hostfr", bg=bgcolor, relief=FLAT)
+                          classname=f"{classname}hostfr", bg=bgcolor, relief=FLAT,
+                          isPlaced=isPlaced)
         frameref = self.widgetsDict[f"{classname}hostfr"]
         menubutton = ttk.Menubutton(
             frameref, text=text.title(),

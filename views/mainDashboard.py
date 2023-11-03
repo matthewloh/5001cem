@@ -26,12 +26,12 @@ from views.dashboard.patientDashboard import PatientDashboard
 
 class Dashboard(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None, name="maindashboard"):
-        super().__init__(parent, width=1, height=1, bg="#344557", name=name)
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name=name)
         self.controller = controller
         self.prisma = self.controller.mainPrisma
         self.parent = parent
         self.name = name
-        gridGenerator(self, 96, 54, LIGHTYELLOW)
+        gridGenerator(self, 96, 54, "#dee8e0")
         self.createFrames()
         self.createElements()
         self.grid(
