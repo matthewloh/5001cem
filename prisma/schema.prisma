@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  recursive_type_depth = "-1"
   interface            = "sync"
+  recursive_type_depth = "-1"
 }
 
 datasource db {
@@ -218,14 +218,6 @@ model doctorPrescription {
   details   String
 }
 
-model BookingAppointment {
-  id                 Int     @id @default(autoincrement())
-  AppName            String
-  SelectedSpeciality String?
-  AppContact         String
-  AppEmail           String
-}
-
 model GovHealthOfficerToGovRegSystem {
   A String
   B String
@@ -233,6 +225,14 @@ model GovHealthOfficerToGovRegSystem {
   @@unique([A, B], map: "_GovHealthOfficerToGovRegSystem_AB_unique")
   @@index([B], map: "_GovHealthOfficerToGovRegSystem_B_index")
   @@map("_GovHealthOfficerToGovRegSystem")
+}
+
+model BookingAppointment {
+  id                 Int     @id @default(autoincrement())
+  AppName            String
+  SelectedSpeciality String?
+  AppContact         String
+  AppEmail           String
 }
 
 enum Gender {
@@ -295,4 +295,26 @@ enum GovRegSystem_state {
   SELANGOR
   TERENGGANU
   WILAYAH_PERSEKUTUAN
+}
+
+enum AppointmentRequest_specialityWanted {
+  GENERAL_PRACTICE
+  DERMATOLOGY
+  CARDIOLOGY
+  GYNAECOLOGY
+  NEUROLOGY
+  OPHTHALMOLOGY
+  ORTHOPAEDICS
+  PAEDIATRICS
+  UROLOGY
+  OTHER
+  NONE
+}
+
+enum AppointmentRequest_reqStatus {
+  PENDING
+  CONFIRMED
+  ONGOING
+  CANCELLED
+  COMPLETED
 }
