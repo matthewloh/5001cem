@@ -121,7 +121,11 @@ class PatientDashboard(Frame):
                 Y: 180,
                 CN: "dash_findbrowseclinic",
                 R: self,
-                BF: lambda: [self.loadBrowseClinic()]
+                BF: lambda: [
+                    self.controller.threadCreator(
+                        target=self.loadBrowseClinic
+                    )
+                ]
             },
             "searchbyspecialist": {
                 IP: "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
@@ -129,7 +133,11 @@ class PatientDashboard(Frame):
                 Y: 300,
                 CN: "dash_searchbyspecialist",
                 R: self,
-                BF: lambda: [self.loadBrowseClinic()]
+                BF: lambda: [
+                    self.controller.threadCreator(
+                        target=self.loadBrowseClinic
+                    )
+                ]
             },
             "dash_viewappointments": {
                 IP: "assets/Dashboard/PatientAssets/PatientDashboard/ViewAppointments.png",
