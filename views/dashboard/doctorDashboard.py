@@ -24,6 +24,7 @@ from ttkbootstrap.toast import ToastNotification
 from views.mainBrowseClinic import MainBrowseClinic
 from views.mainPatientRequests import MainPatientRequestsInterface
 from views.mainViewAppointments import MainViewAppointmentsInterface
+from datetime import datetime
 
 
 class DoctorDashboard(Frame):
@@ -37,8 +38,10 @@ class DoctorDashboard(Frame):
         self.user = self.parent.user
         self.createFrames()
         self.createElements()
+        self.ScrolledFrame()
         self.createPatientList()
-        self.loadAppScrolledFrame()
+        self.createNavigateButton()
+        
 
     def createFrames(self):
         pass
@@ -52,25 +55,104 @@ class DoctorDashboard(Frame):
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
-    def loadAppScrolledFrame(self):
+
+    def ScrolledFrame(self):
         prisma = self.prisma
-        # appointments = prisma.appointment.find_many(
-        #     where={
-        #         "doctor": {
-        #             "is": {
-        #                 "userId": self.getUserID()
-        #             }
-        #         }
-        #     },
-        #     include={
-        #         "patient": {
-        #             "include": {
-        #                 "user": True
-        #             }
-        #         }
-        #     }
-        # )
+        viewAppointment = prisma.appointment.find_many(
+            include={
+                "patient": {
+                    "include": {
+                        "user":True,
+                    }
+                },
+                "doctor": {
+                    "include": {
+                        "clinic":True,
+                    }
+                }    
+            } 
+        )
+
+        h = len(viewAppointment) * 120
+        if h < 760:
+            h = 760
+        self.appointmentListFrame = ScrolledFrame(
+            master=self, width=1500, height=h, autohide=True, bootstyle="DoctorDashboard.bg"
+        )
+        self.appointmentListFrame.grid_propagate(False)
+        self.appointmentListFrame.place(x=48, y=279, width=844, height=722)
+        COORDS = (5, 5)
+        for appointments in viewAppointment:
+
+            patientName = appointments.patient.user.fullName
+            patientContact = appointments.patient.user.contactNo
+
+
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.appointmentListFrame
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{appointments.id}_bg", root=R,
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DashboardAppointmentbutton.png",
+                isPlaced=True,
+            )
+            UpAppPatientName = self.controller.scrolledTextCreator(
+                x=X+5, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_name",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientName}", font=("Inter", 20), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            UpAppPatientContact = self.controller.scrolledTextCreator(
+                x=X+170, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_phone_num",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            patientAppDate = appointments.startTime  # Replace this with your actual patientAppDate
+
+# Extract date and time components
+            date_part = patientAppDate.date()
+            time_part = patientAppDate.time()
+
+# Format the date and time as strings
+            date_string = date_part.strftime('%Y-%m-%d')  # Customize the date format as needed
+            time_string = time_part.strftime('%H:%M:%S')
+            UpAppDate = self.controller.scrolledTextCreator(
+                x=X+340, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
+                bg="#3D405B", hasBorder=False,
+                text=f"{date_string}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            UpAppTime = self.controller.scrolledTextCreator(
+                x=X+505, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_App_time",
+                bg="#3D405B", hasBorder=False,
+                text=f"{time_string}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            COORDS = (COORDS[0], COORDS[1] + 120)
+
+    
         
+    
+    #def createImageClinic(self):
+        #prisma = self.prisma
+        #viewClinicImg = prisma.clinic.find_many(     
+        #)
+    #"assets/Dashboard/DoctorAssets/DoctorClinic.png",
+    #"assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
+
+    def createNavigateButton(self):
+        self.navigateToClinicPage = self.controller.buttonCreator(
+            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1375, y=455,
+            classname = "ButtonToYourClinic", root=self, buttonFunction=lambda:[print("print=ToClinic")],
+            isPlaced=True,
+        )
+
+        self.navigateToPrescriptionPage = self.controller.buttonCreator(
+            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/PrescriptionMoreDetalis.png", x=1205, y=939,
+            classname = "ButtonToRequestPrescription", root=self, buttonFunction=lambda:[print("print=ToPrescription")],
+            isPlaced=True,
+        )
 
 
     def loadAssets(self):
@@ -81,9 +163,9 @@ class DoctorDashboard(Frame):
         )
         d = {
             "doctor": [
-                r"assets/Dashboard/DoctorAssets/DoctorYourClinic.png",
-                r"assets/Dashboard/DoctorAssets/DoctorPatientPrescriptions.png",
-                r"assets/Dashboard/DoctorAssets/DoctorPatientScheduling.png",
+                "assets/Dashboard/DoctorAssets/DoctorYourClinic.png",
+                "assets/Dashboard/DoctorAssets/DoctorPatientPrescriptions.png",
+                "assets/Dashboard/DoctorAssets/DoctorPatientScheduling.png",
             ],
         }
         self.browseClinic = self.controller.buttonCreator(

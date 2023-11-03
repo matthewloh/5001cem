@@ -34,6 +34,8 @@ class DoctorViewPatientRequests(Frame):
         self.createFrames()
         self.createElements()
         self.createbutton()
+        self.createFormEntries()
+        self.ScrolledFrame()
         
 
     def createFrames(self):
@@ -45,11 +47,106 @@ class DoctorViewPatientRequests(Frame):
             x=0, y=0, classname="requestspanelbg", root=self
         )
 
+    def createFormEntries(self):
+        CREATOR = self.controller.ttkEntryCreator
+        FONT = ("Arial", 16)
+
+        self.presTitle = ScrolledText(
+            master=self, autohide=True, width=640, height=345,
+        )
+        self.presTitle.place(
+            x=60, y=303, w=797 ,h=94,
+        )
+        self.presTitleTextArea = self.presTitle.text
+
+        self.presDesc = ScrolledText(
+            master=self, autohide=True, width=640, height=345,
+        )
+        self.presDesc.place(
+            x=60, y=524 ,w=797 ,h=276,
+        )
+        self.presTitleTextArea = self.presTitle.text
+
+    
+
+        
+
+        
+
+    def ScrolledFrame(self):
+        prisma = self.prisma
+        viewPrescriptionList = prisma.appointment.find_many(
+            include={
+                "patient": {
+                    "include": {
+                        "user":True,
+                    }
+                }
+            }
+        )
+               
+        h = len(viewPrescriptionList) * 120
+        if h < 760:
+            h = 760
+        self.viewPrescriptionList = ScrolledFrame(
+            master=self, width=1500, height=h, autohide=True, bootstyle="border.bg"
+        )
+        self.viewPrescriptionList.grid_propagate(False)
+        self.viewPrescriptionList.place(x=949, y=282, width=681, height=721)
+        COORDS = (5, 5)
+        for prescriptions in viewPrescriptionList:
+
+            patientName = prescriptions.u
+            patientContact = prescriptions.patient.user.contactNo
+            patientEmail = prescriptions.patient.user.email
+
+
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.viewPrescriptionList
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{prescriptions.id}_bg", root=R,
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/RequestPrescriptionList.png",
+                isPlaced=True,
+            )
+            PresPatientName = self.controller.scrolledTextCreator(
+                x=X+5, y=Y+30, width=145, height=60, root=R, classname=f"{prescriptions.id}_Pres_req_name",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientName}", font=("Inter", 20), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            PresPatientContact = self.controller.scrolledTextCreator(
+                x=X+170, y=Y+30, width=145, height=60, root=R, classname=f"{prescriptions.id}_Pres_req_phone_num",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )  
+            PresPatientContact = self.controller.scrolledTextCreator(
+                x=X+335, y=Y+30, width=145, height=60, root=R, classname=f"{prescriptions.id}_Pres_req_phonenum",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientEmail}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AccpectPrescription.png",
+                classname=f"AcceptPrescripton{prescriptions.id}", root=R,
+                x=510, y=Y+30, buttonFunction=lambda t = prescriptions.id: [print(f"hide {t}")],
+                isPlaced=True,
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/RejectPrescription.png",
+                classname=f"RejectPrescripton{prescriptions.id}", root=R,
+                x=X+590, y=Y+30, buttonFunction=lambda t = prescriptions.id: [print(f"delete {t}")],
+                isPlaced=True
+            )
+            COORDS = (COORDS[0], COORDS[1] + 120)
+
+
 
         
 
     def createbutton(self):
         self.submitButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/DoctorAssets/patientPrescription/DoctorSubmitButton.png", x=682 , y=880,
+            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314 , y=948,
             classname = "doctorSubmitbutton" , root=self, buttonFunction=lambda:[print('print=Submit')]
         )
