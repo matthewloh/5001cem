@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from views.dashboard.adminDashboard import ClinicAdminDashboard
+    from views.mainDashboard import Dashboard
 import calendar
 import datetime as dt
 import re
@@ -28,7 +28,7 @@ from views.mainViewAppointments import MainViewAppointmentsInterface
 
 
 class ClinicAdminDashboard(Frame):
-    def __init__(self, parent: ClinicAdminDashboard = None, controller: ElementCreator = None):
+    def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="primarypanel")
         self.controller = controller
         self.parent = parent

@@ -227,25 +227,6 @@ model GovHealthOfficerToGovRegSystem {
   @@map("_GovHealthOfficerToGovRegSystem")
 }
 
-model AppointmentRequest {
-  id               Int                                 @id @default(autoincrement())
-  createdAt        DateTime                            @default(now())
-  updatedAt        DateTime
-  location         String
-  preferredDate    String
-  preferredTime    String
-  specialityWanted AppointmentRequest_specialityWanted @default(NONE)
-  additionalInfo   String?                             @db.Text
-  reqStatus        AppointmentRequest_reqStatus        @default(PENDING)
-  patientId        String?
-  adminId          String?
-  clinicId         String?
-
-  @@index([adminId])
-  @@index([clinicId])
-  @@index([patientId])
-}
-
 model BookingAppointment {
   id                 Int     @id @default(autoincrement())
   AppName            String
