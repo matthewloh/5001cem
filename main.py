@@ -4,6 +4,7 @@ import threading
 from tkinter import *
 import bcrypt
 import ttkbootstrap as ttk
+from ttkbootstrap.utility import enable_high_dpi_awareness
 from ttkbootstrap.constants import *
 from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.toast import ToastNotification
@@ -238,6 +239,7 @@ class Window(ElementCreator):
 
 
 def runGui():
+    enable_high_dpi_awareness()
     window = Window()
     window.mainloop()
 

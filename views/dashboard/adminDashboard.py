@@ -197,7 +197,7 @@ class ClinicAdminDashboard(Frame):
             x = initialCoordinates[0]
             y = initialCoordinates[1]
             self.controller.textElement(
-                ipath="assets/Dashboard/ClinicAdminAssets/AdminDashboard/ListButton.png",
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrolldashboardbutton.png",
                 x=x, y=y, classname=f"doctorlistbg{doctor.id}", root=self.doctorsScrolledFrame,
                 text=f"{doctor.user.fullName}", size=30, font=INTER,
                 isPlaced=True,
@@ -309,34 +309,34 @@ class ClinicAdminDashboard(Frame):
                 buttonFunction=lambda: [print('delete')],
                 isPlaced=True
             )
-            
+
             doctorName = self.controller.scrolledTextCreator(
-                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{doctor.id}_name",
+                x=X+50, y=Y+30, width=200, height=60, root=R, classname=f"{doctor.id}_name",
                 bg="#f1feff", hasBorder=False,
                 text=doctor.user.fullName, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             doctorSpeciality = self.controller.scrolledTextCreator(
-                x=X+290, y=Y+30, width=260, height=60, root=R, classname = f"{doctor.id}_speciality",
+                x=X+290, y=Y+30, width=260, height=60, root=R, classname=f"{doctor.id}_speciality",
                 bg="#f1feff", hasBorder=False,
                 text=doctor.speciality, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
-                hasVbar=False                           
+                hasVbar=False
             )
             doctorUserID = self.controller.scrolledTextCreator(
-                x=X+610, y=Y+25, width=200, height=65, root=R, classname = f"{doctor.id}_userId",
+                x=X+610, y=Y+25, width=200, height=65, root=R, classname=f"{doctor.id}_userId",
                 bg="#f1feff", hasBorder=False,
                 text=doctor.userId, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
-                hasVbar=False                           
+                hasVbar=False
             )
             doctorClinicID = self.controller.scrolledTextCreator(
-                x=X+880, y=Y+25, width=200, height=65, root=R, classname = f"{doctor.id}_clinicId",
+                x=X+880, y=Y+25, width=200, height=65, root=R, classname=f"{doctor.id}_clinicId",
                 bg="#f1feff", hasBorder=False,
                 text=doctor.clinicId, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
-                hasVbar=False                           
+                hasVbar=False
             )
             COORDS = (
                 COORDS[0], COORDS[1] + 120
