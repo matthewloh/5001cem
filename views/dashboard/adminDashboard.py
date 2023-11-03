@@ -246,7 +246,7 @@ class ClinicAdminDashboard(Frame):
         self.doctorsScrolledFrame = ScrolledFrame(
             master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
-            x=680, y=150, width=900, height=350
+            x=685, y=150, width=900, height=350
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
