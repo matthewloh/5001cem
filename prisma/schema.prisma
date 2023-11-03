@@ -34,21 +34,23 @@ model User {
 }
 
 model Patient {
-  id           String               @id @default(cuid())
-  userId       String
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  appointments Appointment[]
-  healthRecord PatientHealthRecord?
+  id              String               @id @default(cuid())
+  userId          String
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+  healthRecord    PatientHealthRecord?
+  madeAppRequests AppointmentRequest[]
 
   @@index([userId])
 }
 
 model ClinicAdmin {
-  id       String  @id @default(cuid())
-  userId   String
-  clinicId String?
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clinic   Clinic? @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  id             String               @id @default(cuid())
+  userId         String
+  clinicId       String?
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clinic         Clinic?              @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  requestManaged AppointmentRequest[]
 
   @@index([userId])
   @@index([clinicId])
@@ -105,6 +107,28 @@ model Appointment {
   @@index([doctorId])
 }
 
+model AppointmentRequest {
+  id               Int          @id @default(autoincrement())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  location         String
+  preferredDate    String
+  preferredTime    String
+  specialityWanted Speciality   @default(NONE)
+  additionalInfo   String?      @db.Text
+  reqStatus        ApptStatus   @default(PENDING)
+  clinicId         String?
+  patientId        String?
+  adminId          String?
+  clinic           Clinic?      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient          Patient?     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  approvedBy       ClinicAdmin? @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([adminId])
+  @@index([clinicId])
+}
+
 model Prescription {
   id            Int         @id @default(autoincrement())
   title         String
@@ -127,18 +151,19 @@ model DoctorApptSchedule {
 }
 
 model Clinic {
-  id                 String            @id @default(cuid())
+  id                 String               @id @default(cuid())
   name               String
   address            String
   city               String
   state              String
   zip                String
   phoneNum           String
-  clinicHrs          String?           @db.Text
+  clinicHrs          String?              @db.Text
   clinicImg          Bytes?
   admin              ClinicAdmin[]
   doctor             Doctor[]
   clinicRegistration ClinicEnrolment[]
+  appRequests        AppointmentRequest[]
 }
 
 model ClinicEnrolment {

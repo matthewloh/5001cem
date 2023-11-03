@@ -176,3 +176,6 @@ class AdminBrowseClinic(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+
+    def getClinicInfo(self):
+        pass

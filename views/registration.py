@@ -24,11 +24,11 @@ from views.registrationForms.patientForm import PatientRegistrationForm
 
 class RegistrationPage(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None, name="registration"):
-        super().__init__(parent, width=1, height=1, bg="#344557", name=name)
+        super().__init__(parent, width=1, height=1, bg="#dee8e0", name=name)
         self.controller = controller
         self.parent = parent
         self.name = name
-        gridGenerator(self, 96, 54, LIGHTYELLOW)
+        gridGenerator(self, 96, 54, "#dee8e0")
         self.createFrames()
         self.createElements()
         self.prisma = self.controller.mainPrisma

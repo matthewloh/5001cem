@@ -20,6 +20,7 @@ BLACK = "#000000"
 TRANSPARENTGREEN = "#0F0F0F"
 BUTTON = "button"
 LABEL = "label"
+HUMANTIME = "%I:%M%p" # 12:00AM 
 AVENIRNEXT = "Fonts/AvenirNext-Regular.ttf"
 SFPRO = "Fonts/SF-Pro.ttf"
 INTER = "Fonts/Inter-Regular.ttf"
