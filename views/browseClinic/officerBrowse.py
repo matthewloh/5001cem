@@ -24,8 +24,6 @@ from pendulum import timezone
 import tkintermapview
 
 
-
-
 class OfficerBrowseClinic(Frame):
     def __init__(self, parent: GovOfficerDashboard, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="browseclinicpanel")
@@ -35,7 +33,7 @@ class OfficerBrowseClinic(Frame):
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         self.user = self.parent.user
         self.prisma = self.controller.mainPrisma
-        
+
         self.createFrames()
         self.createElements()
 
@@ -76,54 +74,46 @@ class OfficerBrowseClinic(Frame):
             clinicName = self.controller.scrolledTextCreator(
                 x=60, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_name",
                 bg="#f1feff", hasBorder=False, text=clinic.name,
-                font=("Inter", 14), fg=BLACK, 
+                font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicId = self.controller.scrolledTextCreator(
-                x=290, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_id",
+                x=290, y=Y+20, width=200, height=70, root=R, classname=f"{clinic.id}_id",
                 bg="#f1feff", hasBorder=False, text=clinic.id,
-                font=("Inter", 14), fg=BLACK, 
+                font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicPhone = self.controller.scrolledTextCreator(
                 x=540, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_phone",
                 bg="#f1feff", hasBorder=False, text=clinic.phoneNum,
-                font=("Inter", 14), fg=BLACK, 
+                font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicHrs = self.controller.scrolledTextCreator(
-                x=780, y=Y+20, width=220, height=60, root=R, classname=f"{clinic.id}_hrs",
+                x=760, y=Y+20, width=240, height=60, root=R, classname=f"{clinic.id}_hrs",
                 bg="#f1feff", hasBorder=False, text=clinic.clinicHrs,
-                font=("Inter", 14), fg=BLACK, 
+                font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicAddress = self.controller.scrolledTextCreator(
-                x=1020, y=Y+20, width=260, height=60, root=R, classname=f"{clinic.id}_address",
+                x=1020, y=Y+20, width=280, height=60, root=R, classname=f"{clinic.id}_address",
                 bg="#f1feff", hasBorder=False, text=clinic.address,
-                font=("Inter", 14), fg=BLACK, 
+                font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
-
-            hidebtn = self.controller.buttonCreator(
-                ipath="assets/Dashboard/OfficerAssets/hideindicator.png",
-                classname=f"hideindicator{clinic.id}", root=R,
-                x=1300, y=Y+20, buttonFunction=lambda t = clinic.id: [print(f"hide {t}")],
-                isPlaced=True,
-            )
-            ToolTip(hidebtn, f"Hide {clinic.name}")
 
             deletebtn = self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/dustbin.png",
                 classname=f"dustbin{clinic.id}", root=R,
-                x=1380, y=Y+20, buttonFunction=lambda t = clinic.id: [print(f"delete {t}")],
+                x=1340, y=Y+20, buttonFunction=lambda t=clinic.id: self.deleteClinic(t),
                 isPlaced=True
             )
             ToolTip(deletebtn, f"Delete {clinic.name}")
-            
+
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
@@ -135,19 +125,29 @@ class OfficerBrowseClinic(Frame):
                 "supervisingOfficer": {"some": {"userId": self.user.id}},
             },
             include={
-                "programmeRegistration":{
-                                            "where": {
-                                                "status": "APPROVED"
-                                            },
-                                            "include": {
-                                                "clinic": True
-                                            }
-                                        }
+                "programmeRegistration": {
+                    "where": {
+                        "status": "APPROVED"
+                    },
+                    "include": {
+                        "clinic": True
+                    }
+                }
             }
-            
         )
-         
-    
+
+    def deleteClinic(self, clinicId: str):
+        prisma = self.prisma
+        self.approvedClinics = prisma.clinic.delete(
+            where={
+                "id": clinicId
+            }
+        )
+
+        self.initializeManageClinicsSystem()
+        self.parent.loadClinicsIntoBottomFrame()
+        self.parent.loadClinicsIntoSideFrame()
+        self.parent.loadSupervisedClinicsOnMap()
 
     # def loadClinicsRequests(self):
     #     pass

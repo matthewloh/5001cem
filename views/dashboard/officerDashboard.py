@@ -54,6 +54,12 @@ class GovOfficerDashboard(Frame):
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
+        self.controller.buttonCreator(
+            ipath=r"assets/Dashboard/OfficerAssets/officerrefreshbtn.png",
+            x=1560, y=120, classname="refreshbtn", root=self,
+            buttonFunction=lambda: [self.refreshClinicsSideFrame()]
+        )
+
         self.initializeGovRegSystem()
         self.initializeApprovedClinicDetails()
         self.loadSupervisedClinicsOnMap()
@@ -69,7 +75,7 @@ class GovOfficerDashboard(Frame):
             master=self, width=780, height=h, autohide=True, bootstyle="officer-bg"
         )
         self.clinicsListFrame.grid_propagate(False)
-        self.clinicsListFrame.place(x=880, y=260, width=780, height=760)
+        self.clinicsListFrame.place(x=880, y=260, width=780, height=750)
         COORDS = (20, 20)
         for clinicEnrolment in self.systemManaged.programmeRegistration:
             clinic = clinicEnrolment.clinic
@@ -99,10 +105,18 @@ class GovOfficerDashboard(Frame):
                 text=clinic.address, font=("Inter", 12), fg=BLACK,
                 isDisabled=True, isJustified=True, justification="left",
             )
+
+            if clinicEnrolment.status == "APPROVED":
+                statusimage = "assets/Dashboard/OfficerAssets/approved.png"
+            elif clinicEnrolment.status == "PENDING":
+                statusimage = "assets/Dashboard/OfficerAssets/pending.png"
+            elif clinicEnrolment.status == "REJECTED":
+                statusimage = "assets/Dashboard/OfficerAssets/rejected.png"
+
             clinicStatus = self.controller.buttonCreator(
                 x=X+660, y=Y+20, classname=f"{clinic.id}_status", root=R,
-                ipath="assets/Dashboard/OfficerAssets/approved.png" if clinicEnrolment.status == "APPROVED" else "assets/Dashboard/OfficerAssets/pending.png",
-                buttonFunction=lambda c=clinic: [self.updateClinicStatus(c)],
+                ipath=statusimage,
+                buttonFunction=lambda c=clinic.id: [self.updateClinicStatus(c)],
                 isPlaced=True
             )
             COORDS = (
@@ -179,9 +193,10 @@ class GovOfficerDashboard(Frame):
         clinicsSearchEntry.bind("<FocusIn>", lambda e: [clinicsSearchEntry.delete(0, END)] if clinicsSearchEntry.get() == "Search" else None)
         clinicsSearchEntry.bind("<FocusOut>", lambda e: [clinicsSearchEntry.grid_forget(), self.loadClinicsSearchBar()])
 
-
+    def refreshClinicsSideFrame(self):
+        self.initializeGovRegSystem()
+        self.loadClinicsIntoSideFrame()
         
-
 
     def loadSupervisedClinicsOnMap(self):
         self.loc = GoogleV3(api_key=os.getenv(
@@ -205,6 +220,9 @@ class GovOfficerDashboard(Frame):
                 clinicCoordinates.latitude, clinicCoordinates.longitude, text=clinic.name
             )
 
+    
+
+
     def initializeGovRegSystem(self):
         self.systemManaged = self.prisma.govregsystem.find_first(
             where={
@@ -219,7 +237,51 @@ class GovOfficerDashboard(Frame):
                 }
             }
         )
+
+    def updateClinicStatus(self, clinic):
+        #if clinic is approved, then change clinic to pending, change approved image to pending image
+        #if clinic is pending, then change clinic to approved, change pending image to approved image
+        self.clinicEnrolment = self.prisma.clinicenrolment.find_first(
+            where={
+                "clinicId": clinic
+            }
+        )
+
+        if self.clinicEnrolment.status == "APPROVED":
+            self.clinicEnrolment = self.prisma.clinicenrolment.update(
+                data={"status": "PENDING"},
+                where={"clinicId_govRegId": {"clinicId": clinic, "govRegId": self.systemManaged.id}},
+                include={"clinic": True}
+            )
+            
+            self.initializeGovRegSystem()
+            self.initializeApprovedClinicDetails()
+            self.loadClinicsIntoSideFrame()
+            self.loadClinicsIntoBottomFrame()
+            
+        elif self.clinicEnrolment.status == "PENDING":  
+            self.clinicEnrolment = self.prisma.clinicenrolment.update(
+                data={"status": "APPROVED"},
+                where={"clinicId_govRegId": {"clinicId": clinic, "govRegId": self.systemManaged.id}},
+                include={"clinic": True}
+            )
+
+            self.initializeGovRegSystem()
+            self.initializeApprovedClinicDetails()
+            self.loadClinicsIntoSideFrame()
+            self.loadClinicsIntoBottomFrame()
         
+        elif self.clinicEnrolment.status == "REJECTED":
+            self.clinicEnrolment = self.prisma.clinicenrolment.update(
+                data={"status": "REJECTED"},
+                where={"clinicId_govRegId": {"clinicId": clinic, "govRegId": self.systemManaged.id}},
+                include={"clinic": True}
+            )
+
+            self.initializeGovRegSystem()
+            self.initializeApprovedClinicDetails()
+            self.loadClinicsIntoSideFrame()
+            self.loadClinicsIntoBottomFrame()
 
     def initializeApprovedClinicDetails(self):
         self.approvedClinics = self.prisma.govregsystem.find_first(

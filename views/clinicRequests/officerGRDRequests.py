@@ -79,7 +79,7 @@ class OfficerGRDRequests(Frame):
             )
 
             clinicId = self.controller.scrolledTextCreator(
-                x=320, y=Y+25, width=200, height=60, root=R, classname=f"{clinic.id}_id",
+                x=320, y=Y+25, width=200, height=70, root=R, classname=f"{clinic.id}_id",
                 bg="#f1feff", hasBorder=False, text=clinic.id,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
@@ -93,7 +93,7 @@ class OfficerGRDRequests(Frame):
             )
 
             clinicHrs = self.controller.scrolledTextCreator(
-                x=790, y=Y+25, width=200, height=60, root=R, classname=f"{clinic.id}_hrs",
+                x=770, y=Y+25, width=240, height=60, root=R, classname=f"{clinic.id}_hrs",
                 bg="#f1feff", hasBorder=False, text=clinic.clinicHrs,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
@@ -146,10 +146,12 @@ class OfficerGRDRequests(Frame):
         )
         
 
-        ToastNotification("Clinic Status", f"{self.accept.clinic.name} has been approved", duration=3, bootstyle="success", )
+        ToastNotification("Clinic Status", f"{self.accept.clinic.name} has been approved", duration=3000, bootstyle="success", )
 
         self.initializeOfficerGRDRequests()
         self.loadClinicsRequestsFrame()
+        self.parent.loadClinicsIntoBottomFrame()
+        self.parent.loadClinicsIntoSideFrame()
 
     def rejectClinic(self, clinicid: str):
         prisma = self.prisma
@@ -159,7 +161,9 @@ class OfficerGRDRequests(Frame):
             include={"clinic": True}
         )
 
-        ToastNotification("Clinic Status", f"{self.reject.clinic.name} has been rejected", duration=3, bootstyle="success")
+        ToastNotification("Clinic Status", f"{self.reject.clinic.name} has been rejected", duration=3000, bootstyle="success")
 
         self.initializeOfficerGRDRequests()
         self.loadClinicsRequestsFrame()
+        self.parent.loadClinicsIntoBottomFrame()
+        self.parent.loadClinicsIntoSideFrame()
