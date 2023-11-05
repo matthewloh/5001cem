@@ -37,35 +37,50 @@ class AdminManagePatientRequests(Frame):
         self.createPatientList()
 
     def createFrames(self):
-        pass
+        self.managePatientsClinicFrame = self.controller.frameCreator(
+            x=0, y=0, framewidth=1680, frameheight=1080, classname="managepatientsclinicframe", root=self,
+            bg="#dee8e0"
+        )
+        self.managePatientsClinicFrame.grid_remove()
 
     def createElements(self):
+        self.createLabels()
+        self.createButtons()
+
+    def createLabels(self):
         self.controller.labelCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/PatientRequestsBg.png",
             x=0, y=0, classname="patientrequests", root=self
         )
-        self.createButtons()
+        self.controller.labelCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/ManagePatientRequest.png",
+            x=0, y=0, classname="managepatientrequest", root=self.managePatientsClinicFrame
+        )
 
     def createButtons(self):
         all_requests = self.controller.buttonCreator(
             x=940, y=140, classname="all_requests", root=self,
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/AllRequests.png",
-            buttonFunction=lambda: [self.createPatientList()],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                target=self.createPatientList)],
         )
         pending = self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Pending.png",
             x=1120, y=140, classname="pending_requests", root=self,
-            buttonFunction=lambda: [self.createPatientList(pending=True)],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.createPatientList, pending=True)],
         )
         accepted = self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Accepted.png",
             x=1300, y=140, classname="accepted_requests", root=self,
-            buttonFunction=lambda: [self.createPatientList(confirmed=True)],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.createPatientList, confirmed=True)],
         )
         rejected = self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Rejected.png",
             x=1480, y=140, classname="rejected_requests", root=self,
-            buttonFunction=lambda: [self.createPatientList(cancelled=True)],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.createPatientList, cancelled=True)],
         )
 
     def createPatientList(self, pending=False, confirmed=False, cancelled=False):
@@ -90,12 +105,18 @@ class AdminManagePatientRequests(Frame):
                         "user": True
                     }
                 },
-                "clinic": True
+                "clinic": True,
+                "appointments": True,
+                "approvedBy": {
+                    "include": {
+                        "user": True
+                    }
+                }
             }
         )
         # Loading Current Viewed ScrolledText
         text = f"All Patient Requests" if not pending and not confirmed and not cancelled else f"{'Pending' if pending else 'Confirmed' if confirmed else 'Cancelled'} Patient Requests"
-        fg = "#f6f2ff" if pending else "#d9fbfb" if confirmed else "#fff1f3" if cancelled else "#e6daff"
+        fg = "#f6f2ff" if pending else "#d9fbfb" if confirmed else "#fff1f3" if cancelled else "#ffffff"
         self.controller.scrolledTextCreator(
             x=40, y=146, width=880, height=60, root=self, classname="patientrequesttext",
             bg="#ffbc5b", hasBorder=False,
@@ -112,8 +133,11 @@ class AdminManagePatientRequests(Frame):
         self.patientRequestScrolledFrame.place(
             x=20, y=280, width=1640, height=760)
         COORDS = (20, 0)
-        for req in appRequests:
+        KL = timezone("Asia/Kuala_Lumpur")
+        fmt = "%A, %d/%m/%Y, %I:%M%p"
+        for i, req in list(enumerate(appRequests)):
             patient = req.patient
+            created = KL.convert(req.createdAt).strftime(fmt)
             X = COORDS[0]
             Y = COORDS[1]
             R = self.patientRequestScrolledFrame
@@ -126,15 +150,15 @@ class AdminManagePatientRequests(Frame):
             patientName = self.controller.scrolledTextCreator(
                 x=X+20, y=Y+20, width=180, height=80, root=R, classname=f"{patient.id}_name",
                 bg="#f1feff", hasBorder=False,
-                text=patient.user.fullName, font=FONT, fg=BLACK,
+                text=f"{i}. { patient.user.fullName }\nAdded: {created}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified=True, justification="center",
                 hasVbar=False
             )
             patientHealthRecord = self.controller.buttonCreator(
                 ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/HealthRecordButton.png",
                 x=X+220, y=Y+20, classname=f"healthrecord{req.id}", root=R,
-                buttonFunction=lambda hr=patient.healthRecord: [
-                    print(hr)
+                buttonFunction=lambda req=req: [
+                    self.createManagePatientRequest(req),
                     # self.loadHealthRecord(hr)
                 ],
                 isPlaced=True
@@ -160,13 +184,15 @@ class AdminManagePatientRequests(Frame):
         self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/AcceptRequest.png",
             x=X + 1360, y=Y + 20, classname=f"accept{req.id}", root=R,
-            buttonFunction=lambda: [self.acceptAppointment(req)],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.acceptAppointment, req=req)],
             isPlaced=True
         )
         self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/RejectRequest.png",
             x=X + 1480, y=Y + 20, classname=f"reject{req.id}", root=R,
-            buttonFunction=lambda: [self.rejectAppointment(req)],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.rejectAppointment, req=req)],
             isPlaced=True
         )
 
@@ -174,10 +200,19 @@ class AdminManagePatientRequests(Frame):
         IP = "assets/Dashboard/ClinicAdminAssets/PatientRequests/ResetConfirmed.png" if req.reqStatus == "CONFIRMED" else "assets/Dashboard/ClinicAdminAssets/PatientRequests/ResetCancelled.png"
         self.controller.buttonCreator(
             ipath=IP,
-            x=X + 1420, y=Y + 20, classname=f"cancel{req.id}", root=R,
-            buttonFunction=lambda: [self.cancelAppointment(req)],
+            x=X + 1360 if req.reqStatus == "CONFIRMED" else X + 1420,
+            y=Y + 20, classname=f"cancel{req.id}", root=R,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.resetAppointment, req=req)],
             isPlaced=True
         )
+        if req.reqStatus == "CONFIRMED":
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/CreateAppointments.png",
+                x=X + 1480, y=Y + 20, classname=f"create_appointments{req.id}", root=R,
+                buttonFunction=lambda: [self.managePatientRequest(req)],
+                isPlaced=True
+            )
 
     def acceptAppointment(self, req: AppointmentRequest):
         prisma = self.prisma
@@ -186,10 +221,18 @@ class AdminManagePatientRequests(Frame):
                 "id": req.id
             },
             data={
-                "reqStatus": "CONFIRMED"
+                "reqStatus": "CONFIRMED",
+                "approvedBy": {
+                    "connect": {
+                        "id": prisma.clinicadmin.find_first(
+                            where={"AND": [{"userId": self.user.id}, {
+                                "clinicId": req.clinic.id}]}
+                        ).id
+                    }
+                }
             }
         )
-        self.createPatientList(confirmed=True)
+        self.controller.threadCreator(self.createPatientList, confirmed=True)
 
     def rejectAppointment(self, req: AppointmentRequest):
         prisma = self.prisma
@@ -198,19 +241,148 @@ class AdminManagePatientRequests(Frame):
                 "id": req.id
             },
             data={
-                "reqStatus": "CANCELLED"
+                "reqStatus": "CANCELLED",
+                "approvedBy": {
+                    "connect": {
+                        "id": prisma.clinicadmin.find_first(
+                            where={
+                                "AND": [{"userId": self.user.id}, {"clinicId": req.clinic.id}]
+                            }
+                        ).id
+                    }
+                }
             }
         )
-        self.createPatientList(cancelled=True)
+        self.controller.threadCreator(self.createPatientList, cancelled=True)
 
-    def cancelAppointment(self, req: AppointmentRequest):
+    def resetAppointment(self, req: AppointmentRequest):
         prisma = self.prisma
         prisma.appointmentrequest.update(
             where={
                 "id": req.id
             },
             data={
-                "reqStatus": "PENDING"
+                "reqStatus": "PENDING",
+                "approvedBy": {
+                    "disconnect": True
+                }
             }
         )
-        self.createPatientList(pending=True)
+        self.controller.threadCreator(self.createPatientList, pending=True)
+
+    def managePatientRequest(self, req: AppointmentRequest):
+        self.controller.threadCreator(
+            self.createManagePatientRequest, req=req)
+
+    def createManagePatientRequest(self, req: AppointmentRequest):
+        self.managePatientsClinicFrame.grid()
+        self.managePatientsClinicFrame.tkraise()
+        # Patient Name, Gender and Age (DOB)
+        age = dt.datetime.now().year - req.patient.user.dateOfBirth.year
+        nameGenderAge = f"Patient: {req.patient.user.fullName}\n{req.patient.user.gender}, {age} years old"
+        # Blood Type, Height and Weight
+        bloodTypeHeightWeight = f"Blood type: {req.patient.healthRecord.bloodType}\nHeight : {req.patient.healthRecord.height} cm & Weight : {req.patient.healthRecord.weight} kg"
+        # Past Medical History (Surgeries, Past Medications, Family History)
+        PMH = f"Surgeries: {req.patient.healthRecord.pastSurgery}\nPast Medications: {req.patient.healthRecord.pastMedication}\nFamily History: {req.patient.healthRecord.familyHistory}"
+        # Current Health Status (Allergies, Current Medications, Current Symptoms, Additional Info)
+        CMH = f"Allergies: {req.patient.healthRecord.allergies}\nCurrent Medications: {req.patient.healthRecord.currentMedication}\nCurrent Symptoms: {req.additionalInfo}"
+        # Create Text Spaces
+        self.controller.scrolledTextCreator(
+            x=260, y=260, width=540, height=60, root=self.managePatientsClinicFrame, classname="manage_req_patientname_gender_age",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{nameGenderAge}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=260, y=360, width=540, height=60, root=self.managePatientsClinicFrame, classname="manage_req_bloodtype_height_weight",
+            bg=WHITE, hasBorder=BLACK,
+            text=bloodTypeHeightWeight, font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=500, width=760, height=160, root=self.managePatientsClinicFrame, classname="manage_req_PMH",
+            bg=WHITE, hasBorder=BLACK,
+            text=PMH, font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=740, width=760, height=160, root=self.managePatientsClinicFrame, classname="manage_req_CMH",
+            bg=WHITE, hasBorder=BLACK,
+            text=CMH, font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+
+        # Request Information
+        # Appointment Preferences of Patient
+        KL = timezone("Asia/Kuala_Lumpur")
+        createdAt = KL.convert(req.createdAt).strftime("%A, %d/%m/%Y, %I:%M%p")
+        appPreferences = f"Preferred Date: {req.preferredDate}\nPreferred Time: {req.preferredTime}\nSpeciality Wanted: {req.specialityWanted}"
+        numOfAppointments = len(req.appointments)
+        requestInfoHistory = f"Request Status: {req.reqStatus}\nRequest Date: {createdAt}\nNumber of Appointments: {numOfAppointments}\nMost recent approval by: {req.approvedBy.user.fullName if req.approvedBy else 'None'}"
+        self.controller.scrolledTextCreator(
+            x=880, y=260, width=760, height=160, root=self.managePatientsClinicFrame, classname="manage_req_appointment_preferences",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{appPreferences}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.controller.scrolledTextCreator(
+            x=880, y=500, width=760, height=160, root=self.managePatientsClinicFrame, classname="manage_req_request_info_history",
+            bg=WHITE, hasBorder=BLACK,
+            text=requestInfoHistory, font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Back.png",
+            x=20, y=40, classname="manage_req_back", root=self.managePatientsClinicFrame,
+            buttonFunction=lambda: [
+                self.managePatientsClinicFrame.grid_remove()],
+        )
+        if req.reqStatus == "CONFIRMED":
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/CreateAnAppointment.png",
+                x=880, y=760, classname="manage_req_create_appointment", root=self.managePatientsClinicFrame,
+                buttonFunction=lambda: [self.controller.threadCreator(
+                    self.createAppointment, req=req)],
+            )
+        elif req.reqStatus == "CANCELLED":
+            # Delete Request
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/DeleteRequest.png",
+                x=880, y=760, classname="manage_req_delete_request", root=self.managePatientsClinicFrame,
+                buttonFunction=lambda: [self.controller.threadCreator(
+                    self.deleteRequest, req=req)],
+            )
+            try:
+                for widgetname, widget in self.managePatientsClinicFrame.children.items():
+                    if "manage_req_create_appointment" in widgetname:
+                        widget.grid_remove()
+            except AttributeError:
+                pass
+        self.manageAppointments = self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/ManageAppointmentsRequest.png",
+            x=880, y=860, classname="manage_req_manage_appointments", root=self.managePatientsClinicFrame,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                self.manageAppointment, req=req)],
+        ) if req.reqStatus == "CONFIRMED" else None
+
+    def createAppointment(self, req: AppointmentRequest):
+        pass
+    
+    def manageAppointment(self, req: AppointmentRequest):
+        pass
+
+    def deleteRequest(self, req: AppointmentRequest):
+        result = messagebox.askyesno(
+            "Delete Request", "Are you sure you want to delete this request?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.appointmentrequest.delete(where={
+                "id": req.id
+            })
+            self.controller.threadCreator(
+                self.createPatientList, cancelled=True)
+        else:
+            return

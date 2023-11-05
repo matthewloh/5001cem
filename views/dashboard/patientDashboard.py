@@ -74,12 +74,12 @@ class PatientDashboard(Frame):
         )
         self.viewPatients = self.controller.buttonCreator(
             ipath=d["patient"][1],
-            x=20, y=460, classname="viewpatients_chip", root=self.parent,
+            x=20, y=540, classname="viewpatients_chip", root=self.parent,
             buttonFunction=lambda: [self.loadViewPatients()],
         )
         self.viewDoctorSchedule = self.controller.buttonCreator(
             ipath=d["patient"][2],
-            x=20, y=540, classname="viewdoctorschedule_chip", root=self.parent,
+            x=20, y=460, classname="viewdoctorschedule_chip", root=self.parent,
             buttonFunction=lambda: [self.loadViewAppointments()],
         )
         self.loadDashboardButtons()
@@ -127,22 +127,22 @@ class PatientDashboard(Frame):
                     )
                 ]
             },
-            "searchbyspecialist": {
-                IP: "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
-                X: 40,
-                Y: 300,
-                CN: "dash_searchbyspecialist",
-                R: self,
-                BF: lambda: [
-                    self.controller.threadCreator(
-                        target=self.loadBrowseClinic
-                    )
-                ]
-            },
+            # "searchbyspecialist": {
+            #     IP: "assets/Dashboard/PatientAssets/PatientDashboard/SearchBySpeciality.png",
+            #     X: 40,
+            #     Y: 300,
+            #     CN: "dash_searchbyspecialist",
+            #     R: self,
+            #     BF: lambda: [
+            #         self.controller.threadCreator(
+            #             target=self.loadBrowseClinic
+            #         )
+            #     ]
+            # },
             "dash_viewappointments": {
                 IP: "assets/Dashboard/PatientAssets/PatientDashboard/ViewAppointments.png",
                 X: 40,
-                Y: 420,
+                Y: 300,
                 CN: "dash_viewappointments",
                 R: self,
                 BF: lambda: [self.loadViewAppointments()]
@@ -150,3 +150,20 @@ class PatientDashboard(Frame):
         }
         for param in params:
             CREATOR(**params[param])
+
+    def loadLatestAppointmentRequest(self):
+        prisma = self.prisma
+        prisma.appointmentrequest.find_many(
+            take=2,
+            where={
+                "patientId": {
+                    "equals": self.user.id
+                }
+            },
+            include={
+                "clinic": {
+                    "include": {}
+                }
+            }
+        )
+        pass

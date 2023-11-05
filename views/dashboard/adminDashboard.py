@@ -138,6 +138,9 @@ class ClinicAdminDashboard(Frame):
     def loadDoctorsAndFilterBySpeciality(self):
         prisma = self.prisma
         self.doctors = prisma.doctor.find_many(
+            where={
+                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+            },
             include={
                 "user": True,
             }
@@ -161,6 +164,9 @@ class ClinicAdminDashboard(Frame):
     def loadDoctorsAndFilterByAppointment(self):
         prisma = self.prisma
         self.doctors = prisma.doctor.find_many(
+            where={
+                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+            },
             include={
                 "user": True,
             }
@@ -190,7 +196,7 @@ class ClinicAdminDashboard(Frame):
         self.doctorsScrolledFrame = ScrolledFrame(
             master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
-            x=680, y=145, width=920, height=370
+            x=685, y=150, width=900, height=350
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
@@ -235,6 +241,9 @@ class ClinicAdminDashboard(Frame):
     def createList(self):
         prisma = self.prisma
         doctors = prisma.doctor.find_many(
+            where={
+                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+            },
             include={
                 "user": True,
             }
@@ -266,6 +275,9 @@ class ClinicAdminDashboard(Frame):
     def addAnddeleteList(self):
         prisma = self.prisma
         doctors = prisma.doctor.find_many(
+            where={
+                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+            },
             include={
                 "user": True,
             }

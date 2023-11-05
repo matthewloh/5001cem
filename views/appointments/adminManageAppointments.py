@@ -1,5 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+from views.mainPatientRequests import MainPatientRequestsInterface
 if TYPE_CHECKING:
     from views.dashboard.adminDashboard import ClinicAdminDashboard
 from abc import ABC, abstractmethod
@@ -8,7 +10,7 @@ import re
 import threading
 from tkinter import *
 from tkinter import messagebox
-from prisma.models import Appointment
+from prisma.models import Appointment, AppointmentRequest
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -37,8 +39,6 @@ class AdminManageAppointments(Frame):
         self.appointmentImgLabels()
         self.appointmentButtons()
         self.appointmentList()
-        self.creationFrame.grid_remove()
-        self.viewFrame.grid_remove()
 
     def createFrames(self):
         self.createAppointmentsFrame = self.controller.frameCreator(
@@ -88,7 +88,7 @@ class AdminManageAppointments(Frame):
                 "assets/Appointments/Management/NextBtn.png",
             ]
         }
-        #Appointment Dashboard
+        # Appointment Dashboard
         self.creationButton = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][0],
             x=620, y=800, classname="createbutton", root=self,
@@ -103,35 +103,37 @@ class AdminManageAppointments(Frame):
         )
         self.refreshBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],
-            x=1450, y=120, classname="viewAppointmentrefresh", root=self, 
-            buttonFunction=lambda:print("view appointment requests"), isPlaced=True
+            x=1450, y=120, classname="viewAppointmentrefresh", root=self,
+            buttonFunction=lambda: print("view appointment requests"), isPlaced=True
         )
-        #Appointment Creation
+        # Appointment Creation
         self.returncreationBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][3],
             x=100, y=80, classname="returncreation", root=self.createAppointmentsFrame,
-            buttonFunction=lambda: [self.createAppointmentsFrame.grid_remove()],
+            buttonFunction=lambda: [
+                self.createAppointmentsFrame.grid_remove()],
         )
         self.bookappointmentBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][4],
-            x=740, y=920, classname="bookappointmentrefresh", root=self.createAppointmentsFrame, 
-            buttonFunction=lambda:[self.createAppointmentsFrame.grid()], isPlaced=True
+            x=740, y=920, classname="bookappointmentrefresh", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [self.createAppointmentsFrame.grid()], isPlaced=True
         )
         self.backBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][5],
-            x=930, y=502, classname="backbutton", root=self.createAppointmentsFrame, 
-            buttonFunction=lambda:[self.createAppointmentsFrame.grid()], isPlaced=True
+            x=930, y=502, classname="backbutton", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [self.createAppointmentsFrame.grid()], isPlaced=True
         )
         self.nextBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][6],
-            x=1020, y=502, classname="nextbutton", root=self.createAppointmentsFrame, 
-            buttonFunction=lambda:[self.createAppointmentsFrame.grid()], isPlaced=True
+            x=1020, y=502, classname="nextbutton", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [self.createAppointmentsFrame.grid()], isPlaced=True
         )
-        #Appointment Management
+        # Appointment Management
         self.returnmanagementBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][7],
             x=40, y=80, classname="returnmanagement", root=self.manageAppointmentsFrame,
-            buttonFunction=lambda: [self.manageAppointmentsFrame.grid_remove()],
+            buttonFunction=lambda: [
+                self.manageAppointmentsFrame.grid_remove()],
         )
         self.viewBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][8],
@@ -170,75 +172,133 @@ class AdminManageAppointments(Frame):
         )
         self.backBtn2 = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][15],
-            x=1430, y=720, classname="backbutton2", root=self.manageAppointmentsFrame, 
-            buttonFunction=lambda:[self.manageAppointmentsFrame.grid()], isPlaced=True
+            x=1430, y=720, classname="backbutton2", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()], isPlaced=True
         )
         self.nextBtn2 = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][16],
-            x=1520, y=720, classname="nextbutton2", root=self.manageAppointmentsFrame, 
-            buttonFunction=lambda:[self.manageAppointmentsFrame.grid()], isPlaced=True
+            x=1520, y=720, classname="nextbutton2", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [self.manageAppointmentsFrame.grid()], isPlaced=True
         )
 
     def appointmentList(self):
-        prisma =self.prisma
-        appointments = prisma.appointmentrequest.find_many(
+        prisma = self.prisma
+        app = prisma.appointment.find_many(
             where={
-                "clinicadmin":{
-                    "some":{
-                        "userId":self.user.id
-                    }
-                }
+                "appRequest": {"is": {"clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}}}
+            },
+            include={
+                "doctor": {"include": {"user": True}},
+                "appRequest": {"include": {"clinic": True, "patient": {"include": {"user": True, "healthRecord": True}}, "appointments": True}},
+                "prescription": True,
+
             }
-        )           
-        h = len(appointments) * 120
-        if h < 380:
-            h = 380
+        )
+        h = len(app) * 120
+        if h < 420:
+            h = 420
         self.viewAppointmentScrolledFrame = ScrolledFrame(
-            master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
+            master=self, width=1500, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.viewAppointmentScrolledFrame.grid_propagate(False)
-        self.viewAppointmentScrolledFrame.place(x=70, y=260, width=1520, height=420)
-        COORDS = (20,20)
-        for appointment in appointments:
+        self.viewAppointmentScrolledFrame.place(
+            x=80, y=260, width=1500, height=420)
+        COORDS = (20, 0)
+        for appointment in app:
             createdAt = appointment.createdAt
             X = COORDS[0]
             Y = COORDS[1]
             R = self.viewAppointmentScrolledFrame
             FONT = ("Inter", 12)
             self.controller.labelCreator(
-                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", x=X, y=Y,
-                classname=f"appointmentlist{appointment.id}", root=R,
+                ipath="assets/Appointments/Homepage/AppItemBg.png",
+                x=X, y=Y, classname=f"appointmentlist{appointment.id}", root=R,
                 isPlaced=True,
             )
 
-            d = {
-            "appointmentButton": [
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
-            ]
-            }
-            self.viewbutton = self.controller.buttonCreator(
-            ipath=d["appointmentButton"][0],
-            x=X+1280, y=Y+30, classname=f"viewbutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
-                buttonFunction=lambda: [print('view')],
-                isPlaced=True
-            )
-            self.deletebutton = self.controller.buttonCreator(
-            ipath=d["appointmentButton"][1],
-            x=X+1360, y=Y+30, classname=f"deletebutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
-                buttonFunction=lambda: [print('delete')],
-                isPlaced=True
-            )
-
-            createdAt = self.controller.scrolledTextCreator(
-                x = X+50, y=Y+30, width=200, height=60, root=R, classname = f"{appointment.id}_createdAt",
+            # d = {
+            #     "appointmentButton": [
+            #         "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
+            #         "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+            #     ]
+            # }
+            # self.viewbutton = self.controller.buttonCreator(
+            #     ipath=d["appointmentButton"][0],
+            #     x=X+1280, y=Y+30, classname=f"viewbutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
+            #     buttonFunction=lambda: [print('view')],
+            #     isPlaced=True
+            # )
+            # self.deletebutton = self.controller.buttonCreator(
+            #     ipath=d["appointmentButton"][1],
+            #     x=X+1360, y=Y+30, classname=f"deletebutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
+            #     buttonFunction=lambda: [print('delete')],
+            #     isPlaced=True
+            # )
+            self.controller.scrolledTextCreator(
+                x=X+20, y=Y, width=220, height=100, root=R, classname=f"{appointment.id}_patient_name",
                 bg="#f1feff", hasBorder=False,
-                text=appointment.createdAt, font=FONT, fg=BLACK,
+                text=f"{appointment.appRequest.patient.user.fullName}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
-
+            self.controller.scrolledTextCreator(
+                x=X+240, y=Y, width=240, height=100, root=R, classname=f"{appointment.id}_doctor_name",
+                bg="#f1feff", hasBorder=False,
+                text=f"{appointment.doctor.user.fullName}", font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            KL = timezone("Asia/Kuala_Lumpur")
+            # "DD/MM/YYYY HH:MM"
+            fmt = "%d/%m/%Y %H:%M"
+            startTime = KL.convert(appointment.startTime).strftime(fmt)
+            endTime = KL.convert(appointment.endTime).strftime(fmt)
+            formatted = f"Start: {startTime}\nEnd: {endTime}"
+            self.controller.scrolledTextCreator(
+                x=X+480, y=Y, width=240, height=100, root=R, classname=f"{appointment.id}_dateandtime_time",
+                bg="#f1feff", hasBorder=False,
+                text=formatted, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            self.controller.scrolledTextCreator(
+                x=X+720, y=Y, width=140, height=100, root=R, classname=f"{appointment.id}_doctor_accept",
+                bg="#f1feff", hasBorder=False,
+                text=f"{appointment.docAccepted}", font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            self.controller.scrolledTextCreator(
+                x=X+860, y=Y, width=140, height=100, root=R, classname=f"{appointment.id}_patient_accept",
+                bg="#f1feff", hasBorder=False,
+                text=f"{appointment.patientAccepted}", font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Appointments/Homepage/ViewAppRequest.png",
+                x=X+1040, y=Y+20, classname=f"viewbutton{appointment.id}", root=R,
+                buttonFunction=lambda a=appointment.appRequest: [
+                    self.controller.threadCreator(
+                        target=self.loadViewPatientRequest, appReq=a
+                    )
+                ],
+                isPlaced=True
+            )
+            self.controller.scrolledTextCreator(
+                x=X+1140, y=Y, width=160, height=100, root=R, classname=f"{appointment.id}_status",
+                bg="#f1feff", hasBorder=False,
+                text=f"{appointment.status}", font=FONT, fg=BLACK,
+                isDisabled=True, isJustified="center",
+                hasVbar=False
+            )
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
-        
+
+    def loadViewPatientRequest(self, appReq: AppointmentRequest):
+        self.parent.patientRequests = MainPatientRequestsInterface(
+            controller=self.controller, parent=self.parent)
+        self.parent.patientRequests.loadRoleAssets(clinicAdmin=True)
+        self.parent.patientRequests.primarypanel.createManagePatientRequest(
+            req=appReq)
