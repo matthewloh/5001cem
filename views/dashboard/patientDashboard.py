@@ -147,6 +147,22 @@ class PatientDashboard(Frame):
                 R: self,
                 BF: lambda: [self.loadViewAppointments()]
             },
+            "dash_manage_health_records": {
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/ManageHealthRecords.png",
+                X: 1180,
+                Y: 140,
+                CN: "dash_manage_health_records",
+                R: self,
+                BF: lambda: [self.loadViewPatients()]
+            },
+            "dash_manage_profile": {
+                IP: "assets/Dashboard/PatientAssets/PatientDashboard/ManageCallADoctorProfile.png",
+                X: 1180,
+                Y: 240,
+                CN: "dash_manage_profile",
+                R: self,
+                BF: lambda: [self.loadViewPatients()]
+            }
         }
         for param in params:
             CREATOR(**params[param])

@@ -104,7 +104,10 @@ class AdminManageAppointments(Frame):
         self.refreshBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],
             x=1450, y=120, classname="viewAppointmentrefresh", root=self,
-            buttonFunction=lambda: print("view appointment requests"), isPlaced=True
+            buttonFunction=lambda: 
+                [self.controller.threadCreator(
+                    target=self.appointmentList)],
+                isPlaced=True
         )
         # Appointment Creation
         self.returncreationBtn = self.controller.buttonCreator(

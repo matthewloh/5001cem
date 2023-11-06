@@ -51,6 +51,7 @@ class Window(ElementCreator):
             classname="emailentry",
             # placeholder="Email",
         )
+
         self.loginPasswordEntry = self.ttkEntryCreator(
             root=self.parentFrame,
             x=1140, y=600,
@@ -63,6 +64,12 @@ class Window(ElementCreator):
             LOGIN_PASSWORD = os.getenv("LOGIN_PASSWORD")
             self.loginEmailEntry.insert(0, LOGIN_EMAIL)
             self.loginPasswordEntry.insert(0, LOGIN_PASSWORD)
+            # Bind enter to login
+            self.loginEmailEntry.bind(
+                "<Return>", lambda e: self.signInThreaded())
+            self.loginPasswordEntry.bind(
+                "<Return>", lambda e: self.signInThreaded()
+            )
         except Exception as e:
             print("Error loading login credentials from .env file")
             print(e)
