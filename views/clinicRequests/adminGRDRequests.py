@@ -59,7 +59,7 @@ class AdminGRDRequest(Frame):
         prisma = self.prisma
         self.clinicstatusdetails = prisma.clinicenrolment.find_first(
             where={
-                "clinicId": "clobupwii0003vtq0ozxna6zy",
+                "clinicId": self.user.clinicAdmin[0].clinicId,
             },
             include={
                 "govRegDocSystem": True,
@@ -100,10 +100,10 @@ class AdminGRDRequest(Frame):
             isPlaced=True
         )
 
-        if status == "ACCEPTED":
+        if status == "APPROVED":
             statusimg = "assets/Dashboard/ClinicAdminAssets/clinicaccepted.png"
-            statustext="Request accepted"
-            statusdes="Your GRD request has been accepted.\nYou can now add doctors to your clinic."
+            statustext="Request approved"
+            statusdes="Your GRD request has been approved.\nYou can now add doctors to your clinic."
 
         elif status == "REJECTED":
             statusimg="assets\Dashboard\ClinicAdminAssets\clinicrejected.png"
