@@ -58,19 +58,26 @@ class DoctorDashboard(Frame):
 
     def ScrolledFrame(self):
         prisma = self.prisma
+        doctor = prisma.doctor.find_first(
+            where={
+                "userId" : self.user.id
+            }
+        )
         viewAppointment = prisma.appointment.find_many(
+            where={
+                "doctorId":doctor.id
+            },
             include={
-                "patient": {
+                "appRequest": {
                     "include": {
-                        "user":True,
+                        "patient": {
+                            "include": {
+                                "user": True
+                            }
+                        }
                     }
-                },
-                "doctor": {
-                    "include": {
-                        "clinic":True,
-                    }
-                }    
-            } 
+                }
+            }
         )
 
         h = len(viewAppointment) * 120
@@ -84,8 +91,8 @@ class DoctorDashboard(Frame):
         COORDS = (5, 5)
         for appointments in viewAppointment:
 
-            patientName = appointments.patient.user.fullName
-            patientContact = appointments.patient.user.contactNo
+            patientName = appointments.appRequest.patient.user.fullName
+            patientContact = appointments.appRequest.patient.user.fullName
 
 
             X = COORDS[0]
@@ -108,14 +115,13 @@ class DoctorDashboard(Frame):
                 text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )
-            patientAppDate = appointments.startTime  # Replace this with your actual patientAppDate
+            patientAppDate = appointments.startTime 
 
-# Extract date and time components
+
             date_part = patientAppDate.date()
             time_part = patientAppDate.time()
 
-# Format the date and time as strings
-            date_string = date_part.strftime('%Y-%m-%d')  # Customize the date format as needed
+            date_string = date_part.strftime('%Y-%m-%d') 
             time_string = time_part.strftime('%H:%M:%S')
             UpAppDate = self.controller.scrolledTextCreator(
                 x=X+340, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",

@@ -55,7 +55,7 @@ class DoctorViewPatientRequests(Frame):
             master=self, autohide=True, width=640, height=345,
         )
         self.presTitle.place(
-            x=60, y=303, w=797 ,h=94,
+            x=40, y=299, w=839 ,h=120,
         )
         self.presTitleTextArea = self.presTitle.text
 
@@ -63,7 +63,7 @@ class DoctorViewPatientRequests(Frame):
             master=self, autohide=True, width=640, height=345,
         )
         self.presDesc.place(
-            x=60, y=524 ,w=797 ,h=276,
+            x=40, y=521 ,w=839 ,h=288,
         )
         self.presTitleTextArea = self.presTitle.text
 
