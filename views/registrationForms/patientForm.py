@@ -54,10 +54,9 @@ class PatientRegistrationForm(Frame):
         self.OPT2STR = "Current Medications"
         self.OPT3STR = "Allergies"
         self.OPT4STR = "Family History"
-        self.OPT5STR = "Additional Biodata"
-        self.OPT6STR = "Input Height, Weight\nand Blood Type"
+        self.OPT5STR = "Input Height, Weight\nand Blood Type"
         optList = [self.OPT1STR, self.OPT2STR, self.OPT3STR,
-                   self.OPT4STR, self.OPT5STR, self.OPT6STR]
+                   self.OPT4STR, self.OPT5STR]
         # creating a button arrangement of two per row
         # iterates over the list of options and creates a button for each
         for i, option in enumerate(optList):
@@ -89,7 +88,7 @@ class PatientRegistrationForm(Frame):
         self.bloodType = StringVar()
 
     def loadInputForOption(self, option: str):
-        if option == self.OPT6STR:
+        if option == self.OPT5STR:
             # Ask user to input height and weight
             self.inputframe.grid()
             self.inputframe.tkraise()
@@ -213,7 +212,7 @@ class PatientRegistrationForm(Frame):
             ipath="assets/Registration/InputFormTextBG.png", x=0, y=0,
             classname="inputformtext", root=self.inputframe, text=f"Input your {option} here",
             size=30, font=INTER,
-            yIndex=-2/3 if option == self.OPT6STR else 0
+            yIndex=-2/3 if option == self.OPT5STR else 0
         )
 
     def confirmSubmission(self):

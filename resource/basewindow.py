@@ -611,8 +611,8 @@ class ElementCreator(ttk.Window):
         self.widgetsDict[classname] = scrolledText
         return scrolledText
 
-    def threadCreator(self, target, daemon=True):
-        t = threading.Thread(target=target)
+    def threadCreator(self, target, daemon=True, *args, **kwargs):
+        t = threading.Thread(target=target, args=args, kwargs=kwargs)
         t.daemon = daemon
         t.start()
 
