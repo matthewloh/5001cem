@@ -3,6 +3,7 @@ import re
 import string
 import threading
 from tkinter import *
+from tkinter import messagebox
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.toast import ToastNotification
@@ -65,7 +66,7 @@ class RegistrationPage(Frame):
         self.userRegEntries = [
             (40, 120, 720, 60, self.frameref, "regfullname"),
             (40, 220, 340, 60, self.frameref, "regemail", "isEmail"),
-            (420, 220, 340, 60, self.frameref, "regnric"),
+            (420, 220, 340, 60, self.frameref, "regnric", "isNRIC"),
             (40, 320, 260, 60, self.frameref, "regbirthdate"),
             (420, 320, 340, 60, self.frameref, "regcontactnumber", "isContactNo"),
             (40, 420, 340, 60, self.frameref, "regpassent", "isPassword"),
@@ -79,13 +80,13 @@ class RegistrationPage(Frame):
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
         EC = self.controller.ttkEntryCreator
         self.fullname = EC(
-            x=40, y=120, width=720, height=60, root=self.frameref, classname="regfullname"
+            x=40, y=120, width=720, height=60, root=self.frameref, classname="regfullname", validation="isFullName"
         )
         self.email = EC(
             x=40, y=220, width=340, height=60, root=self.frameref, classname="regemail", validation="isEmail"
         )
         self.nric_passno = EC(
-            x=420, y=220, width=340, height=60, root=self.frameref, classname="regnric"
+            x=420, y=220, width=340, height=60, root=self.frameref, classname="regnric", validation="isNRIC"
         )
         self.dateOfBirthEntry = self.controller.ttkEntryCreator(
             x=40, y=320, width=260, height=60, root=self.frameref, classname="regbirthdate"
@@ -167,27 +168,78 @@ class RegistrationPage(Frame):
                 variable=v["variable"], font=("Helvetica", 12),
                 command=lambda: [self.loadStateMenubuttons(self.country.get())]
             )
+    
+    def validateRegInfo(self):
+        if self.fullname.get() == "" or self.fullname.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid full name.")
+            return False
+        elif self.email.get() == "" or self.email.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid email address.")
+            return False
+        elif self.nric_passno.get() == "" or self.nric_passno.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid NRIC or Passport Number.")
+            return False
+        elif self.dateOfBirthEntry.get() == "Select Date of Birth":
+            messagebox.showerror(title="Error", message="Please select a date of birth.")
+            return False
+        elif self.contactnumber.get() == "" or self.contactnumber.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid contact number.")
+            return False
+        elif self.password.get() == "" or self.password.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid password.\nPassword must contain at least 1 uppercase, 1 number, 1 special character and must be at least 8 characters long.")
+            return False
+        elif self.confirmpassword.get() == "" or self.confirmpassword.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid confirmation password.")
+            return False
+        elif self.countryoforigin.get() == "":
+            messagebox.showerror(title="Error", message="Please enter country of origin.")
+            return False
+        elif self.addressline1.get() == "":
+            messagebox.showerror(title="Error", message="Please enter an address.")
+            return False
+        elif self.postcode.get() == "" or self.postcode.validate() == False:
+            messagebox.showerror(title="Error", message="Please enter a valid postcode.")
+            return False
+        elif self.gender.get() =="" or self.gender.get() == "Gender":
+            messagebox.showerror(title="Error", message="Please select a gender.")
+            return False
+        elif self.race.get() =="" or self.race.get() == "Race":
+            messagebox.showerror(title="Error", message="Please select a race.")
+            return False
+        elif self.country.get() == "" or self.country.get() == "Please Select Country":
+            messagebox.showerror(title="Error", message="Please select a country.")
+            return False
+        elif self.state.get() == "" or self.state.get() == "Please Select State":
+            messagebox.showerror(title="Error", message="Please select a state.")
+            return False
+        elif self.city.get() == "" or self.city.get() == "Please Select City":
+            messagebox.showerror(title="Error", message="Please select a city.")
+            return False
+        
+        else:
+            return True
+                
 
     def createRoleButtons(self):
         self.patientFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/PatientFormButton.png",
             x=1420, y=460, classname="patientformbtn", root=self,
-            buttonFunction=lambda: self.loadRoleAssets(patient=True)
+            buttonFunction=lambda: self.loadRoleAssets(patient=True) if self.validateRegInfo() else None
         )
         self.doctorFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/DoctorFormButton.png",
             x=1420, y=600, classname="doctorformbtn", root=self,
-            buttonFunction=lambda: self.loadRoleAssets(doctor=True)
+            buttonFunction=lambda: self.loadRoleAssets(doctor=True) if self.validateRegInfo() else None
         )
         self.adminFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/AdminFormButton.png",
             x=1420, y=740, classname="adminformbtn", root=self,
-            buttonFunction=lambda: self.loadRoleAssets(clinicAdmin=True)
+            buttonFunction=lambda: self.loadRoleAssets(clinicAdmin=True) if self.validateRegInfo() else None
         )
         self.officerFormBtn = self.controller.buttonCreator(
             ipath="assets/Registration/OfficerFormButton.png",
             x=1420, y=880, classname="officerformbtn", root=self,
-            buttonFunction=lambda: self.loadRoleAssets(govofficer=True)
+            buttonFunction=lambda: self.loadRoleAssets(govofficer=True) if self.validateRegInfo() else None
         )
 
     def selectDate(self, btn):
@@ -210,6 +262,15 @@ class RegistrationPage(Frame):
             toast = ToastNotification(
                 title="Error",
                 message="Please select a valid date of birth between 1900 and the current year",
+                duration=3000,
+                bootstyle="danger"
+            )
+            toast.show_toast()
+            return
+        if dialog.date_selected.year > dt.now().year - 18:
+            toast = ToastNotification(
+                title="Error",
+                message="You must be at least 18 years old to use this system",
                 duration=3000,
                 bootstyle="danger"
             )
@@ -283,6 +344,7 @@ class RegistrationPage(Frame):
             return dict(zip(["x", "y", "width", "height", "root", "classname", "validation"], tup))
         elif len(tup) == 8:
             return dict(zip(["x", "y", "width", "height", "root", "classname", "validation", "captchavar"], tup))
+                
 
     def seed_data(self):
         WD = self.controller.widgetsDict
@@ -898,6 +960,7 @@ class RegistrationPage(Frame):
         self.grid_remove()
 
     def loadRoleAssets(self, patient: bool = False, doctor: bool = False, clinicAdmin: bool = False, govofficer: bool = False):
+        self.validateRegInfo()
         self.btns = [self.patientFormBtn, self.doctorFormBtn,
                      self.adminFormBtn, self.officerFormBtn]
         for btn in self.btns:

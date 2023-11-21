@@ -73,7 +73,7 @@ class PatientRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validatePatientForm() else None
         )
 
     def initializeFormVars(self):
@@ -215,6 +215,15 @@ class PatientRegistrationForm(Frame):
             size=30, font=INTER,
             yIndex=-2/3 if option == self.OPT6STR else 0
         )
+    
+    def validatePatientForm(self):
+        if self.bloodType.get() == "":
+            messagebox.showerror(title="Error", message="Please select your blood type")
+            return False
+        elif self.height.get() == 0 or self.weight.get() == 0:
+            messagebox.showerror(title="Error", message="Please enter your height and weight")
+            return False
+        
 
     def confirmSubmission(self):
         prisma = self.prisma
@@ -258,3 +267,6 @@ class PatientRegistrationForm(Frame):
                 }
             }
         )
+        toast = ToastNotification("Registration", f"{patient.user.fullName} has been registered", duration=3000, bootstyle="success", )
+        toast.show_toast()
+        self.parent.loadSignIn()

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tkinter import messagebox
 
 from typing import TYPE_CHECKING
 
@@ -72,7 +73,7 @@ class DoctorRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validateDoctorForm() else None
         )
 
     def initializeFormVars(self):
@@ -176,6 +177,17 @@ class DoctorRegistrationForm(Frame):
             classname="inputformtext", root=self.inputframe, text=f"Input your {option} here",
             size=30, font=INTER
         )
+    
+    def validateDoctorForm(self):
+        if self.vars[self.OPT3STR].get() == "":
+            messagebox.showerror(title="Error", message="Please select a specialization")
+            return False
+        elif self.vars[self.OPT1STR].get() == "":
+            messagebox.showerror(title="Error", message="Please fill in  your employment history")
+            return False
+        elif self.vars[self.OPT2STR].get() == "":
+            messagebox.showerror(title="Error", message="Please fill in your education history")
+            return False
 
     def confirmSubmission(self):
         prisma = self.prisma
@@ -212,3 +224,7 @@ class DoctorRegistrationForm(Frame):
                 "speciality": self.vars[self.OPT3STR].get().upper().replace(" ", "_"),
             }
         )
+        toast = ToastNotification("Registration", f"{doctor.user.fullName} has been registered as a doctor", duration=3000,
+                          bootstyle="success", )
+        toast.show_toast()
+        self.parent.loadSignIn()

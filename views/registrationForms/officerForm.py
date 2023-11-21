@@ -63,7 +63,7 @@ class OfficerRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validateOfficerInfo() else None
         )
 
     def createEntries(self):
@@ -140,11 +140,36 @@ class OfficerRegistrationForm(Frame):
         if dialog.date_selected is None:
             return
         date = dialog.date_selected.strftime("%d/%m/%Y")
+        if int(date.split("/")[2]) < 2018:
+            messagebox.showerror("Invalid Year", "Please select a year after 2018")
+            return
         entry.configure(state="normal")
         entry.delete(0, END)
         entry.insert(0, date)
         entry.configure(foreground=BLACK)
         entry.configure(state=READONLY)
+
+    #validate officer info
+    def validateOfficerInfo(self):
+        WD = self.controller.widgetsDict
+        if WD["grdidentry"].get() == "Enter your GRD ID":
+            messagebox.showerror("Error", "Please enter your GRD ID")
+            return False
+        elif self.jurisdictionState.get() == "":
+            messagebox.showerror("Error", "Please select a state of jurisdiction")
+            return False
+        elif WD["startofdutyentry"].get() == "Select Start of Duty" or WD["endofdutyentry"].get() == "Select End of Duty":
+            messagebox.showerror("Error", "Please select a date of duty")
+            return False
+        startDate = datetime.strptime(WD["startofdutyentry"].get(), "%d/%m/%Y")
+        endDate = datetime.strptime(WD["endofdutyentry"].get(), "%d/%m/%Y")
+        if startDate == endDate:
+            messagebox.showerror("Error", "Start and end date cannot be the same")
+            return False
+        elif startDate > endDate:
+            messagebox.showerror("Error", "Please select a valid start date and end date")
+            return False
+        
 
     def confirmSubmission(self):
         prisma = self.prisma
@@ -204,4 +229,7 @@ class OfficerRegistrationForm(Frame):
                 }
             }
         )
+        toast = ToastNotification("Registration", f"{officer.user.fullName} has been registered as a government health officer", duration=3000, bootstyle="success")
+        toast.show_toast()
+        self.parent.loadSignIn()
         

@@ -1,7 +1,7 @@
 import io
 import sys
 import threading
-from tkinter import FLAT, NSEW, Frame, Label
+from tkinter import FLAT, NSEW, Frame, Label, messagebox
 from prisma import Base64, Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -442,18 +442,27 @@ class ElementCreator(ttk.Window):
         if validation == "isPassword":
             entry.config(show=passwordchar)
             add_regex_validation(
-                widget=entry, pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$")
+                widget=entry, pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*,?&_])[A-Za-z\d@$!%*,?&_]{8,}$")
         elif validation == "isConfPass":
             entry.config(show=passwordchar)
             add_validation(widget=entry, func=validatePassword)
         elif validation == "isEmail":
             add_regex_validation(
-                widget=entry, pattern="^[a-zA-Z0-9._%+-]+@(?:student\.newinti\.edu\.my|newinti\.edu\.my)$")
+                widget=entry, pattern="^[A-Za-z0-9._%+-]+@gmail.com")
         elif validation == "isContactNo":
             add_regex_validation(
-                widget=entry, pattern="^(\+?6?01)[02-46-9]-*[0-9]{7}$|^(\+?6?01)[1]-*[0-9]{8}$")
+                widget=entry, pattern="^\+60[0-9]{8,10}$")
         elif validation == "isCaptcha":
             add_validation(widget=entry, func=validateCaptcha)
+        elif validation == "isFullName":
+            add_regex_validation(
+            widget=entry, pattern="^[a-zA-Z\s\-]+$")
+        elif validation == "isNRIC":
+            add_regex_validation(
+                widget=entry, pattern="^[0-9]{12}$|^[A-Z]{1}[0-9]{8}$")
+        elif validation == "isPostcode":
+            add_regex_validation(
+                widget=entry, pattern="^[0-9]{5}$")
         else:
             # just not blank
             add_regex_validation(widget=entry, pattern="^.*\S.*$")

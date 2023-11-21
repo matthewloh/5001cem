@@ -89,7 +89,7 @@ class AdminRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validateClinicForm() else None
         )
         self.closebutton = self.controller.buttonCreator(
             ipath="assets/Registration/Close.png", x=80, y=680,
@@ -155,7 +155,7 @@ class AdminRegistrationForm(Frame):
 
         self.savebutton.config(
             command=lambda: [
-                self.saveClinicInformation()]
+                self.saveClinicInformation() if self.validateClinicForm() else None]
         )
         self.loadCloseAndSaveButtons()
 
@@ -269,8 +269,14 @@ class AdminRegistrationForm(Frame):
         diff = timedelta(hours=end.hour, minutes=end.minute) - \
             timedelta(hours=start.hour, minutes=start.minute)
         # TODO: add validation for clinic hours
-        self.clinichrsVar.set(
-            f"{self.startTimeVar.get()} - {self.endTimeVar.get()}")
+        if diff.total_seconds() < 0:
+            messagebox.showerror(
+                title="Error", message="End time cannot be before start time.")
+            return
+        else:
+            self.clinichrsVar.set(
+                f"{self.startTimeVar.get()} - {self.endTimeVar.get()}")
+        
 
     def loadClinicInformationInput(self):
         WD = self.controller.widgetsDict
@@ -291,6 +297,35 @@ class AdminRegistrationForm(Frame):
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
         self.startTimeMenu.config(text=self.startTimeVar.get())
         self.endTimeMenu.config(text=self.endTimeVar.get())
+    
+    def validateClinicForm(self):
+        WD = self.controller.widgetsDict
+        if WD["clinicnameentry"].get() == "" or WD["clinicnameentry"].get()=="Clinic Name":
+            messagebox.showerror(
+                title="Error", message="Please enter a clinic name.")
+            return False
+        elif WD["clinicaddressentry"].get() == "" or WD["clinicaddressentry"].get()=="Clinic Address":
+            messagebox.showerror(
+                title="Error", message="Please enter a clinic address.")
+            return False
+        elif WD["cliniccontactnumberentry"].get() == "" or re.match("^\+60[0-9]{7,10}$", WD["cliniccontactnumberentry"].get()) is None:
+            messagebox.showerror(
+                title="Error", message="Please enter a valid clinic contact number. e.g. +60XXXXXXXX")
+            return False
+        elif WD["cliniccityentry"].get() == "" or WD["cliniccityentry"].get()=="Clinic City":
+            messagebox.showerror(
+                title="Error", message="Please select a clinic city.")
+            return False
+        elif self.clinicStateVar.get() == "" or self.clinicStateVar.get()=="State":
+            messagebox.showerror(
+                title="Error", message="Please select a clinic state.")
+            return False
+        elif WD["cliniczipentry"].get() == "" or re.match("^[0-9]{5}$", WD["cliniczipentry"].get()) is None:
+            messagebox.showerror(
+                title="Error", message="Please enter a valid clinic zip code.")
+            return False
+        return True
+        
 
     def saveClinicInformation(self):
         prisma = self.prisma
@@ -564,5 +599,9 @@ class AdminRegistrationForm(Frame):
                 },
                 "status": "PENDING"
             }
-
         )
+        toast = ToastNotification("Registration", f"{clinicAdmin.clinic.name} has been registered.\nPlease wait for GRD approval.", duration=3000, bootstyle="success", )
+        toast.show_toast()
+        self.parent.loadSignIn()
+
+    
