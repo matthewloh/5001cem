@@ -2,24 +2,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from views.mainDashboard import Dashboard
-import calendar
-import datetime as dt
-import re
-import threading
-from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
 from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
-from tkinter import messagebox
-
-import tkintermapview
-from pendulum import timezone
+from prisma.models import Clinic
 from ttkbootstrap.constants import *
-from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
-from ttkbootstrap.dialogs.dialogs import DatePickerDialog
-from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
-from ttkbootstrap.toast import ToastNotification
+from ttkbootstrap.scrolled import ScrolledFrame
 
 from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
@@ -39,8 +27,7 @@ class ClinicAdminDashboard(Frame):
         self.createFrames()
         self.createElements()
         self.dashboardButtons()
-        self.loadDoctorsAndFilterBySpeciality()
-        self.loadDoctorsAndFilterByAppointment()
+        self.loadClinics()
         self.createList()
         self.addAnddeleteList()
 
@@ -135,11 +122,47 @@ class ClinicAdminDashboard(Frame):
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
+    def loadClinics(self):
+        prisma = self.prisma
+        self.clinics = prisma.clinic.find_many(
+            where={
+                "admin": {"some": {"userId": self.user.id}}
+            }
+        )
+        self.clinic: Clinic = self.clinics[0]
+        self.clinicSelected = StringVar()
+        keyOptionsForMenuButton = list(
+            map(lambda clinic: clinic.name, self.clinics))
+        self.clinicMenuButton = self.controller.menubuttonCreator(
+            x=140, y=240, classname="clinicmenubutton", root=self,
+            width=400, height=80, listofvalues=keyOptionsForMenuButton,
+            variable=self.clinicSelected,
+            command=lambda: [
+                self.setClinic(self.clinicSelected.get()),
+                self.loadDoctorsByClinic(),
+            ],
+            text="Select Clinic"
+        )
+        self.clinicSelected.set(self.clinics[0].name)
+        self.clinicMenuButton.configure(
+            text=self.clinicSelected.get() if self.clinicSelected.get() else "Select Clinic"
+        )
+        self.setClinic(self.clinicSelected.get())
+        self.loadDoctorsByClinic()
+
+    def setClinic(self, option: str):
+        self.clinic = list(
+            filter(lambda clinic: clinic.name == option, self.clinics))[0]
+
+    def loadDoctorsByClinic(self):
+        self.loadDoctorsAndFilterByAppointment()
+        self.loadDoctorsAndFilterBySpeciality()
+
     def loadDoctorsAndFilterBySpeciality(self):
         prisma = self.prisma
         self.doctors = prisma.doctor.find_many(
             where={
-                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+                "clinicId": self.clinic.id
             },
             include={
                 "user": True,
@@ -153,7 +176,7 @@ class ClinicAdminDashboard(Frame):
         self.specialitySelected = StringVar()
         keyOptionsForMenuButton = list(self.specialitiesAndDoctors.keys())
         self.specialityMenuButton = self.controller.menubuttonCreator(
-            x=140, y=240, classname="specialitymenubutton", root=self,
+            x=140, y=440, classname="specialitymenubutton", root=self,
             width=400, height=80, listofvalues=keyOptionsForMenuButton,
             variable=self.specialitySelected,
             command=lambda: [
@@ -177,16 +200,22 @@ class ClinicAdminDashboard(Frame):
                 self.appointmentsAndDoctors[doctor.doctorApptSchedule] = []
             self.appointmentsAndDoctors[doctor.doctorApptSchedule].append(
                 doctor)
-        self.doctorApptScheduleSelected = StringVar()
-        keyOptionsForMenuButton = list(self.appointmentsAndDoctors.keys())
-        self.doctorApptScheduleMenuButton = self.controller.menubuttonCreator(
-            x=140, y=640, classname="doctorApptSchedulemenubutton", root=self,
-            width=400, height=80, listofvalues=keyOptionsForMenuButton,
-            variable=self.specialitySelected,
-            command=lambda: [
-                self.loadDoctorsAndFilterByAppointment(self.doctorApptScheduleSelected.get())],
-            text="Select Time Schedules"
+        self.timeSlotSelected = StringVar()
+        s_time = self.clinic.clinicHrs.split(" - ")[0]
+        e_time = self.clinic.clinicHrs.split(" - ")[1]
+        self.doctorApptScheduleMenuButton = self.controller.timeMenuButtonCreator(
+            x=140, y=840, classname="doctorApptSchedulemenubutton", root=self,
+            width=400, height=80,
+            variable=self.timeSlotSelected,
+            command=lambda: [self.loadAvailableDoctorsByTimeSlot(
+                self.timeSlotSelected.get())],
+            text="Select Time Schedules",
+            startTime=s_time, endTime=e_time, interval=30,
+            isTimeSlotFmt=True,
         )
+
+    def loadAvailableDoctorsByTimeSlot(self, option: str):
+        print(option)
 
     def loadDoctorsBySpeciality(self, option):
         doctors = self.specialitiesAndDoctors[option]
@@ -223,7 +252,7 @@ class ClinicAdminDashboard(Frame):
         }
         self.Listbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][0],
-            x=140, y=440, classname="listbutton", root=self,
+            x=140, y=640, classname="listbutton", root=self,
             buttonFunction=lambda: [
                 self.doctorListFrame.grid(), self.doctorListFrame.tkraise()],
         )
