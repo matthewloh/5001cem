@@ -37,7 +37,6 @@ model Patient {
   id              String               @id @default(cuid())
   userId          String
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  appointments    Appointment[]
   healthRecord    PatientHealthRecord?
   madeAppRequests AppointmentRequest[]
 
@@ -85,44 +84,45 @@ model GovHealthOfficer {
 }
 
 model Appointment {
-  id              Int            @id @default(autoincrement())
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id              Int                @id @default(autoincrement())
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   startTime       DateTime
   endTime         DateTime
   completedAt     DateTime?
-  editedAt        DateTime?      @default(now())
-  status          ApptStatus     @default(PENDING)
-  docAccepted     Boolean        @default(false)
-  patientAccepted Boolean        @default(false)
+  editedAt        DateTime?          @default(now())
+  status          ApptStatus         @default(PENDING)
+  docAccepted     Boolean            @default(false)
+  patientAccepted Boolean            @default(false)
   docAcceptAt     DateTime?
   patientAcceptAt DateTime?
-  patientId       String?
+  appRequestId    Int
+  appRequest      AppointmentRequest @relation(fields: [appRequestId], references: [id], onDelete: Cascade)
   doctorId        String?
-  patient         Patient?       @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor          Doctor?        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctor          Doctor?            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   prescription    Prescription[]
 
-  @@index([patientId])
   @@index([doctorId])
+  @@index([appRequestId])
 }
 
 model AppointmentRequest {
-  id               Int          @id @default(autoincrement())
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   location         String
   preferredDate    String
   preferredTime    String
-  specialityWanted Speciality   @default(NONE)
-  additionalInfo   String?      @db.Text
-  reqStatus        ApptStatus   @default(PENDING)
+  specialityWanted Speciality    @default(NONE)
+  additionalInfo   String?       @db.Text
+  reqStatus        ApptStatus    @default(PENDING)
   clinicId         String?
   patientId        String?
   adminId          String?
-  clinic           Clinic?      @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  patient          Patient?     @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  approvedBy       ClinicAdmin? @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  clinic           Clinic?       @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient          Patient?      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  approvedBy       ClinicAdmin?  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  appointments     Appointment[]
 
   @@index([patientId])
   @@index([adminId])

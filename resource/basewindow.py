@@ -1,7 +1,9 @@
+from datetime import datetime, timedelta
 import io
 import sys
 import threading
-from tkinter import FLAT, NSEW, Frame, Label, messagebox
+from tkinter import FLAT, NSEW, Frame, Label
+from typing import Dict
 from prisma import Base64, Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -54,7 +56,7 @@ def gridGenerator(root: Frame, width=None, height=None, color="#dee8e0", overrid
 class ElementCreator(ttk.Window):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.widgetsDict = {}
+        self.widgetsDict : Dict[str, Widget|Entry]= {}
         self.imageDict = {}
         self.imagePathDict = {}
 
@@ -388,6 +390,33 @@ class ElementCreator(ttk.Window):
 
         return menubutton
 
+    def timeMenuButtonCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), text=None, variable=None,
+                              command=None, isPlaced=False,
+                              startTime: str = "12:00AM", endTime: str = "12:00PM",
+                              interval: int = 30,
+                              isTimeSlotFmt: bool = False) -> ttk.Menubutton:
+        """ 
+        Takes in arguments x, y, width, height, from Figma, creates a menubutton using the menubuttonCreator function,\n
+        Similar to the menubuttonCreator function, but takes in a startTime, endTime, and interval to generate a list of timeslots.\n
+        """
+        start_time = datetime.strptime(startTime, HUMANTIME)
+        end_time = datetime.strptime(endTime, HUMANTIME)
+        interval = interval
+        total_minutes = int((end_time - start_time).total_seconds() / 60)
+        time_slots = [(start_time + timedelta(minutes=i*interval)).strftime(HUMANTIME) + ' - ' +
+                      (start_time + timedelta(minutes=(i+1)
+                       * interval)).strftime(HUMANTIME)
+                      for i in range(total_minutes // interval)]
+
+        if not isTimeSlotFmt:
+            time_slots = [time.split(' - ')[0] for time in time_slots]
+
+        return self.menubuttonCreator(
+            x=x, y=y, width=width, height=height, root=root, classname=classname,
+            bgcolor=bgcolor, relief=relief, font=font, text=text, variable=variable,
+            command=command, isPlaced=isPlaced, listofvalues=time_slots,
+        )
+
     def ttkEntryCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None, bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), fg=BLACK, validation=False, passwordchar="*", captchavar=None, isPlaced=False, placeholder=None) -> ttk.Entry:
         """
         Takes in arguments x, y, width, height, from Figma, creates a frame,\n
@@ -620,8 +649,8 @@ class ElementCreator(ttk.Window):
         self.widgetsDict[classname] = scrolledText
         return scrolledText
 
-    def threadCreator(self, target, daemon=True):
-        t = threading.Thread(target=target)
+    def threadCreator(self, target, daemon=True, *args, **kwargs):
+        t = threading.Thread(target=target, args=args, kwargs=kwargs)
         t.daemon = daemon
         t.start()
 

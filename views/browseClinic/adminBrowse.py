@@ -69,8 +69,8 @@ class AdminBrowseClinic(Frame):
         }
         self.Refreshbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][0],
-            x=1385, y=135, classname="manageclinicrefresh", root=self, 
-            buttonFunction=lambda:print("manage clinic requests"), isPlaced=True,
+            x=1385, y=135, classname="manageclinicrefresh", root=self,
+            buttonFunction=lambda: print("manage clinic requests"), isPlaced=True,
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
@@ -79,8 +79,8 @@ class AdminBrowseClinic(Frame):
         )
         self.addClinicbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][2],
-            x=1540, y=40, classname="addclinic", root=self, 
-            buttonFunction=lambda:[
+            x=1540, y=40, classname="addclinic", root=self,
+            buttonFunction=lambda: [
                 self.addDoctorFrame.grid(), self.addDoctorFrame.tkraise()], isPlaced=True
         )
 
@@ -88,11 +88,11 @@ class AdminBrowseClinic(Frame):
         prisma = self.prisma
         manageclinics = prisma.clinicenrolment.find_many(
             where={
-                "status":"APPROVED"
+                "AND": [{"status": "APPROVED"}, {"clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}}]
             },
             include={
-                "clinic":True,
-                "govRegDocSystem":True
+                "clinic": True,
+                "govRegDocSystem": True
             }
         )
         h = len(manageclinics) * 120
@@ -102,9 +102,10 @@ class AdminBrowseClinic(Frame):
             master=self, width=1540, height=h, autohide=True, bootstyle="minty-bg"
         )
         self.manageClinicScrolledFrame.grid_propagate(False)
-        self.manageClinicScrolledFrame.place(x=60, y=280, width=1540, height=640)
-        
-        COORDS = (20,20)
+        self.manageClinicScrolledFrame.place(
+            x=60, y=280, width=1540, height=640)
+
+        COORDS = (20, 20)
         for clinics in manageclinics:
             clinicName = clinics.clinic.name
             clinicId = clinics.clinicId
@@ -116,11 +117,11 @@ class AdminBrowseClinic(Frame):
             R = self.manageClinicScrolledFrame
             FONT = ("Inter", 12)
             self.controller.labelCreator(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png", 
+                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png",
                 x=X, y=Y, classname=f"manageClinic{clinicId}", root=R,
                 isPlaced=True,
-            )   
-        
+            )
+
             d = {
                 "clinicButton": [
                     "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
@@ -141,44 +142,44 @@ class AdminBrowseClinic(Frame):
             )
 
             clinicName = self.controller.scrolledTextCreator(
-                x = X+40, y=Y+30, width=240, height=70, root=R, classname = f"{clinicId}_name",
+                x=X+40, y=Y+30, width=240, height=70, root=R, classname=f"{clinicId}_name",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.name, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicId = self.controller.scrolledTextCreator(
-                x = X+320, y=Y+25, width=200, height=70, root=R, classname = f"{clinicId}_id",
+                x=X+320, y=Y+25, width=200, height=70, root=R, classname=f"{clinicId}_id",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinicId, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
-            ) 
+            )
             clinicContact = self.controller.scrolledTextCreator(
-                x = X+560, y=Y+30, width=200, height=60, root=R, classname = f"{clinicId}_contact",
+                x=X+560, y=Y+30, width=200, height=60, root=R, classname=f"{clinicId}_contact",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.phoneNum, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
-            ) 
+            )
             clinicOpHrs = self.controller.scrolledTextCreator(
-                x = X+800, y=Y+25, width=200, height=60, root=R, classname = f"{clinicId}_opHrs",
+                x=X+800, y=Y+25, width=200, height=60, root=R, classname=f"{clinicId}_opHrs",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.clinicHrs, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
-            ) 
+            )
             clinicAddress = self.controller.scrolledTextCreator(
-                x = X+1040, y=Y+25, width=200, height=60, root=R, classname = f"{clinicId}_address",
+                x=X+1040, y=Y+25, width=200, height=60, root=R, classname=f"{clinicId}_address",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.address, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
-            ) 
+            )
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
-   
+
     def addDoctorButtons(self):
         self.closebutton = self.controller.buttonCreator(
             ipath="assets/Registration/Close.png", x=100, y=820,
@@ -190,7 +191,7 @@ class AdminBrowseClinic(Frame):
             classname="reg_savebutton", root=self.addDoctorFrame,
             buttonFunction=lambda: [print('test')]
         )
-    
+
     def createClinicInfoEntries(self):
         CREATOR = self.controller.ttkEntryCreator
         X, Y, W, H, R, CN, PH = "x", "y", "width", "height", "root", "classname", "placeholder"
@@ -263,5 +264,3 @@ class AdminBrowseClinic(Frame):
         self.endTimeVar = StringVar()
         self.endTimeVar.set("12:00PM")
         self.loadClinicHoursMenu()
-
-  
