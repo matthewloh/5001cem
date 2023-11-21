@@ -3,6 +3,7 @@ import io
 import sys
 import threading
 from tkinter import FLAT, NSEW, Frame, Label
+from typing import Dict
 from prisma import Base64, Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
@@ -55,7 +56,7 @@ def gridGenerator(root: Frame, width=None, height=None, color="#dee8e0", overrid
 class ElementCreator(ttk.Window):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.widgetsDict = {}
+        self.widgetsDict : Dict[str, Widget|Entry]= {}
         self.imageDict = {}
         self.imagePathDict = {}
 
