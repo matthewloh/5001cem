@@ -427,25 +427,26 @@ class AdminManageAppointments(Frame):
         # Perform any actions based on the selected doctor
         print(f"Selected Doctor: {selected_doctor}")
 
-    def loadFormEntries(self):
+    def loadAppointmentFormEntries(self):
         self.userRegEntries = [
-            (40, 320, 260, 60, self.createAppointmentsFrame, "regbirthdate"),
+            (40, 320, 260, 60, self.createAppointmentsFrame, "regappointmentdate"),
         ]
         for i in self.userRegEntries:
             self.controller.ttkEntryCreator(**self.tupleToDict(i))
-        self.dateOfBirthEntry = self.controller.ttkEntryCreator(
-            x=40, y=320, width=260, height=60, root=self.createAppointmentsFrame, classname="regbirthdate"
-        )
-    
+            self.appointmentDateEntry = self.controller.ttkEntryCreator(
+            x=40, y=320, width=260, height=60, root=self.createAppointmentsFrame, classname="regappointmentdate"
+            )
+
     def initDatePicker(self):
         self.datePicker = self.controller.buttonCreator(
             ipath="assets/Registration/DatePicker.png",
             x=320, y=320, classname="datepicker", root=self.frameref,
             buttonFunction=lambda: self.selectDate(self.datePicker)
         )
-        self.dobMsg = "Select Date of Birth"
-        self.dateOfBirthEntry.insert(0, self.dobMsg)
-        self.dateOfBirthEntry.config(state=READONLY)
+        self.appointmentMsg = "Select Appointment Date"
+        self.appointmentDateEntry.insert(0, self.appointmentMsg)
+        self.appointmentDateEntry.config(state=READONLY)
+    
 
     def selectDate(self, btn):
         self.dateOfBirthEntry.configure(foreground="black")
@@ -466,15 +467,15 @@ class AdminManageAppointments(Frame):
         if dialog.date_selected.year > dt.now().year or dialog.date_selected.year < 1900:
             toast = ToastNotification(
                 title="Error",
-                message="Please select a valid date of birth between 1900 and the current year",
+                message="Please select a valid appointment date between 1900 and the current year",
                 duration=3000,
                 bootstyle="danger"
-            )
-            toast.show_toast()
-            return
-        self.dateTimeDOB = dialog.date_selected
+        )
+        toast.show_toast()
+        return
+        self.dateTimeAppointment = dialog.date_selected
         date = dialog.date_selected.strftime("%d/%m/%Y")
-        self.dateOfBirthEntry.configure(state=NORMAL)
-        self.dateOfBirthEntry.delete(0, END)
-        self.dateOfBirthEntry.insert(0, date)
-        self.dateOfBirthEntry.configure(state=READONLY)
+        self.appointmentDateEntry.configure(state=NORMAL)
+        self.appointmentDateEntry.delete(0, END)
+        self.appointmentDateEntry.insert(0, date)
+        self.appointmentDateEntry.configure(state=READONLY)
