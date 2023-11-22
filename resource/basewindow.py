@@ -7,6 +7,7 @@ from typing import Dict
 from prisma import Base64, Prisma
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import DatePickerDialog
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.validation import add_regex_validation, validator, add_validation
 from nonstandardimports import *
@@ -56,7 +57,7 @@ def gridGenerator(root: Frame, width=None, height=None, color="#dee8e0", overrid
 class ElementCreator(ttk.Window):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.widgetsDict : Dict[str, Widget|Entry]= {}
+        self.widgetsDict: Dict[str, Widget | Entry] = {}
         self.imageDict = {}
         self.imagePathDict = {}
 
@@ -501,6 +502,40 @@ class ElementCreator(ttk.Window):
         self.widgetsDict[classname] = entry
         self.updateWidgetsDict(root=root)
         return entry
+
+    def show_date_picker_dialog(self, button, entry):
+        dialog = DatePickerDialog(
+            parent=button, title="Select Date", firstweekday=0
+        )
+
+        date = dialog.date_selected.strftime("%d/%m/%Y")
+        if dialog.date_selected:
+            entry.delete(0, END)
+            entry.insert(0, date)
+
+    def entrywithDatePickerCreator(self, x=None, y=None, width=None, height=None, root=None, classname=None,
+                                   bgcolor=WHITE, relief=FLAT, font=("Helvetica", 16), fg=BLACK, validation=False, passwordchar="*", captchavar=None, isPlaced=False, placeholder=None) -> ttk.Entry:
+        """ 
+        Creates a ttkEntry and a button with a calendar image that triggers a datepicker.\n
+        The button follows the height of the entry, and is placed to the right of the entry.\n
+        """
+        CALENDAR = "assets/Registration/DatePicker.png"
+        entry = self.ttkEntryCreator(
+            x=x, y=y, width=width, height=height, root=root, classname=classname,
+            bgcolor=bgcolor, relief=relief, font=font, fg=fg, validation=validation, passwordchar=passwordchar, captchavar=captchavar, isPlaced=isPlaced, placeholder=placeholder
+        )
+        button = self.buttonCreator(
+            ipath=CALENDAR, x=x+width, y=y, classname=f"{classname}button", root=root, buttonFunction=lambda: [
+                self.show_date_picker_dialog(button, entry),
+            ]
+        )
+        img = self.imagePathDict[f"{classname}button"]
+        img = Image.open(img)
+        img = img.resize((height, height), Image.Resampling.LANCZOS)
+        self.imageDict[f"{classname}button"] = ImageTk.PhotoImage(img)
+        button.config(image=self.imageDict[f"{classname}button"])
+        button.place(x=x+width, y=y, width=height, height=height)
+        return entry, button
 
     def textElement(self, ipath, x, y, classname=None, buttonFunction=None, root=None, relief=FLAT, fg=BLACK, bg=WHITE, font=SFPRO, text=None, size=40, isPlaced=False, yIndex=0, xoffset=0) -> Label | Button:
         classname = classname.replace(" ", "").lower()
