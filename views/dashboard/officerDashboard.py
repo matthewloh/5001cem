@@ -125,8 +125,8 @@ class GovOfficerDashboard(Frame):
 
     def loadClinicsIntoBottomFrame(self):
         h = len(self.approvedClinics.programmeRegistration) * 120
-        if h < 185:
-            h = 185
+        if h < 150:
+            h = 150
         self.clinicStatusFrame = ScrolledFrame(
             master=self, width=840, height=h, autohide=True, bootstyle="officer-bg"
         )
@@ -196,6 +196,7 @@ class GovOfficerDashboard(Frame):
     def refreshClinicsSideFrame(self):
         self.initializeGovRegSystem()
         self.loadClinicsIntoSideFrame()
+        self.loadClinicsIntoBottomFrame()
         
 
     def loadSupervisedClinicsOnMap(self):
@@ -258,6 +259,7 @@ class GovOfficerDashboard(Frame):
             self.initializeApprovedClinicDetails()
             self.loadClinicsIntoSideFrame()
             self.loadClinicsIntoBottomFrame()
+            self.loadAssets()
             
         elif self.clinicEnrolment.status == "PENDING":  
             self.clinicEnrolment = self.prisma.clinicenrolment.update(
@@ -270,6 +272,7 @@ class GovOfficerDashboard(Frame):
             self.initializeApprovedClinicDetails()
             self.loadClinicsIntoSideFrame()
             self.loadClinicsIntoBottomFrame()
+
         
         elif self.clinicEnrolment.status == "REJECTED":
             self.clinicEnrolment = self.prisma.clinicenrolment.update(
@@ -282,6 +285,7 @@ class GovOfficerDashboard(Frame):
             self.initializeApprovedClinicDetails()
             self.loadClinicsIntoSideFrame()
             self.loadClinicsIntoBottomFrame()
+
 
     def initializeApprovedClinicDetails(self):
         self.approvedClinics = self.prisma.govregsystem.find_first(

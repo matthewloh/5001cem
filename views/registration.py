@@ -361,7 +361,7 @@ class RegistrationPage(Frame):
         self.dateOfBirthEntry.insert(0, "01/01/2000")
         self.dateOfBirthEntry.configure(state=READONLY)
         self.contactnumber.delete(0, END)
-        self.contactnumber.insert(0, "0123456789")
+        self.contactnumber.insert(0, "+60123456789")
         self.password.delete(0, END)
         self.password.insert(0, "Password_1")
         self.confirmpassword.delete(0, END)

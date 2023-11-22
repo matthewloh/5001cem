@@ -45,6 +45,11 @@ class OfficerBrowseClinic(Frame):
             ipath=r"assets/Dashboard/OfficerAssets/OfficerManageClinicsBG.png",
             x=0, y=0, classname="browseclinicbg", root=self
         )
+        self.controller.buttonCreator(
+            ipath=r"assets/Dashboard/OfficerAssets/officerrefreshbtn.png",
+            x=1420, y=140, classname="browseclinicrefreshbtn", root=self,
+            buttonFunction=lambda: [self.refreshBrowseClinics()]
+        )
 
         self.initializeManageClinicsSystem()
         self.loadManageClinicsFrame()
@@ -66,41 +71,41 @@ class OfficerBrowseClinic(Frame):
             Y = COORDS[1]
             R = self.manageClinicsFrame
             self.controller.labelCreator(
-                x=X, y=Y, classname=f"{clinic.id}_bg", root=R,
+                x=X, y=Y, classname=f"{clinic.id}browse_bg", root=R,
                 ipath="assets\Dashboard\clinicdetailsbg.png",
                 isPlaced=True,
             )
 
             clinicName = self.controller.scrolledTextCreator(
-                x=60, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_name",
+                x=60, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}browse_name",
                 bg="#f1feff", hasBorder=False, text=clinic.name,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicId = self.controller.scrolledTextCreator(
-                x=290, y=Y+20, width=200, height=70, root=R, classname=f"{clinic.id}_id",
+                x=290, y=Y+20, width=200, height=70, root=R, classname=f"{clinic.id}browse_id",
                 bg="#f1feff", hasBorder=False, text=clinic.id,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicPhone = self.controller.scrolledTextCreator(
-                x=540, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}_phone",
+                x=540, y=Y+20, width=200, height=60, root=R, classname=f"{clinic.id}browse_phone",
                 bg="#f1feff", hasBorder=False, text=clinic.phoneNum,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicHrs = self.controller.scrolledTextCreator(
-                x=760, y=Y+20, width=240, height=60, root=R, classname=f"{clinic.id}_hrs",
+                x=760, y=Y+20, width=240, height=60, root=R, classname=f"{clinic.id}browse_hrs",
                 bg="#f1feff", hasBorder=False, text=clinic.clinicHrs,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
             clinicAddress = self.controller.scrolledTextCreator(
-                x=1020, y=Y+20, width=280, height=60, root=R, classname=f"{clinic.id}_address",
+                x=1020, y=Y+20, width=280, height=60, root=R, classname=f"{clinic.id}browse_address",
                 bg="#f1feff", hasBorder=False, text=clinic.address,
                 font=("Inter", 14), fg=BLACK,
                 isDisabled=True, isJustified=True,
@@ -117,6 +122,11 @@ class OfficerBrowseClinic(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+
+    def refreshBrowseClinics(self):
+        self.initializeManageClinicsSystem()
+        self.loadManageClinicsFrame()
+
 
     def initializeManageClinicsSystem(self):
         prisma = self.prisma
@@ -143,11 +153,11 @@ class OfficerBrowseClinic(Frame):
                 "id": clinicId
             }
         )
+        ToastNotification("Success", f"Deleted Clinic {clinicId}", duration=3000, bootstyle=SUCCESS).show_toast()
 
         self.initializeManageClinicsSystem()
-        self.parent.loadClinicsIntoBottomFrame()
-        self.parent.loadClinicsIntoSideFrame()
-        self.parent.loadSupervisedClinicsOnMap()
+        self.loadManageClinicsFrame()
+        
 
     # def loadClinicsRequests(self):
     #     pass

@@ -46,6 +46,12 @@ class OfficerGRDRequests(Frame):
             ipath=r"assets/Dashboard/OfficerAssets/OfficerClinicsRequestsBG.png",
             x=0, y=0, classname="grdrequestsbg", root=self
         )
+        self.controller.buttonCreator(
+            ipath=r"assets/Dashboard/OfficerAssets/officerrefreshbtn.png",
+            x=1420, y=140, classname="grdrequestsrefreshbtn", root=self,
+            buttonFunction=lambda: [self.refreshClinicsRequests()]
+        )
+
 
         self.initializeOfficerGRDRequests()
         self.loadClinicsRequestsFrame()
@@ -136,6 +142,10 @@ class OfficerGRDRequests(Frame):
                 }
             }
         )
+    
+    def refreshClinicsRequests(self):
+        self.initializeOfficerGRDRequests()
+        self.loadClinicsRequestsFrame()
 
     def acceptClinic(self, clinicid: str):
         prisma = self.prisma
@@ -146,12 +156,11 @@ class OfficerGRDRequests(Frame):
         )
         
 
-        ToastNotification("Clinic Status", f"{self.accept.clinic.name} has been approved", duration=3000, bootstyle="success", )
+        ToastNotification("Clinic Status", f"{self.accept.clinic.name} has been approved", duration=3000, bootstyle="success", ).show_toast()
 
         self.initializeOfficerGRDRequests()
         self.loadClinicsRequestsFrame()
-        self.parent.loadClinicsIntoBottomFrame()
-        self.parent.loadClinicsIntoSideFrame()
+
 
     def rejectClinic(self, clinicid: str):
         prisma = self.prisma
@@ -161,9 +170,8 @@ class OfficerGRDRequests(Frame):
             include={"clinic": True}
         )
 
-        ToastNotification("Clinic Status", f"{self.reject.clinic.name} has been rejected", duration=3000, bootstyle="success")
+        ToastNotification("Clinic Status", f"{self.reject.clinic.name} has been rejected", duration=3000, bootstyle="success").show_toast()
 
         self.initializeOfficerGRDRequests()
         self.loadClinicsRequestsFrame()
-        self.parent.loadClinicsIntoBottomFrame()
-        self.parent.loadClinicsIntoSideFrame()
+
