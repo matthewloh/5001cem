@@ -41,7 +41,6 @@ class DoctorDashboard(Frame):
         self.ScrolledFrame()
         self.createPatientList()
         self.createNavigateButton()
-        
 
     def createFrames(self):
         pass
@@ -55,17 +54,16 @@ class DoctorDashboard(Frame):
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
-
     def ScrolledFrame(self):
         prisma = self.prisma
         doctor = prisma.doctor.find_first(
             where={
-                "userId" : self.user.id
+                "userId": self.user.id
             }
         )
         viewAppointment = prisma.appointment.find_many(
             where={
-                "doctorId":doctor.id
+                "doctorId": doctor.id
             },
             include={
                 "appRequest": {
@@ -94,7 +92,6 @@ class DoctorDashboard(Frame):
             patientName = appointments.appRequest.patient.user.fullName
             patientContact = appointments.appRequest.patient.user.fullName
 
-
             X = COORDS[0]
             Y = COORDS[1]
             R = self.appointmentListFrame
@@ -115,13 +112,12 @@ class DoctorDashboard(Frame):
                 text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )
-            patientAppDate = appointments.startTime 
-
+            patientAppDate = appointments.startTime
 
             date_part = patientAppDate.date()
             time_part = patientAppDate.time()
 
-            date_string = date_part.strftime('%Y-%m-%d') 
+            date_string = date_part.strftime('%Y-%m-%d')
             time_string = time_part.strftime('%H:%M:%S')
             UpAppDate = self.controller.scrolledTextCreator(
                 x=X+340, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
@@ -137,29 +133,25 @@ class DoctorDashboard(Frame):
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
 
-    
-        
-    
-    #def createImageClinic(self):
-        #prisma = self.prisma
-        #viewClinicImg = prisma.clinic.find_many(     
-        #)
-    #"assets/Dashboard/DoctorAssets/DoctorClinic.png",
-    #"assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
+    # def createImageClinic(self):
+        # prisma = self.prisma
+        # viewClinicImg = prisma.clinic.find_many(
+        # )
+    # "assets/Dashboard/DoctorAssets/DoctorClinic.png",
+    # "assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
 
     def createNavigateButton(self):
         self.navigateToClinicPage = self.controller.buttonCreator(
             ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1375, y=455,
-            classname = "ButtonToYourClinic", root=self, buttonFunction=lambda:[print("print=ToClinic")],
+            classname="ButtonToYourClinic", root=self, buttonFunction=lambda: [print("print=ToClinic")],
             isPlaced=True,
         )
 
         self.navigateToPrescriptionPage = self.controller.buttonCreator(
             ipath="assets/Dashboard/DoctorAssets/DoctorListButton/PrescriptionMoreDetalis.png", x=1205, y=939,
-            classname = "ButtonToRequestPrescription", root=self, buttonFunction=lambda:[print("print=ToPrescription")],
+            classname="ButtonToRequestPrescription", root=self, buttonFunction=lambda: [print("print=ToPrescription")],
             isPlaced=True,
         )
-
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -221,24 +213,22 @@ class DoctorDashboard(Frame):
         prisma = self.prisma
         patients = prisma.patient.find_many(
             include={
-                "appointments": {
+                "madeAppRequests": {
                     "include": {
-                        "doctor": {
+                        "appointments": {
                             "include": {
-                                "user": True
+                                "doctor": {
+                                    "include": {
+                                        "user": True
+                                    }
+                                },
+                                "prescription": True
                             }
-                        },
-                        "prescription": True
+                        }
                     }
-
                 },
                 "user": True
             }
         )
         for patient in patients:
-            singlePatientsApps = patient.appointments
-            for app in singlePatientsApps:
-                prescriptions = app.prescription
-                for p in prescriptions:
-                    t = p.title
-                    d = p.desc
+            print(patient)
