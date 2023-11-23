@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from views.mainDashboard import Dashboard
 import calendar
+from prisma.models import Appointment
 import datetime as dt
 import re
 import threading
@@ -74,7 +75,8 @@ class DoctorDashboard(Frame):
                             }
                         }
                     }
-                }
+                },
+                "prescription": True
             }
         )
 
@@ -95,10 +97,12 @@ class DoctorDashboard(Frame):
             X = COORDS[0]
             Y = COORDS[1]
             R = self.appointmentListFrame
-            self.controller.labelCreator(
+            self.controller.buttonCreator(
                 x=X, y=Y, classname=f"{appointments.id}_bg", root=R,
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DashboardAppointmentbutton.png",
                 isPlaced=True,
+                buttonFunction=lambda a=appointments: [
+                    self.loadIntoAppointmentView(a)]
             )
             UpAppPatientName = self.controller.scrolledTextCreator(
                 x=X+5, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_name",
@@ -230,5 +234,16 @@ class DoctorDashboard(Frame):
                 "user": True
             }
         )
-        for patient in patients:
-            print(patient)
+        # for patient in patients:
+        # print(patient)
+
+    def loadIntoAppointmentView(self, appointment: Appointment):
+        try:
+            self.patientRequests.primarypanel.grid()
+            self.patientRequests.primarypanel.tkraise()
+        except:
+            self.patientRequests = MainPatientRequestsInterface(
+                controller=self.controller, parent=self.parent)
+            self.patientRequests.loadRoleAssets(doctor=True)
+        self.patientRequests.primarypanel.loadAppointment(
+            appointment=appointment)
