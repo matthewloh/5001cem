@@ -21,7 +21,6 @@ from pendulum import timezone
 import tkintermapview
 from prisma.models import doctorPrescription
 
-
 class DoctorViewPatientRequests(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="requestspanel")
@@ -33,10 +32,11 @@ class DoctorViewPatientRequests(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
+        self.createFormEntries()  
         self.createbutton()
-        self.createFormEntries()
-        self.ScrolledFrame()
-        
+        self.submitPrescription() 
+        # self.loadAppointment()
+       # self.ScrolledFrame()
 
     def createFrames(self):
         pass
@@ -67,23 +67,59 @@ class DoctorViewPatientRequests(Frame):
         )
         self.presTitleTextArea = self.presTitle.text
 
-    
 
+    def createbutton(self):
+        self.submitButton = self.controller.buttonCreator(
+            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314 , y=948,
+            classname = "doctorSubmitbutton" , root=self, buttonFunction=lambda: self.submitPrescription(),
+        )
         
+    def submitPrescription(self):
+        title_data = self.presTitle.get("1.0", "end-1c")
+        desc_data = self.presDesc.get("1.0", "end-1c")
 
-        
+        try:
+            prescription = self.prisma.prescription.create(
+                data={
+                    "title": title_data,
+                    "desc": desc_data,g
+                    "appointmentId": self.currentAppointment.id,  # Replace with the actual appointment ID
+                }
+            )
+            print("Prescription submitted successfully:", prescription)
+        except Exception as e:
+            print("Error submitting prescription:", e)
 
-    def ScrolledFrame(self):
+       
+        self.presTitle.delete("1.0", "end")
+        self.presDesc.delete("1.0", "end")
+
+    def loadAppointment(self, appointment:Appointment):
+        #pass appointment details
+        self.currentAppointment : Appointment = appointment
+        appId = appointment.id
+        prescriptionList = appointment.prescription
+        patient = appointment.appRequest.patient
+        patientName = patient.user.fullName
+        patientEmail = patient.user.email
+        patientPhone = patient.user.contactNo
+        print(appId,)
+        print(patientName, patientEmail, patientPhone)
+        pass
+
+    def ScrolledFrame(self, appointment: Appointment):
         prisma = self.prisma
         viewPrescriptionList = prisma.appointment.find_many(
             include={
-                "patient": {
                     "include": {
-                        "user":True,
+                        "patient": {
+                            "include": {
+                                "user": True,
+                            }
+                        }
                     }
                 }
-            }
-        )
+            )
                
         h = len(viewPrescriptionList) * 120
         if h < 760:
@@ -96,10 +132,9 @@ class DoctorViewPatientRequests(Frame):
         COORDS = (5, 5)
         for prescriptions in viewPrescriptionList:
 
-            patientName = prescriptions.u
-            patientContact = prescriptions.patient.user.contactNo
-            patientEmail = prescriptions.patient.user.email
-
+            patientName = prescriptions.appRequest.patient.user.fullName
+            patientContact = prescriptions.appRequest.patient.user.contactNo
+            patientEmail = prescriptions.appRequest.patient.user.email
 
             X = COORDS[0]
             Y = COORDS[1]
@@ -121,32 +156,23 @@ class DoctorViewPatientRequests(Frame):
                 text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )  
-            PresPatientContact = self.controller.scrolledTextCreator(
-                x=X+335, y=Y+30, width=145, height=60, root=R, classname=f"{prescriptions.id}_Pres_req_phonenum",
+            PresPatientEmail = self.controller.scrolledTextCreator(
+                x=X+335, y=Y+30, width=145, height=60, root=R, classname=f"{prescriptions.id}_Pres_req_Email",
                 bg="#3D405B", hasBorder=False,
                 text=f"{patientEmail}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AccpectPrescription.png",
-                classname=f"AcceptPrescripton{prescriptions.id}", root=R,
+                classname=f"AcceptPrescriptonbutton{prescriptions.id}", root=R,
                 x=510, y=Y+30, buttonFunction=lambda t = prescriptions.id: [print(f"hide {t}")],
                 isPlaced=True,
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/RejectPrescription.png",
-                classname=f"RejectPrescripton{prescriptions.id}", root=R,
+                classname=f"RejectPrescriptonbutton{prescriptions.id}", root=R,
                 x=X+590, y=Y+30, buttonFunction=lambda t = prescriptions.id: [print(f"delete {t}")],
                 isPlaced=True
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
 
-
-
-        
-
-    def createbutton(self):
-        self.submitButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314 , y=948,
-            classname = "doctorSubmitbutton" , root=self, buttonFunction=lambda:[print('print=Submit')]
-        )

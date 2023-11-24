@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from views.mainDashboard import Dashboard
 import calendar
+from prisma.models import Appointment
 import datetime as dt
 import re
 import threading
@@ -41,6 +42,7 @@ class DoctorDashboard(Frame):
         self.ScrolledFrame()
         self.createPatientList()
         self.createNavigateButton()
+        self.getClinicData()
 
     def createFrames(self):
         pass
@@ -74,7 +76,8 @@ class DoctorDashboard(Frame):
                             }
                         }
                     }
-                }
+                },
+                 "prescription": True
             }
         )
 
@@ -85,12 +88,12 @@ class DoctorDashboard(Frame):
             master=self, width=1500, height=h, autohide=True, bootstyle="DoctorDashboard.bg"
         )
         self.appointmentListFrame.grid_propagate(False)
-        self.appointmentListFrame.place(x=48, y=279, width=844, height=722)
+        self.appointmentListFrame.place(x=48, y=279, width=1040, height=722)
         COORDS = (5, 5)
         for appointments in viewAppointment:
 
             patientName = appointments.appRequest.patient.user.fullName
-            patientContact = appointments.appRequest.patient.user.fullName
+            patientContact = appointments.appRequest.patient.user.contactNo
 
             X = COORDS[0]
             Y = COORDS[1]
@@ -101,13 +104,13 @@ class DoctorDashboard(Frame):
                 isPlaced=True,
             )
             UpAppPatientName = self.controller.scrolledTextCreator(
-                x=X+5, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_name",
+                x=X+15, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_name",
                 bg="#3D405B", hasBorder=False,
                 text=f"{patientName}", font=("Inter", 20), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )
             UpAppPatientContact = self.controller.scrolledTextCreator(
-                x=X+170, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_phone_num",
+                x=X+180, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_phone_num",
                 bg="#3D405B", hasBorder=False,
                 text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
@@ -120,16 +123,29 @@ class DoctorDashboard(Frame):
             date_string = date_part.strftime('%Y-%m-%d')
             time_string = time_part.strftime('%H:%M:%S')
             UpAppDate = self.controller.scrolledTextCreator(
-                x=X+340, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
+                x=X+350, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
                 bg="#3D405B", hasBorder=False,
                 text=f"{date_string}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )
             UpAppTime = self.controller.scrolledTextCreator(
-                x=X+505, y=Y+30, width=145, height=60, root=R, classname=f"{appointments.id}_App_time",
+                x=X+515, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_time",
                 bg="#3D405B", hasBorder=False,
                 text=f"{time_string}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/HealthRecord.png",
+                classname=f"HealthReocrd{appointments.id}", root=R,
+                x=X+670, y=Y+25, buttonFunction=lambda t = appointments.id: [print(f"record {t}")],
+                isPlaced=True
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AddPrescription.png",
+                classname=f"AcceptPrescripton{appointments.id}", root=R,
+                x=844, y=Y+25, buttonFunction=lambda a=appointments: [
+                self.loadIntoAppointmentView(a)],
+                isPlaced=True,
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
 
@@ -140,16 +156,46 @@ class DoctorDashboard(Frame):
     # "assets/Dashboard/DoctorAssets/DoctorClinic.png",
     # "assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
 
-    def createNavigateButton(self):
-        self.navigateToClinicPage = self.controller.buttonCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1375, y=455,
-            classname="ButtonToYourClinic", root=self, buttonFunction=lambda: [print("print=ToClinic")],
-            isPlaced=True,
+    
+
+    def getClinicData(self):
+        prisma = self.prisma
+        viewClinicList = prisma.clinic.find_many(
+            include={
+                "doctor": {
+                    "include": {
+                        "user": True
+                    }
+                }
+            }
         )
 
-        self.navigateToPrescriptionPage = self.controller.buttonCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/PrescriptionMoreDetalis.png", x=1205, y=939,
-            classname="ButtonToRequestPrescription", root=self, buttonFunction=lambda: [print("print=ToPrescription")],
+        if viewClinicList:
+            clinic = viewClinicList[0]  
+
+
+            # clinic data
+            clinic_name = clinic.name
+            clinic_address = clinic.address
+
+            ClinicName = self.controller.scrolledTextCreator(
+               x=1377, y=150, width=244, height=34, classname=f"clinic_name_dashboard",
+               root=self, bg="#ECECEC", hasBorder=TRUE,
+               text=f"{clinic_name}", font=("Inter", 18), fg=BLACK,
+               isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            ClinicAddress = self.controller.scrolledTextCreator(
+                x=1394, y=238, width=227, height=97, classname=f"clinic_address_dashboard",
+                root=self, bg="#ECECEC", hasBorder=True,
+                text=f"{clinic_address}", font=("Inter", 18), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+    def createNavigateButton(self):
+        self.navigateToClinicPage = self.controller.buttonCreator(
+            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1355, y=455,
+            classname="ButtonToYourClinic", root=self, buttonFunction=lambda: [print("print=ToClinic")],
             isPlaced=True,
         )
 
@@ -230,5 +276,18 @@ class DoctorDashboard(Frame):
                 "user": True
             }
         )
-        for patient in patients:
-            print(patient)
+        #for patient in patients:
+           # print(patient)
+
+    def loadIntoAppointmentView(self, appointment: Appointment):
+        try:
+            self.patientRequests.primarypanel.grid()
+            self.patientRequests.primarypanel.tkraise()
+        except:
+            self.patientRequests = MainPatientRequestsInterface(
+                controller=self.controller, parent=self.parent)
+            self.patientRequests.loadRoleAssets(doctor=True)
+        self.patientRequests.primarypanel.loadAppointment(
+            appointment=appointment)
+
+

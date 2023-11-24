@@ -38,6 +38,8 @@ class DoctorBrowseClinic(Frame):
         self.createElements()
         self.getClinicInformation()
         self.loadClinic()
+        self.ScrolledFrame()
+
 
     def createFrames(self):
         pass
@@ -113,7 +115,7 @@ class DoctorBrowseClinic(Frame):
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
-            ClinicZi = self.controller.scrolledTextCreator(
+            ClinicZip = self.controller.scrolledTextCreator(
                 x=612, y=420, width=240, height=60, classname=f"clinic_details_state",
                 root=self, bg="#D1E8E2", hasBorder=True,
                 text=f"{clinic_zip}", font=("Inter", 20), fg=BLACK,
@@ -174,15 +176,8 @@ class DoctorBrowseClinic(Frame):
         )
         newImage = self.controller.imageDict["doctor_loadedclinic_image"]
         self.clinicImage.configure(image=newImage, width=693, height=793)
-        self.clinicImage.place(x=965, y=120, width=700, height=700)
-        formatAddress = f"{clinic.address}, {clinic.zip}, {clinic.city}, {clinic.state.replace('_', ' ').title()}"
-        self.clinicAddress = self.controller.scrolledTextCreator(
-            x=140, y=1000, width=660, height=100, root=self.loadedClinicFrame, classname="patient_loadedclinic_address",
-            bg=WHITE, hasBorder=BLACK,
-            text=formatAddress, font=("Inter Bold", 18), fg=BLACK,
-            isDisabled=True, isJustified=True, justification="left",
-            hasVbar=False
-        )
+        self.clinicImage.place(x=955, y=220, width=665, height=650)
+        
 
 
             #DoctorName = self.controller.scrolledTextCreator(
@@ -199,7 +194,80 @@ class DoctorBrowseClinic(Frame):
             #)
     
 
-        
+    def ScrolledFrame(self):   
+        prisma = self.prisma
+        doctor = prisma.doctor.find_first(
+            where={
+                "userId": self.user.id
+            }
+        )
+        clinicOfDoctor = prisma.clinic.find_first(
+            where={
+                "doctor": {
+                    "some":{
+                        "id": doctor.id
+                    }
+                }
+            },
+            include={
+                "doctor": {
+                    "include": {
+                         "user": True,
+                    }
+                }
+            }
+        )
+
+        h = len(clinicOfDoctor) * 120
+        if h < 760:
+            h = 760
+        self.appointmentListFrame = ScrolledFrame(
+            master=self, width=1500, height=h, autohide=True, bootstyle="DoctorDashboard.bg"
+        )
+        self.appointmentListFrame.grid_propagate(False)
+        self.appointmentListFrame.place(x=23, y=782, width=877, height=225)
+        COORDS = (5, 5)
+        for clinicDoctor in clinicOfDoctor.doctor:
+
+            DoctorName = clinicDoctor.user.fullName
+            DoctorSpeciality = clinicDoctor.speciality
+            DoctorContact = clinicDoctor.user.contactNo
+            Doctoremail = clinicDoctor.user.email
+
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.appointmentListFrame
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{clinicDoctor.id}_bg", root=R,
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/ViewDcotorDetails.png",
+                isPlaced=True,
+            )
+            doctoerName = self.controller.scrolledTextCreator(
+                x=X+15, y=Y+32, width=145, height=60, root=R, classname=f"{clinicDoctor.id}_name",
+                bg="#3D405B", hasBorder=False,
+                text=f"{DoctorName}", font=("Inter", 20), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            doctorContact = self.controller.scrolledTextCreator(
+                x=X+180, y=Y+32, width=145, height=60, root=R, classname=f"{clinicDoctor.id}_phone_num",
+                bg="#3D405B", hasBorder=False,
+                text=f"{DoctorSpeciality}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            UpAppTime = self.controller.scrolledTextCreator(
+                x=X+515, y=Y+32, width=145, height=60, root=R, classname=f"{clinicDoctor.id}_App_time",
+                bg="#3D405B", hasBorder=False,
+                text=f"{DoctorContact}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            UpAppTime = self.controller.scrolledTextCreator(
+                x=X+515, y=Y+32, width=145, height=60, root=R, classname=f"{clinicDoctor.id}_App_time",
+                bg="#3D405B", hasBorder=False,
+                text=f"{Doctoremail}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            COORDS = (COORDS[0], COORDS[1] + 120)
+
         
 
 
