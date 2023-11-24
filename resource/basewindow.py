@@ -66,6 +66,7 @@ class ElementCreator(ttk.Window):
             self.mainPrisma = Prisma()
             self.mainPrisma.connect()
             print("Successfully connected to Prisma client.")
+            self.pingBackend()
         except Exception as e:
             print(e)
 
@@ -674,6 +675,19 @@ class ElementCreator(ttk.Window):
         self.updateWidgetsDict(root=root)
         self.widgetsDict[classname] = scrolledText
         return scrolledText
+
+    def scrolledFrameCreator(self, x: int = None, y: int = None, width: int = None,
+                             maxheight: int = None, minheight: int = None,
+                             root: Frame = None, 
+                             bootstyle: str = "bg-rounded", padding: int = 0):
+        """ 
+        """
+        if maxheight <= minheight:
+            maxheight = minheight
+        scrolledFrame = ScrolledFrame(
+            master=root, width=width, height=maxheight, autohide=True, bootstyle=bootstyle, padding=padding)
+        scrolledFrame.place(x=x, y=y, width=width, height=minheight)
+        return scrolledFrame
 
     def threadCreator(self, target, daemon=True, *args, **kwargs):
         t = threading.Thread(target=target, args=args, kwargs=kwargs)

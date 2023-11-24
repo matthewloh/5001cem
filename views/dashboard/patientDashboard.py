@@ -12,7 +12,7 @@ from resource.basewindow import ElementCreator, gridGenerator
 from resource.static import *
 from tkinter import *
 from tkinter import messagebox
-
+from prisma.models import Patient
 import tkintermapview
 from pendulum import timezone
 from ttkbootstrap.constants import *
@@ -35,6 +35,7 @@ class PatientDashboard(Frame):
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         self.prisma = self.controller.mainPrisma
         self.user = self.parent.user
+        self.patient: Patient = None
         self.createFrames()
         self.createElements()
 
@@ -51,6 +52,24 @@ class PatientDashboard(Frame):
         )
 
     def loadAssets(self):
+        self.patient = self.prisma.patient.find_first(
+            where={"userId": self.user.id},
+            include={
+                "user": True,
+                "healthRecord": True,
+                "madeAppRequests": {
+                    "include": {
+                        "clinic": True,
+                        "appointments": {
+                            "include": {
+                                "doctor": True,
+                                "prescription": True,
+                            }
+                        }
+                    }
+                }
+            }
+        )
         self.pfp = self.controller.buttonCreator(
             ipath="assets/Dashboard/PatientAssets/PatientProfilePicture.png",
             x=20, y=100, classname="profilepicture", root=self.parent,
@@ -83,33 +102,6 @@ class PatientDashboard(Frame):
             buttonFunction=lambda: [self.loadViewAppointments()],
         )
         self.loadDashboardButtons()
-
-    def loadBrowseClinic(self):
-        try:
-            self.mainInterface.primarypanel.grid()
-            self.mainInterface.primarypanel.tkraise()
-        except:
-            self.mainInterface = MainBrowseClinic(
-                controller=self.controller, parent=self.parent)
-            self.mainInterface.loadRoleAssets(patient=True)
-
-    def loadViewPatients(self):
-        try:
-            self.patientRequests.primarypanel.grid()
-            self.patientRequests.primarypanel.tkraise()
-        except:
-            self.patientRequests = MainPatientRequestsInterface(
-                controller=self.controller, parent=self.parent)
-            self.patientRequests.loadRoleAssets(patient=True)
-
-    def loadViewAppointments(self):
-        try:
-            self.appointments.primarypanel.grid()
-            self.appointments.primarypanel.tkraise()
-        except:
-            self.appointments = MainViewAppointmentsInterface(
-                controller=self.controller, parent=self.parent)
-            self.appointments.loadRoleAssets(patient=True)
 
     def loadDashboardButtons(self):
         CREATOR = self.controller.buttonCreator
@@ -167,19 +159,29 @@ class PatientDashboard(Frame):
         for param in params:
             CREATOR(**params[param])
 
-    def loadLatestAppointmentRequest(self):
-        prisma = self.prisma
-        prisma.appointmentrequest.find_many(
-            take=2,
-            where={
-                "patientId": {
-                    "equals": self.user.id
-                }
-            },
-            include={
-                "clinic": {
-                    "include": {}
-                }
-            }
-        )
-        pass
+    def loadBrowseClinic(self):
+        try:
+            self.mainInterface.primarypanel.grid()
+            self.mainInterface.primarypanel.tkraise()
+        except:
+            self.mainInterface = MainBrowseClinic(
+                controller=self.controller, parent=self.parent)
+            self.mainInterface.loadRoleAssets(patient=True)
+
+    def loadViewPatients(self):
+        try:
+            self.patientRequests.primarypanel.grid()
+            self.patientRequests.primarypanel.tkraise()
+        except:
+            self.patientRequests = MainPatientRequestsInterface(
+                controller=self.controller, parent=self.parent)
+            self.patientRequests.loadRoleAssets(patient=True)
+
+    def loadViewAppointments(self):
+        try:
+            self.appointments.primarypanel.grid()
+            self.appointments.primarypanel.tkraise()
+        except:
+            self.appointments = MainViewAppointmentsInterface(
+                controller=self.controller, parent=self.parent)
+            self.appointments.loadRoleAssets(patient=True)
