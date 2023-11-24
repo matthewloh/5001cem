@@ -82,7 +82,7 @@ class DoctorViewPatientRequests(Frame):
             prescription = self.prisma.prescription.create(
                 data={
                     "title": title_data,
-                    "desc": desc_data,g
+                    "desc": desc_data,
                     "appointmentId": self.currentAppointment.id,  # Replace with the actual appointment ID
                 }
             )
