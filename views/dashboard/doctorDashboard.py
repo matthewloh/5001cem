@@ -98,10 +98,12 @@ class DoctorDashboard(Frame):
             X = COORDS[0]
             Y = COORDS[1]
             R = self.appointmentListFrame
-            self.controller.labelCreator(
+            self.controller.buttonCreator(
                 x=X, y=Y, classname=f"{appointments.id}_bg", root=R,
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DashboardAppointmentbutton.png",
                 isPlaced=True,
+                buttonFunction=lambda a=appointments: [
+                    self.loadIntoAppointmentView(a)]
             )
             UpAppPatientName = self.controller.scrolledTextCreator(
                 x=X+15, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_name",

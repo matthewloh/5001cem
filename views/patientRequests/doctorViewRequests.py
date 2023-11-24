@@ -28,7 +28,7 @@ class DoctorViewPatientRequests(Frame):
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-        
+
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
@@ -55,7 +55,7 @@ class DoctorViewPatientRequests(Frame):
             master=self, autohide=True, width=640, height=345,
         )
         self.presTitle.place(
-            x=40, y=299, w=839 ,h=120,
+            x=40, y=299, w=839, h=120,
         )
         self.presTitleTextArea = self.presTitle.text
 
@@ -63,7 +63,7 @@ class DoctorViewPatientRequests(Frame):
             master=self, autohide=True, width=640, height=345,
         )
         self.presDesc.place(
-            x=40, y=521 ,w=839 ,h=288,
+            x=40, y=521, w=839, h=288,
         )
         self.presTitleTextArea = self.presTitle.text
 
@@ -176,3 +176,8 @@ class DoctorViewPatientRequests(Frame):
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
 
+    def createbutton(self):
+        self.submitButton = self.controller.buttonCreator(
+            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314, y=948,
+            classname="doctorSubmitbutton", root=self, buttonFunction=lambda: [print('print=Submit')]
+        )
