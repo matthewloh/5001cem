@@ -74,56 +74,56 @@ class DoctorViewAppointments(Frame):
             weight = healthRecord.weight
                 
             allergiesRecord = self.controller.scrolledTextCreator(
-               x=382, y=315, width=399, height=58, classname=f"allergiesRecords",
+               x=302, y=245, width=438, height=50, classname=f"allergiesRecords",
                root=self, bg="#D1E8E2", hasBorder=TRUE,
-               text=f"{allergies}", font=("Inter", 30), fg=BLACK,
+               text=f"{allergies}", font=("Inter", 20), fg=BLACK,
                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
             bloodtypeRecord = self.controller.scrolledTextCreator(
-                x=1037, y=315, width=399, height=58, classname=f"bloodtypeRecords",
-                root=self, bg="#D1E8E2", hasBorder=True,
-                text=f"{bloodtype}", font=("Inter", 20), fg=BLACK,
-                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
-            )
-
-            currentMedicationRecord = self.controller.scrolledTextCreator(
-                x=382, y=451, width=399, height=58, classname=f"currentMedicationRecords",
+                x=302, y=345, width=438, height=50, classname=f"bloodtypeRecords",
                 root=self, bg="#D1E8E2", hasBorder=True,
                 text=f"{currentMedication}", font=("Inter", 20), fg=BLACK,
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
-            familyHistoryRecord = self.controller.scrolledTextCreator(
-                x=1037, y=451, width=399, height=58, classname=f" familyHistoryRecords",
-                root=self, bg="#D1E8E2", hasBorder=True,
-                text=f"{familyHistory}", font=("Inter", 20), fg=BLACK,
-                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
-            )
-
-            heightRecord = self.controller.scrolledTextCreator(
-                x=382, y=594, width=399, height=58, classname=f"heightRecords",
+            currentMedicationRecord = self.controller.scrolledTextCreator(
+                x=302, y=445, width=438, height=50, classname=f"currentMedicationRecords",
                 root=self, bg="#D1E8E2", hasBorder=True,
                 text=f"{height}", font=("Inter", 20), fg=BLACK,
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
-            pastMedicationRecord = self.controller.scrolledTextCreator(
-                x=1037, y=594, width=399, height=58, classname=f"pastMedicationRecords",
-                root=self, bg="#D1E8E2", hasBorder=True,
-                text=f"{pastMedication}", font=("Inter", 20), fg=BLACK,
-                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
-            )
-
-            pastSurgeryRecord = self.controller.scrolledTextCreator(
-                x=382, y=731, width=399, height=58, classname=f"pastSurgeryRecords",
+            familyHistoryRecord = self.controller.scrolledTextCreator(
+                x=302, y=545, width=438, height=50, classname=f" familyHistoryRecords",
                 root=self, bg="#D1E8E2", hasBorder=True,
                 text=f"{pastSurgery}", font=("Inter", 20), fg=BLACK,
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
+            heightRecord = self.controller.scrolledTextCreator(
+                x=302, y=645, width=438, height=50, classname=f"heightRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{bloodtype}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            pastMedicationRecord = self.controller.scrolledTextCreator(
+                x=302, y=745, width=438, height=50, classname=f"pastMedicationRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{familyHistory}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            pastSurgeryRecord = self.controller.scrolledTextCreator(
+                x=302, y=845, width=438, height=50, classname=f"pastSurgeryRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{pastMedication}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
             weightRecord = self.controller.scrolledTextCreator(
-                x=1037, y=731, width=399, height=58, classname=f"weightRecords",
+                x=302, y=945, width=438, height=50, classname=f"weightRecords",
                 root=self, bg="#D1E8E2", hasBorder=True,
                 text=f"{weight}", font=("Inter", 20), fg=BLACK,
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,

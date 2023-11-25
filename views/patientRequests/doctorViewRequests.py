@@ -75,6 +75,8 @@ class DoctorViewPatientRequests(Frame):
             ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314 , y=948,
             classname = "doctorSubmitbutton" , root=self, buttonFunction=lambda: self.submitPrescription(),
         )
+
+    
         
     def submitPrescription(self):
         title = self.presTitle.get("1.0", "end-1c")
@@ -92,11 +94,10 @@ class DoctorViewPatientRequests(Frame):
         except Exception as e:
             print("Error submitting prescription:", e)
 
-       
+      
         self.presTitle.delete("1.0", "end")
         self.presDesc.delete("1.0", "end")
-
-    
+        
 
     def loadAppointment(self, appointment:Appointment):
         #pass appointment details

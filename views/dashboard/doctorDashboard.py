@@ -89,8 +89,8 @@ class DoctorDashboard(Frame):
             master=self, width=1500, height=h, autohide=True, bootstyle="DoctorDashboard.bg"
         )
         self.appointmentListFrame.grid_propagate(False)
-        self.appointmentListFrame.place(x=48, y=279, width=1040, height=722)
-        COORDS = (5, 5)
+        self.appointmentListFrame.place(x=97, y=278, width=950, height=721)
+        COORDS = (3, 3)
         for appointments in viewAppointment:
 
             patientName = appointments.appRequest.patient.user.fullName
@@ -111,7 +111,7 @@ class DoctorDashboard(Frame):
                 isDisabled=True, isJustified=True, justification="center",
             )
             UpAppPatientContact = self.controller.scrolledTextCreator(
-                x=X+180, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_phone_num",
+                x=X+175, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_phone_num",
                 bg="#3D405B", hasBorder=False,
                 text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
@@ -124,13 +124,13 @@ class DoctorDashboard(Frame):
             date_string = date_part.strftime('%Y-%m-%d')
             time_string = time_part.strftime('%H:%M:%S')
             UpAppDate = self.controller.scrolledTextCreator(
-                x=X+350, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
+                x=X+345, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
                 bg="#3D405B", hasBorder=False,
                 text=f"{date_string}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
             )
             UpAppTime = self.controller.scrolledTextCreator(
-                x=X+515, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_time",
+                x=X+510, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_time",
                 bg="#3D405B", hasBorder=False,
                 text=f"{time_string}", font=("Inter", 18), fg=WHITE,
                 isDisabled=True, isJustified=True, justification="center",
@@ -138,7 +138,7 @@ class DoctorDashboard(Frame):
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/HealthRecord.png",
                 classname=f"HealthReocrd{appointments.id}", root=R,
-                x=X+670, y=Y+25, buttonFunction=lambda a=appointments: [
+                x=X+688, y=Y, buttonFunction=lambda a=appointments: [
                 self.loadIntoPatientView(a)],
                 isPlaced=True,
                 
@@ -146,8 +146,15 @@ class DoctorDashboard(Frame):
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AddPrescription.png",
                 classname=f"AcceptPrescripton{appointments.id}", root=R,
-                x=844, y=Y+25, buttonFunction=lambda a=appointments: [
+                x=774, y=Y, buttonFunction=lambda a=appointments: [
                 self.loadIntoAppointmentView(a)],
+                isPlaced=True,
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Done.png",
+                classname=f"Done{appointments.id}", root=R,
+                x=857, y=Y, buttonFunction=lambda a=appointments: [
+                    self.markAppointmentAsCompleted(a)],
                 isPlaced=True,
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
@@ -159,7 +166,19 @@ class DoctorDashboard(Frame):
     # "assets/Dashboard/DoctorAssets/DoctorClinic.png",
     # "assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
 
-    
+    def markAppointmentAsCompleted(self, appointment):
+        try:
+            update_query = {
+                "where": {"id": appointment.id},
+                "data": {"status": "COMPLETED", "completedAt": datetime.now()}
+            }
+
+            self.prisma.appointment.update(**update_query)
+
+           
+        except Exception as e:
+            print(f"Failed to change status to Completed {e}")
+
 
     def getClinicData(self):
         prisma = self.prisma
@@ -182,14 +201,14 @@ class DoctorDashboard(Frame):
             clinic_address = clinic.address
 
             ClinicName = self.controller.scrolledTextCreator(
-               x=1377, y=150, width=244, height=34, classname=f"clinic_name_dashboard",
+               x=1315, y=165, width=260, height=34, classname=f"clinic_name_dashboard",
                root=self, bg="#ECECEC", hasBorder=TRUE,
                text=f"{clinic_name}", font=("Inter", 18), fg=BLACK,
                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
             ClinicAddress = self.controller.scrolledTextCreator(
-                x=1394, y=238, width=227, height=97, classname=f"clinic_address_dashboard",
+                x=1350, y=238, width=220, height=140, classname=f"clinic_address_dashboard",
                 root=self, bg="#ECECEC", hasBorder=True,
                 text=f"{clinic_address}", font=("Inter", 18), fg=BLACK,
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,
@@ -197,10 +216,10 @@ class DoctorDashboard(Frame):
 
     def createNavigateButton(self):
         self.navigateToClinicPage = self.controller.buttonCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1355, y=455,
-            classname="ButtonToYourClinic", root=self, buttonFunction=lambda: [print("print=ToClinic")],
-            isPlaced=True,
-        )
+        ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1265, y=505,
+        classname="ButtonToYourClinic", root=self, buttonFunction=lambda: self.loadBrowseClinic(),
+        isPlaced=True,
+)
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -301,12 +320,12 @@ class DoctorDashboard(Frame):
             self.appointments.primarypanel.tkraise()
         except:
             self.appointments = MainViewAppointmentsInterface(
-            controller=self.controller, parent=self.parent)
-        self.appointments.loadRoleAssets(doctor=True)
-
-    # Pass the patient information to the loadpatient method
+                controller=self.controller, parent=self.parent)
+            self.appointments.loadRoleAssets(doctor=True)
         self.appointments.primarypanel.loadpatient(patient=patient)
 
+       
+        
     
 
 
