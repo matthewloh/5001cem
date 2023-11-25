@@ -4,6 +4,7 @@ if TYPE_CHECKING:
     from views.mainDashboard import Dashboard
 import calendar
 from prisma.models import Appointment
+from prisma.models import Patient
 import datetime as dt
 import re
 import threading
@@ -98,12 +99,10 @@ class DoctorDashboard(Frame):
             X = COORDS[0]
             Y = COORDS[1]
             R = self.appointmentListFrame
-            self.controller.buttonCreator(
+            self.controller.labelCreator(
                 x=X, y=Y, classname=f"{appointments.id}_bg", root=R,
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DashboardAppointmentbutton.png",
                 isPlaced=True,
-                buttonFunction=lambda a=appointments: [
-                    self.loadIntoAppointmentView(a)]
             )
             UpAppPatientName = self.controller.scrolledTextCreator(
                 x=X+15, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_name",
@@ -139,8 +138,10 @@ class DoctorDashboard(Frame):
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/HealthRecord.png",
                 classname=f"HealthReocrd{appointments.id}", root=R,
-                x=X+670, y=Y+25, buttonFunction=lambda t = appointments.id: [print(f"record {t}")],
-                isPlaced=True
+                x=X+670, y=Y+25, buttonFunction=lambda a=appointments: [
+                self.loadIntoPatientView(a)],
+                isPlaced=True,
+                
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AddPrescription.png",
@@ -163,13 +164,13 @@ class DoctorDashboard(Frame):
     def getClinicData(self):
         prisma = self.prisma
         viewClinicList = prisma.clinic.find_many(
-            include={
-                "doctor": {
-                    "include": {
-                        "user": True
+            where={
+                "doctor":{
+                    "some": {
+                        "userId": self.user.id
                     }
                 }
-            }
+            },
         )
 
         if viewClinicList:
@@ -291,5 +292,21 @@ class DoctorDashboard(Frame):
             self.patientRequests.loadRoleAssets(doctor=True)
         self.patientRequests.primarypanel.loadAppointment(
             appointment=appointment)
+
+
+    def loadIntoPatientView(self, appointment: Appointment):
+        patient = appointment.appRequest.patient
+        try:
+            self.appointments.primarypanel.grid()
+            self.appointments.primarypanel.tkraise()
+        except:
+            self.appointments = MainViewAppointmentsInterface(
+            controller=self.controller, parent=self.parent)
+        self.appointments.loadRoleAssets(doctor=True)
+
+    # Pass the patient information to the loadpatient method
+        self.appointments.primarypanel.loadpatient(patient=patient)
+
+    
 
 

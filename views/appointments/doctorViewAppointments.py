@@ -4,7 +4,7 @@ import re
 import threading
 from tkinter import *
 from tkinter import messagebox
-from prisma.models import Appointment
+from prisma.models import Patient
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -19,6 +19,7 @@ from pendulum import timezone
 import tkintermapview
 
 
+
 class DoctorViewAppointments(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="appointmentspanel")
@@ -30,7 +31,7 @@ class DoctorViewAppointments(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
-        self.loadAppScrolledFrame()
+
        
 
     def createFrames(self):
@@ -38,45 +39,96 @@ class DoctorViewAppointments(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorRequestPrecription.png",
+            ipath="assets/Dashboard/DoctorAssets/HealthRecord.png",
             x=0, y=0, classname="secondarypanelbg", root=self
         )
 
-    def loadAppScrolledFrame(self):
+    def loadpatient(self, patient:Patient):
+        self.currentPatient : Patient = patient
+        patientID = patient.id
+        print(patientID)
+        self.getPatientHealthRecord(patient)
+        pass
+
+
+    def getPatientHealthRecord(self, patient: Patient):
         prisma = self.prisma
-        # appointments = prisma.appointment.find_many(
-        #     where={
-        #         "doctor": {
-        #             "is": {
-        #                 "userId": self.getUserID()
-        #             }
-        #         }
-        #     },
-        #     include={
-        #         "patient": {
-        #             "include": {
-        #                 "user": True
-        #             }
-        #         }
-        #     }
-        # )
-        appointments = [1, 2, 3, 4, 5, 6, 7]
-        h = len(appointments) * 120
-        if h < 620:
-            h = 620
-        self.appointmentScrolledFrame = ScrolledFrame(
-            master=self, width=1500, height=h, bootstyle="bg-round", autohide=True
+        viewHealthRecord = prisma.patient.find_first(
+            where={
+                "id": self.currentPatient.id  
+            },
+            include={
+                "healthRecord": True,
+            }
         )
-        self.appointmentScrolledFrame.place(
-            x=161, y=280, width=1311, height=683)
-        initCoords = (20, 20)
-        for a in appointments:
-            #a.fullname.userId
-            bg = self.controller.labelCreator(
-                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DoctorRequestPrescriptionButton.png",
-                x=initCoords[0], y=initCoords[1], classname=f"AcceptPrescriptionRequest{a}", root=self.appointmentScrolledFrame,
-                isPlaced=True
+        if viewHealthRecord:
+            healthRecord = viewHealthRecord.healthRecord 
+
+            allergies = healthRecord.allergies 
+            bloodtype = healthRecord.bloodType
+            currentMedication = healthRecord.currentMedication
+            familyHistory = healthRecord.familyHistory
+            height = healthRecord.height
+            pastMedication = healthRecord.pastMedication
+            pastSurgery = healthRecord.pastSurgery
+            weight = healthRecord.weight
+                
+            allergiesRecord = self.controller.scrolledTextCreator(
+               x=382, y=315, width=399, height=58, classname=f"allergiesRecords",
+               root=self, bg="#D1E8E2", hasBorder=TRUE,
+               text=f"{allergies}", font=("Inter", 30), fg=BLACK,
+               isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
-            initCoords = (initCoords[0], initCoords[1] + 100)
+
+            bloodtypeRecord = self.controller.scrolledTextCreator(
+                x=1037, y=315, width=399, height=58, classname=f"bloodtypeRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{bloodtype}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            currentMedicationRecord = self.controller.scrolledTextCreator(
+                x=382, y=451, width=399, height=58, classname=f"currentMedicationRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{currentMedication}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            familyHistoryRecord = self.controller.scrolledTextCreator(
+                x=1037, y=451, width=399, height=58, classname=f" familyHistoryRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{familyHistory}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            heightRecord = self.controller.scrolledTextCreator(
+                x=382, y=594, width=399, height=58, classname=f"heightRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{height}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            pastMedicationRecord = self.controller.scrolledTextCreator(
+                x=1037, y=594, width=399, height=58, classname=f"pastMedicationRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{pastMedication}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            pastSurgeryRecord = self.controller.scrolledTextCreator(
+                x=382, y=731, width=399, height=58, classname=f"pastSurgeryRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{pastSurgery}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            weightRecord = self.controller.scrolledTextCreator(
+                x=1037, y=731, width=399, height=58, classname=f"weightRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{weight}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+       
 
 
+    

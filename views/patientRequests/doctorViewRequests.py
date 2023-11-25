@@ -32,11 +32,11 @@ class DoctorViewPatientRequests(Frame):
         self.prisma = self.controller.mainPrisma
         self.createFrames()
         self.createElements()
-        self.createFormEntries()  
-        self.createbutton()
-        self.submitPrescription() 
+        self.createFormEntries()
+        self.createbutton() 
+        self.submitPrescription()
         # self.loadAppointment()
-       # self.ScrolledFrame()
+        # self.ScrolledFrame()
 
     def createFrames(self):
         pass
@@ -61,12 +61,14 @@ class DoctorViewPatientRequests(Frame):
 
         self.presDesc = ScrolledText(
             master=self, autohide=True, width=640, height=345,
+            wrap='word' #No enter for next line
         )
         self.presDesc.place(
             x=40, y=521, w=839, h=288,
         )
-        self.presTitleTextArea = self.presTitle.text
+        self.presDescTextArea = self.presDesc.text
 
+        self.presDescTextArea.bind("<Return>", lambda event: "break")
 
     def createbutton(self):
         self.submitButton = self.controller.buttonCreator(
@@ -75,15 +77,15 @@ class DoctorViewPatientRequests(Frame):
         )
         
     def submitPrescription(self):
-        title_data = self.presTitle.get("1.0", "end-1c")
-        desc_data = self.presDesc.get("1.0", "end-1c")
+        title = self.presTitle.get("1.0", "end-1c")
+        desc = self.presDesc.get("1.0", "end-1c")
 
         try:
             prescription = self.prisma.prescription.create(
                 data={
-                    "title": title_data,
-                    "desc": desc_data,
-                    "appointmentId": self.currentAppointment.id,  # Replace with the actual appointment ID
+                    "title": title,
+                    "desc": desc,
+                    "appointmentId": self.currentAppointment.id,  
                 }
             )
             print("Prescription submitted successfully:", prescription)
@@ -93,6 +95,8 @@ class DoctorViewPatientRequests(Frame):
        
         self.presTitle.delete("1.0", "end")
         self.presDesc.delete("1.0", "end")
+
+    
 
     def loadAppointment(self, appointment:Appointment):
         #pass appointment details
@@ -176,8 +180,3 @@ class DoctorViewPatientRequests(Frame):
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
 
-    def createbutton(self):
-        self.submitButton = self.controller.buttonCreator(
-            ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314, y=948,
-            classname="doctorSubmitbutton", root=self, buttonFunction=lambda: [print('print=Submit')]
-        )
