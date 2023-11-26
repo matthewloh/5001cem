@@ -68,6 +68,7 @@ class AdminManageAppointments(Frame):
                 "assets/Appointments/Homepage/ManageAppointments.png",
                 "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
                 "assets/Appointments/ReturnButton.png",
+                "assets/Appointments/Creation/BookAppointment.png"
                 "assets/Appointments/ReturnButton.png",
             ]
         }
@@ -98,9 +99,14 @@ class AdminManageAppointments(Frame):
             buttonFunction=lambda: [
                 self.createAppointmentsFrame.grid_remove()],
         )
+        self.bookAppointmentBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][4],
+            x=820, y=720, classname="bookappointment", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [print('book')],
+        )
         # Appointment Management
         self.returnmanagementBtn = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][4],
+            ipath=d["appointmentButtons"][5],
             x=20, y=60, classname="returnmanagement", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [
                 self.manageAppointmentsFrame.grid_remove()],
