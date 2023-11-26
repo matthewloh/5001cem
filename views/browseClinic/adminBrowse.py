@@ -137,10 +137,10 @@ class AdminBrowseClinic(Frame):
             self.deleteClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][1],
                 x=X+1360, y=Y+30, classname=f"deleteclinic{clinicId}", root=R,
-                buttonFunction=lambda: [print('clinicdelete')],
+                buttonFunction=lambda: [self.controller.threadCreator(
+                    self.deleteClinic)],
                 isPlaced=True
             )
-
             clinicName = self.controller.scrolledTextCreator(
                 x=X+40, y=Y+30, width=240, height=70, root=R, classname=f"{clinicId}_name",
                 bg="#f1feff", hasBorder=False,
@@ -179,6 +179,27 @@ class AdminBrowseClinic(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+
+    def deleteClinic(self):
+        result = messagebox.askyesno(
+            "Delete Clinic", "Are you sure you want to delete this clinic account?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.clinicenrolment.update(
+                where={
+                "clinicId":self.user.id
+                },
+                data={
+                    "clinicAdmin":{
+                        "disconnect": True
+                    }
+                }
+            )
+            self.controller.threadCreator(
+                self.manageClinic, cancelled=True)
+        else:
+            return
 
     def addDoctorButtons(self):
         self.closebutton = self.controller.buttonCreator(

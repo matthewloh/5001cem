@@ -13,7 +13,8 @@ from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
 from views.mainPatientRequests import MainPatientRequestsInterface
 from views.mainViewAppointments import MainViewAppointmentsInterface
-
+from prisma.models import Doctor
+from tkinter import messagebox
 
 class ClinicAdminDashboard(Frame):
     def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
@@ -347,7 +348,8 @@ class ClinicAdminDashboard(Frame):
             self.deletedoctorbutton = self.controller.buttonCreator(
                 ipath=d["scrollButton"][1],
                 x=X+1360, y=Y+30, classname=f"deletebutton{doctor.id}", root=R,
-                buttonFunction=lambda: [print('delete')],
+                buttonFunction=lambda: [self.controller.threadCreator(
+                    self.deleteDoctor)],
                 isPlaced=True
             )
 
@@ -382,3 +384,24 @@ class ClinicAdminDashboard(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+
+    def deleteDoctor(self):
+        result = messagebox.askyesno(
+            "Delete Doctor", "Are you sure you want to delete this doctor account?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.doctor.update(
+                where={
+                "userId":self.user.id
+                },
+                data={
+                    "clinic":{
+                        "disconnect": True
+                    }
+                }
+            )
+            self.controller.threadCreator(
+                self.addAnddeleteList, cancelled=True)
+        else:
+            return
