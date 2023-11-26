@@ -82,7 +82,7 @@ class AdminManageAppointments(Frame):
             ipath=d["appointmentButtons"][1],
             x=1140, y=800, classname="managebutton", root=self,
             buttonFunction=lambda: [
-                self.loadAppointmentCreation],
+                self.manageAppointmentsFrame.grid,self.manageAppointmentsFrame.tkraise],
         )
         self.refreshBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],

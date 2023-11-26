@@ -44,7 +44,7 @@ class ClinicAdminDashboard(Frame):
                 "assets/Dashboard/ClinicAdminAssets/AdminViewPatientRequests.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminViewDoctorSchedule.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminGRDRequests.png"
-            ],
+            ]
         }
         self.browseClinic = self.controller.buttonCreator(
             ipath=d["clinicAdmin"][0],
@@ -107,10 +107,14 @@ class ClinicAdminDashboard(Frame):
         self.doctorListFrame = self.controller.frameCreator(
             x=0, y=0, classname="listframe", root=self, framewidth=1680, frameheight=1080
         )
+        self.manageDoctorFrame = self.controller.frameCreator(
+            x=0, y=0, classname="doctorframe", root=self, framewidth=1680, frameheight=1080
+        )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
         self.doctorListFrame.grid_remove()
+        self.manageDoctorFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
@@ -119,7 +123,9 @@ class ClinicAdminDashboard(Frame):
         )
         self.imgLabels = [
             ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/DoctorListManagement.png",
-             0, 0, "listimage", self.doctorListFrame)
+             0, 0, "listimage", self.doctorListFrame),
+            ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/ManageDoctors.png",
+             0, 0, "doctorimage", self.manageDoctorFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
@@ -248,7 +254,8 @@ class ClinicAdminDashboard(Frame):
             "adminDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Add&DeleteDoctor.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/Add&DeleteList/AddDoctor.png"
+                "assets/Dashboard/ClinicAdminAssets/Add&DeleteList/AddDoctor.png",
+                "assets/Appointments/ReturnButton.png",
             ]
         }
         self.Listbutton = self.controller.buttonCreator(
@@ -266,6 +273,11 @@ class ClinicAdminDashboard(Frame):
             ipath=d["adminDashboard"][2],
             x=1540, y=40, classname="addbutton", root=self.doctorListFrame,
             buttonFunction=lambda: [print('add')],
+        )
+        self.returnListbutton = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][3],
+            x=60, y=40, classname="returnbutton", root=self.manageDoctorFrame,
+            buttonFunction=lambda: [self.manageDoctorFrame.grid_remove()],
         )
 
     def createList(self):
@@ -302,7 +314,7 @@ class ClinicAdminDashboard(Frame):
                 initialCoordinates[0], initialCoordinates[1] + 100
             )
 
-    def addAnddeleteList(self):
+    def addAnddeleteList(self, req: Doctor):
         prisma = self.prisma
         doctors = prisma.doctor.find_many(
             where={
@@ -342,7 +354,7 @@ class ClinicAdminDashboard(Frame):
             self.viewdoctorbutton = self.controller.buttonCreator(
                 ipath=d["scrollButton"][0],
                 x=X+1280, y=Y+30, classname=f"viewbutton{doctor.id}", root=R,
-                buttonFunction=lambda: [print('view')],
+                buttonFunction=lambda: [self.manageDoctor(req)],
                 isPlaced=True
             )
             self.deletedoctorbutton = self.controller.buttonCreator(
@@ -405,3 +417,20 @@ class ClinicAdminDashboard(Frame):
                 self.addAnddeleteList, cancelled=True)
         else:
             return
+    
+    def manageDoctor(self, req:Doctor):
+        self.controller.threadCreator(
+            self.createManageDoctor, req=req
+        )
+
+    def createManageDoctor(self, req: Doctor ):
+        self.manageDoctorFrame.grid()
+        self.manageDoctorFrame.tkraise()
+
+        self.controller.scrolledTextCreator(
+            x=260, y=260, width=540, height=60, root=self.manageDoctorFrame, classname="manage_speciality",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{req.speciality}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
