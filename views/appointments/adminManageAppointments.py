@@ -68,7 +68,9 @@ class AdminManageAppointments(Frame):
                 "assets/Appointments/Homepage/ManageAppointments.png",
                 "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
                 "assets/Appointments/ReturnButton.png",
+                "assets/Appointments/Creation/BookAppointment.png",
                 "assets/Appointments/ReturnButton.png",
+                "assets/Appointments/Management/UpdateInformation.png"
             ]
         }
         # Appointment Dashboard
@@ -81,7 +83,7 @@ class AdminManageAppointments(Frame):
             ipath=d["appointmentButtons"][1],
             x=1140, y=800, classname="managebutton", root=self,
             buttonFunction=lambda: [
-                self.loadAppointmentCreation],
+                self.manageAppointmentsFrame.grid,self.manageAppointmentsFrame.tkraise()],
         )
         self.refreshBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],
@@ -98,12 +100,22 @@ class AdminManageAppointments(Frame):
             buttonFunction=lambda: [
                 self.createAppointmentsFrame.grid_remove()],
         )
+        self.bookAppointmentBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][4],
+            x=820, y=720, classname="bookappointment", root=self.createAppointmentsFrame,
+            buttonFunction=lambda: [print('book')],
+        )
         # Appointment Management
         self.returnmanagementBtn = self.controller.buttonCreator(
-            ipath=d["appointmentButtons"][4],
+            ipath=d["appointmentButtons"][5],
             x=20, y=60, classname="returnmanagement", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [
                 self.manageAppointmentsFrame.grid_remove()],
+        )
+        self.updateInfoBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][6],
+            x=800, y=660, classname="updateinfo", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [print('update')],
         )
 
     def appointmentList(self):
@@ -494,89 +506,4 @@ class AdminManageAppointments(Frame):
                 title="Aborting...", message="Invalid time interval value")
         self.create_app_load_time_menu()
 
-    def loadDoctors(self):
-        R = self.createAppointmentsFrame
-        prisma = self.prisma
-
-        # Fetch the list of doctors from the database
-        doctors_data = prisma.doctor.find_many(
-            where={
-                "userId": self.user.id
-            },
-            include={
-                "user": True,
-            }
-        )
-
-        # Extract the full names of doctors
-        doctor_names = [doctor.user.fullName for doctor in doctors_data]
-
-        # Create a Tkinter variable to store the selected doctor
-        self.selected_doctor = StringVar()
-
-        # Create a menu button and populate it with doctor names
-        self.doctor_menu = self.controller.menubuttonCreator(
-            x=140, y=600, width=400, height=80, root=R, classname="doctor",
-            text="Select Doctor", options=doctor_names, variable=self.selected_doctor
-        )
-
-        # Add a command to handle the selection
-        self.doctor_menu.configure(command=self.handleDoctorSelection)
-
-    def handleDoctorSelection(self):
-        # Access the selected doctor using self.selected_doctor.get()
-        selected_doctor = self.selected_doctor.get()
-        # Perform any actions based on the selected doctor
-        print(f"Selected Doctor: {selected_doctor}")
-
-    def loadAppointmentFormEntries(self):
-        self.userRegEntries = [
-            (40, 320, 260, 60, self.createAppointmentsFrame, "regappointmentdate"),
-        ]
-        for i in self.userRegEntries:
-            self.controller.ttkEntryCreator(**self.tupleToDict(i))
-            self.appointmentDateEntry = self.controller.ttkEntryCreator(
-                x=40, y=320, width=260, height=60, root=self.createAppointmentsFrame, classname="regappointmentdate"
-            )
-
-    def initDatePicker(self):
-        self.datePicker = self.controller.buttonCreator(
-            ipath="assets/Registration/DatePicker.png",
-            x=320, y=320, classname="datepicker", root=self.frameref,
-            buttonFunction=lambda: self.selectDate(self.datePicker)
-        )
-        self.appointmentMsg = "Select Appointment Date"
-        self.appointmentDateEntry.insert(0, self.appointmentMsg)
-        self.appointmentDateEntry.config(state=READONLY)
-
-    def selectDate(self, btn):
-        self.dateOfBirthEntry.configure(foreground="black")
-        year = Querybox.get_integer(
-            parent=btn, title="Enter Year", minvalue=1900, maxvalue=2023, initialvalue=2023,
-            prompt="Please enter birth year, to aid in adjustment, left-click the arrow to move the calendar by one month. Right-click the arrow to move the calendar by one year or right-click the title to reset the calendar to the start date."
-        )
-        if year is None:
-            self.dateOfBirthEntry.configure(foreground="red")
-            return
-        dateTimeYear = dt.strptime(f"{year}", "%Y")
-        dialog = DatePickerDialog(
-            parent=btn, title="Select Date", firstweekday=0, startdate=dateTimeYear
-        )
-        if dialog.date_selected is None:
-            print('test')
-            return
-        if dialog.date_selected.year > dt.now().year or dialog.date_selected.year < 1900:
-            toast = ToastNotification(
-                title="Error",
-                message="Please select a valid appointment date between 1900 and the current year",
-                duration=3000,
-                bootstyle="danger"
-            )
-        toast.show_toast()
-        return
-        self.dateTimeAppointment = dialog.date_selected
-        date = dialog.date_selected.strftime("%d/%m/%Y")
-        self.appointmentDateEntry.configure(state=NORMAL)
-        self.appointmentDateEntry.delete(0, END)
-        self.appointmentDateEntry.insert(0, date)
-        self.appointmentDateEntry.configure(state=READONLY)
+    

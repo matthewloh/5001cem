@@ -13,7 +13,10 @@ from views.mainBrowseClinic import MainBrowseClinic
 from views.mainGRDRequests import MainGRDRequestsInterface
 from views.mainPatientRequests import MainPatientRequestsInterface
 from views.mainViewAppointments import MainViewAppointmentsInterface
-
+from prisma.models import Doctor
+from datetime import datetime, timedelta
+import datetime as dt
+from tkinter import messagebox
 
 class ClinicAdminDashboard(Frame):
     def __init__(self, parent: Dashboard = None, controller: ElementCreator = None):
@@ -43,7 +46,7 @@ class ClinicAdminDashboard(Frame):
                 "assets/Dashboard/ClinicAdminAssets/AdminViewPatientRequests.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminViewDoctorSchedule.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminGRDRequests.png"
-            ],
+            ]
         }
         self.browseClinic = self.controller.buttonCreator(
             ipath=d["clinicAdmin"][0],
@@ -106,10 +109,14 @@ class ClinicAdminDashboard(Frame):
         self.doctorListFrame = self.controller.frameCreator(
             x=0, y=0, classname="listframe", root=self, framewidth=1680, frameheight=1080
         )
+        self.manageDoctorFrame = self.controller.frameCreator(
+            x=0, y=0, classname="doctorframe", root=self, framewidth=1680, frameheight=1080
+        )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
         self.doctorListFrame.grid_remove()
+        self.manageDoctorFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
@@ -118,7 +125,9 @@ class ClinicAdminDashboard(Frame):
         )
         self.imgLabels = [
             ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/DoctorListManagement.png",
-             0, 0, "listimage", self.doctorListFrame)
+             0, 0, "listimage", self.doctorListFrame),
+            ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/ManageDoctors.png",
+             0, 0, "doctorimage", self.manageDoctorFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
@@ -215,17 +224,39 @@ class ClinicAdminDashboard(Frame):
         )
 
     def loadAvailableDoctorsByTimeSlot(self, option: str):
-        print(option)
+        doctors = self.appointmentsAndDoctors[option]
+        h = len(doctors) * 100
+        if h < 350:
+            h = 350
+        self.statusScrolledFrame = ScrolledFrame(
+            master=self, width=900, height=h, autohide=True, bootstyle="minty-bg")
+        self.statusScrolledFrame.place(
+            x=680, y=670, width=900, height=350
+        )
+        initialCoordinates = (20, 20)
+        for doctor in doctors:
+            x = initialCoordinates[0]
+            y = initialCoordinates[1]
+            self.controller.textElement(
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrolldashboardbutton.png",
+                x=x, y=y, classname=f"doctorstatusbg{doctor.id}", root=self.statusScrolledFrame,
+                text=f"{doctor.user.fullName}", size=30, font=INTER,
+                isPlaced=True,
+                buttonFunction=lambda d=doctor: [print(d)]
+            )
+            initialCoordinates = (
+                initialCoordinates[0], initialCoordinates[1] + 100
+            )
 
     def loadDoctorsBySpeciality(self, option):
         doctors = self.specialitiesAndDoctors[option]
         h = len(doctors) * 100
-        if h < 375:
-            h = 375
+        if h < 350:
+            h = 350
         self.doctorsScrolledFrame = ScrolledFrame(
-            master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
+            master=self, width=900, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
-            x=685, y=150, width=900, height=350
+            x=680, y=150, width=900, height=350
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
@@ -247,7 +278,7 @@ class ClinicAdminDashboard(Frame):
             "adminDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Add&DeleteDoctor.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/Add&DeleteList/AddDoctor.png"
+                "assets/Appointments/ReturnButton.png",
             ]
         }
         self.Listbutton = self.controller.buttonCreator(
@@ -261,10 +292,10 @@ class ClinicAdminDashboard(Frame):
             x=60, y=40, classname="doctorreturnbutton", root=self.doctorListFrame,
             buttonFunction=lambda: [self.doctorListFrame.grid_remove()],
         )
-        self.Addbutton = self.controller.buttonCreator(
+        self.returnDoctorListbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][2],
-            x=1540, y=40, classname="addbutton", root=self.doctorListFrame,
-            buttonFunction=lambda: [print('add')],
+            x=20, y=40, classname="return_to_doctorlist", root=self.manageDoctorFrame,
+            buttonFunction=lambda: [self.manageDoctorFrame.grid_remove()],
         )
 
     def createList(self):
@@ -341,13 +372,14 @@ class ClinicAdminDashboard(Frame):
             self.viewdoctorbutton = self.controller.buttonCreator(
                 ipath=d["scrollButton"][0],
                 x=X+1280, y=Y+30, classname=f"viewbutton{doctor.id}", root=R,
-                buttonFunction=lambda: [print('view')],
+                buttonFunction=lambda: [self.manageDoctorFrame.grid(),self.manageDoctorFrame.tkraise()],
                 isPlaced=True
             )
             self.deletedoctorbutton = self.controller.buttonCreator(
                 ipath=d["scrollButton"][1],
                 x=X+1360, y=Y+30, classname=f"deletebutton{doctor.id}", root=R,
-                buttonFunction=lambda: [print('delete')],
+                buttonFunction=lambda: [self.controller.threadCreator(
+                    self.deleteDoctor)],
                 isPlaced=True
             )
 
@@ -382,3 +414,57 @@ class ClinicAdminDashboard(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+
+    def deleteDoctor(self):
+        result = messagebox.askyesno(
+            "Delete Doctor", "Are you sure you want to delete this doctor account?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.doctor.update(
+                where={
+                "userId":self.user.id
+                },
+                data={
+                    "clinic":{
+                        "disconnect": True
+                    }
+                }
+            )
+            self.controller.threadCreator(
+                self.addAnddeleteList, cancelled=True)
+        else:
+            return
+    
+    def createManageDoctor(self, req: Doctor):
+        age = dt.datetime.now().year - req.user.dateOfBirth.year
+        nameGenderAge = f"Doctor: {req.user.fullName}\n{req.user.gender}, {age} years old"
+        doctorSpeciality = f"Speciality:{req.speciality}"
+        educationHistory = f"EducationHistory:{req.educationHistory}"
+        employmentHistory = f"EmploymentHistory:{req.employmentHistory}"
+        self.controller.scrolledTextCreator(
+            x=260, y=260, width=540, height=60, root=self.manageDoctorFrame, classname="manage_doctorname_gender_age",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{nameGenderAge}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=260, y=360, width=540, height=60, root=self.manageDoctorFrame, classname="manage_speciality",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{doctorSpeciality}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=500, width=760, height=160, root=self.manageDoctorFrame, classname="manage_educationhistory",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{educationHistory}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=740, width=760, height=160, root=self.manageDoctorFrame, classname="manage_employmenthistory",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{employmentHistory}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )

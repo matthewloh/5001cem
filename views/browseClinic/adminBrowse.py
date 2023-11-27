@@ -9,7 +9,7 @@ import threading
 from tkinter import *
 from tkinter import messagebox
 from views.citystatesdict import states_dict
-from prisma.models import Appointment
+from prisma.models import Clinic
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -40,22 +40,22 @@ class AdminBrowseClinic(Frame):
         self.addDoctorButtons()
 
     def createFrames(self):
-        self.addDoctorFrame = self.controller.frameCreator(
-            x=0, y=0, classname="adddoctor", root=self, framewidth=1680, frameheight=1080
+        self.clinicInfoFrame = self.controller.frameCreator(
+            x=0, y=0, classname="clinicinfo", root=self, framewidth=1680, frameheight=1080
         )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
-        self.addDoctorFrame.grid_remove()
+        self.clinicInfoFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/ManageClinic/ManageClinicBg.png",
+            ipath="assets/Dashboard/ClinicAdminAssets/ManageClinic/Homepage.png",
             x=0, y=0, classname="manageclinicbg", root=self
         )
         self.imgLabels = [
-            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/AddClinicBg.png",
-             0, 0, "addclinicbg", self.addDoctorFrame)
+            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/ClinicInformation.png",
+             0, 0, "clinicinfobg", self.clinicInfoFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
@@ -64,7 +64,6 @@ class AdminBrowseClinic(Frame):
             "adminDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/ManageClinic/AddClinic.png"
             ]
         }
         self.Refreshbutton = self.controller.buttonCreator(
@@ -74,14 +73,8 @@ class AdminBrowseClinic(Frame):
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
-            x=60, y=40, classname="clinicreturnbutton", root=self.addDoctorFrame,
-            buttonFunction=lambda: [self.addDoctorFrame.grid_remove()],
-        )
-        self.addClinicbutton = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][2],
-            x=1540, y=40, classname="addclinic", root=self,
-            buttonFunction=lambda: [
-                self.addDoctorFrame.grid(), self.addDoctorFrame.tkraise()], isPlaced=True
+            x=60, y=40, classname="clinicreturnbutton", root=self.clinicInfoFrame,
+            buttonFunction=lambda: [self.clinicInfoFrame.grid_remove()],
         )
 
     def manageClinic(self):
@@ -131,16 +124,16 @@ class AdminBrowseClinic(Frame):
             self.viewClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][0],
                 x=X+1280, y=Y+30, classname=f"viewclinic{clinicId}", root=R,
-                buttonFunction=lambda: [print('clinicview')],
+                buttonFunction=lambda: [self.clinicInfoFrame.grid(), self.clinicInfoFrame.tkraise()],
                 isPlaced=True
             )
             self.deleteClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][1],
                 x=X+1360, y=Y+30, classname=f"deleteclinic{clinicId}", root=R,
-                buttonFunction=lambda: [print('clinicdelete')],
+                buttonFunction=lambda: [self.controller.threadCreator(
+                    self.deleteClinic)],
                 isPlaced=True
             )
-
             clinicName = self.controller.scrolledTextCreator(
                 x=X+40, y=Y+30, width=240, height=70, root=R, classname=f"{clinicId}_name",
                 bg="#f1feff", hasBorder=False,
@@ -180,87 +173,111 @@ class AdminBrowseClinic(Frame):
                 COORDS[0], COORDS[1] + 120
             )
 
+    def deleteClinic(self):
+        result = messagebox.askyesno(
+            "Delete Clinic", "Are you sure you want to delete this clinic account?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.clinicenrolment.update(
+                where={
+                "clinicId":self.user.id
+                },
+                data={
+                    "clinicAdmin":{
+                        "disconnect": True
+                    }
+                }
+            )
+            self.controller.threadCreator(
+                self.manageClinic, cancelled=True)
+        else:
+            return
+
     def addDoctorButtons(self):
         self.closebutton = self.controller.buttonCreator(
             ipath="assets/Registration/Close.png", x=100, y=820,
-            classname="reg_closebutton", root=self.addDoctorFrame,
+            classname="reg_closebutton", root=self.clinicInfoFrame,
             buttonFunction=lambda: [print('remain')]
         )
         self.savebutton = self.controller.buttonCreator(
             ipath="assets/Registration/Save.png", x=400, y=820,
-            classname="reg_savebutton", root=self.addDoctorFrame,
+            classname="reg_savebutton", root=self.clinicInfoFrame,
             buttonFunction=lambda: [print('test')]
         )
 
-    def createClinicInfoEntries(self):
-        CREATOR = self.controller.ttkEntryCreator
-        X, Y, W, H, R, CN, PH = "x", "y", "width", "height", "root", "classname", "placeholder"
-        param = {
-            "clinicname": {
-                X: 40,
-                Y: 40,
-                W: 640,
-                H: 80,
-                CN: "clinicnameentry",
-                R: self,
-                PH: "Clinic Name"
+    def resetClinicInfo(self, req: Clinic):
+        prisma = self.prisma
+        prisma.clinic.update(
+            where={
+                "AND": [{"status": "APPROVED"}, {"clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}}]
             },
-            "clinicaddress": {
-                X: 40,
-                Y: 160,
-                W: 640,
-                H: 80,
-                CN: "clinicaddressentry",
-                R: self,
-                PH: "Clinic Address"
-            },
-            "cliniccontactnumber": {
-                X: 40,
-                Y: 280,
-                W: 300,
-                H: 80,
-                CN: "cliniccontactnumberentry",
-                R: self,
-                PH: "Clinic Contact Number"
-            },
-            "cliniccity": {
-                X: 380,
-                Y: 280,
-                W: 300,
-                H: 80,
-                CN: "cliniccityentry",
-                R: self,
-                PH: "Clinic City"
-            },
-            "cliniczip": {
-                X: 380,
-                Y: 400,
-                W: 300,
-                H: 80,
-                CN: "cliniczipentry",
-                R: self,
-                PH: "Clinic Zip"
-            },
-        }
-        for p in param:
-            CREATOR(**param[p])
-        self.clinicStateVar = StringVar()
-        states = list(states_dict.keys())
-        self.menuframe = self.controller.frameCreator(
-            x=40, y=400, framewidth=300, frameheight=80,
-            bg=WHITE, classname="clinicstateframe", root=self
+            include={
+                "clinic": True,
+                "govRegDocSystem": True
+            }
         )
-        self.clinicStateMenu = self.controller.menubuttonCreator(
-            x=0, y=0, width=300, height=80,
-            root=self.menuframe, classname="reg_clinicstate",
-            text=f"State", listofvalues=states,
-            variable=self.clinicStateVar, font=("Helvetica", 12),
-            command=lambda:
-                ToastNotification(title="Success", bootstyle="success", duration=3000,
-                                  message=f"State Selected: {self.clinicStateVar.get()}").show_toast()
+        self.controller.threadCreator(self.manageClinic, confirmed=True)
+        
+    def manageClinicInfo(self, req: Clinic):
+            self.controller.threadCreator(
+            self.createManageClinicInfo, req=req)
+
+    def createManageClinicInfo(self, req: Clinic): 
+        clinicName = f"Clinic:{req.name}" 
+        clinicAddress = f"Address:{req.address}"
+        clinicContactNo = f"ContactNo:{req.phoneNum}"
+        clinicCity = f"City:{req.city}"
+        clinicZip = f"Zip:{req.zip}"
+        clinicOpHrs = f"OpHrs:{req.clinicHrs}"
+
+        self.controller.scrolledTextCreator(
+            x=40, y=40, width=640, height=60, root=self.clinicInfoFrame, classname=f"{req.id}_name",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicName}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
         )
-        self.startTimeVar = StringVar()
-        self.startTimeVar.set("12:00AM")
-        self.endTimeVar = StringVar()
-        self.endTimeVar.set("12:00PM")
-        self.loadClinicHoursMenu()
+        self.controller.scrolledTextCreator(
+            x=40, y=160, width=640, height=60, root=self.clinicInfoFrame, classname="clinic_address",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicAddress}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=280, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_contactno",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicContactNo}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=380, y=280, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_city",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicCity}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=380, y=400, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_zip",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicZip}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )    
+        KL = timezone("Asia/Kuala_Lumpur")
+        # "DD/MM/YYYY HH:MM"
+        fmt = "%d/%m/%Y %H:%M"
+        startTime = KL.convert(req.startTime).strftime(fmt)
+        endTime = KL.convert(req.endTime).strftime(fmt)
+        formatted = f"Start: {startTime}\nEnd: {endTime}"
+        self.controller.scrolledTextCreator(
+            x=X+480, y=Y, width=240, height=100, root=self.clinicInfoFrame, classname="clinic_opHours",
+            bg="#f1feff", hasBorder=False,
+            text=f"{clinicOpHrs}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified="center",
+            hasVbar=False
+            )
+            
+        
