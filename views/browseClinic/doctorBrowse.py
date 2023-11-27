@@ -196,16 +196,11 @@ class DoctorBrowseClinic(Frame):
 
     def ScrolledFrame(self):   
         prisma = self.prisma
-        doctor = prisma.doctor.find_first(
-            where={
-                "userId": self.user.id
-            }
-        )
         clinicOfDoctor = prisma.clinic.find_first(
             where={
                 "doctor": {
                     "some":{
-                        "id": doctor.id
+                        "userId": self.user.id
                     }
                 }
             },
@@ -218,7 +213,7 @@ class DoctorBrowseClinic(Frame):
             }
         )
 
-        h = len(str(clinicOfDoctor)) * 120
+        h = len(clinicOfDoctor.doctor) * 120
         if h < 760:
             h = 760
         self.appointmentListFrame = ScrolledFrame(
