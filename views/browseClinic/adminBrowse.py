@@ -40,22 +40,22 @@ class AdminBrowseClinic(Frame):
         self.addDoctorButtons()
 
     def createFrames(self):
-        self.addDoctorFrame = self.controller.frameCreator(
-            x=0, y=0, classname="adddoctor", root=self, framewidth=1680, frameheight=1080
+        self.clinicInfoFrame = self.controller.frameCreator(
+            x=0, y=0, classname="clinicinfo", root=self, framewidth=1680, frameheight=1080
         )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
-        self.addDoctorFrame.grid_remove()
+        self.clinicInfoFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
-            ipath="assets/Dashboard/ClinicAdminAssets/ManageClinic/ManageClinicBg.png",
+            ipath="assets/Dashboard/ClinicAdminAssets/ManageClinic/Homepage.png",
             x=0, y=0, classname="manageclinicbg", root=self
         )
         self.imgLabels = [
-            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/AddClinicBg.png",
-             0, 0, "addclinicbg", self.addDoctorFrame)
+            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/ClinicInformation.png",
+             0, 0, "clinicinfobg", self.clinicInfoFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
@@ -64,7 +64,6 @@ class AdminBrowseClinic(Frame):
             "adminDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/ManageClinic/AddClinic.png"
             ]
         }
         self.Refreshbutton = self.controller.buttonCreator(
@@ -74,14 +73,8 @@ class AdminBrowseClinic(Frame):
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
-            x=60, y=40, classname="clinicreturnbutton", root=self.addDoctorFrame,
-            buttonFunction=lambda: [self.addDoctorFrame.grid_remove()],
-        )
-        self.addClinicbutton = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][2],
-            x=1540, y=40, classname="addclinic", root=self,
-            buttonFunction=lambda: [
-                self.addDoctorFrame.grid(), self.addDoctorFrame.tkraise()], isPlaced=True
+            x=60, y=40, classname="clinicreturnbutton", root=self.clinicInfoFrame,
+            buttonFunction=lambda: [self.clinicInfoFrame.grid_remove()],
         )
 
     def manageClinic(self):
@@ -131,7 +124,7 @@ class AdminBrowseClinic(Frame):
             self.viewClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][0],
                 x=X+1280, y=Y+30, classname=f"viewclinic{clinicId}", root=R,
-                buttonFunction=lambda: [print('clinicview')],
+                buttonFunction=lambda: [self.clinicInfoFrame.grid(), self.clinicInfoFrame.tkraise()],
                 isPlaced=True
             )
             self.deleteClinicbutton = self.controller.buttonCreator(
@@ -204,12 +197,12 @@ class AdminBrowseClinic(Frame):
     def addDoctorButtons(self):
         self.closebutton = self.controller.buttonCreator(
             ipath="assets/Registration/Close.png", x=100, y=820,
-            classname="reg_closebutton", root=self.addDoctorFrame,
+            classname="reg_closebutton", root=self.clinicInfoFrame,
             buttonFunction=lambda: [print('remain')]
         )
         self.savebutton = self.controller.buttonCreator(
             ipath="assets/Registration/Save.png", x=400, y=820,
-            classname="reg_savebutton", root=self.addDoctorFrame,
+            classname="reg_savebutton", root=self.clinicInfoFrame,
             buttonFunction=lambda: [print('test')]
         )
 

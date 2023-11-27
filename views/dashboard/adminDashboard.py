@@ -274,9 +274,9 @@ class ClinicAdminDashboard(Frame):
             x=1540, y=40, classname="addbutton", root=self.doctorListFrame,
             buttonFunction=lambda: [print('add')],
         )
-        self.returnListbutton = self.controller.buttonCreator(
+        self.returnDoctorListbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][3],
-            x=60, y=40, classname="returnbutton", root=self.manageDoctorFrame,
+            x=20, y=40, classname="return_to_doctorlist", root=self.manageDoctorFrame,
             buttonFunction=lambda: [self.manageDoctorFrame.grid_remove()],
         )
 
@@ -314,7 +314,7 @@ class ClinicAdminDashboard(Frame):
                 initialCoordinates[0], initialCoordinates[1] + 100
             )
 
-    def addAnddeleteList(self, req: Doctor):
+    def addAnddeleteList(self):
         prisma = self.prisma
         doctors = prisma.doctor.find_many(
             where={
@@ -354,7 +354,7 @@ class ClinicAdminDashboard(Frame):
             self.viewdoctorbutton = self.controller.buttonCreator(
                 ipath=d["scrollButton"][0],
                 x=X+1280, y=Y+30, classname=f"viewbutton{doctor.id}", root=R,
-                buttonFunction=lambda: [self.manageDoctor(req)],
+                buttonFunction=lambda: [self.manageDoctorFrame.grid(),self.manageDoctorFrame.tkraise()],
                 isPlaced=True
             )
             self.deletedoctorbutton = self.controller.buttonCreator(
@@ -418,19 +418,12 @@ class ClinicAdminDashboard(Frame):
         else:
             return
     
-    def manageDoctor(self, req:Doctor):
-        self.controller.threadCreator(
-            self.createManageDoctor, req=req
-        )
 
-    def createManageDoctor(self, req: Doctor ):
-        self.manageDoctorFrame.grid()
-        self.manageDoctorFrame.tkraise()
-
+    def createManageDoctor(self):
         self.controller.scrolledTextCreator(
             x=260, y=260, width=540, height=60, root=self.manageDoctorFrame, classname="manage_speciality",
             bg=WHITE, hasBorder=BLACK,
-            text=f"{req.speciality}", font=("Inter", 12), fg=BLACK,
+            text=f"{Doctor.speciality}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
