@@ -32,6 +32,7 @@ class MainViewAppointmentsInterface:
         if patient:
             self.primarypanel = PatientViewAppointments(
                 parent=self.parent, controller=self.controller)
+            self.primarypanel.loadAppRequests()
         elif doctor:
             self.primarypanel = DoctorViewAppointments(
                 parent=self.parent, controller=self.controller)

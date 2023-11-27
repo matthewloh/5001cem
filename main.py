@@ -2,6 +2,7 @@ import os
 import sys
 import threading
 from tkinter import *
+from typing import Dict
 import bcrypt
 import ttkbootstrap as ttk
 from ttkbootstrap.utility import enable_high_dpi_awareness
@@ -32,16 +33,14 @@ if sys.platform == "win32":
 class Window(ElementCreator):
     def __init__(self, *args, **kwargs):
         ttk.Window.__init__(self, themename="minty", *args, **kwargs)
-        self.widgetsDict = {}
-        self.imageDict = {}
-        self.imagePathDict = {}
-        self.frames = {}
-        self.subframes = {}
+        self.widgetsDict: Dict[str, Widget] = {}
+        self.imageDict: Dict[str, ImageTk.PhotoImage] = {}
+        self.imagePathDict: Dict[str, str] = {}
+        self.frames: Dict[str, Frame] = {}
         self.initializeWindow()
         self.initMainPrisma()
         self.loadSignIn()
         self.bind("<F11>", lambda e: self.togglethewindowbar())
-        # self.pingBackend()
 
     def loadSignIn(self):
         self.loginEmailEntry = self.ttkEntryCreator(
@@ -70,9 +69,11 @@ class Window(ElementCreator):
             self.loginPasswordEntry.bind(
                 "<Return>", lambda e: self.signInThreaded()
             )
+            # Focus on email entry
+            self.loginEmailEntry.focus()
         except Exception as e:
             print("Error loading login credentials from .env file")
-            print(e)
+
         self.loginButton = self.buttonCreator(
             root=self.parentFrame,
             ipath="assets/HomePage/SignInButton.png",
