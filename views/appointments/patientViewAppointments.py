@@ -40,6 +40,10 @@ class PatientViewAppointments(Frame):
 
     def createElements(self):
         self.createLabels()
+        self.createButtons()
+
+    def reloadPage(self):
+        self.loadAppRequests()
 
     def createLabels(self):
         self.controller.labelCreator(
@@ -47,15 +51,43 @@ class PatientViewAppointments(Frame):
             x=0, y=0, classname="appointmentspanelbg", root=self
         )
 
+    def createButtons(self):
+        self.reloadPageButton = self.controller.buttonCreator(
+            ipath="assets/Appointments/Patient/Refresh.png",
+            x=700, y=100, classname="view_apprequest_reload_page", root=self,
+            buttonFunction=lambda: [
+                self.controller.threadCreator(
+                    target=self.reloadPage
+                )
+            ],
+        )
+
     def loadAppRequests(self):
+        prisma = self.prisma
         self.patient = self.parent.primarypanel.patient
-        height = len(self.patient.madeAppRequests) * 320
+        all_requests = prisma.appointmentrequest.find_many(
+            where={"patientId": self.patient.id},
+            include={
+                "clinic": True,
+                "appointments": {
+                    "include": {
+                        "doctor": {
+                            "include": {
+                                "user": True,
+                            }
+                        },
+                        "prescription": True,
+                    }
+                },
+            },
+        )
+        height = len(all_requests) * 320
         self.appRequestScrolledFrame = self.controller.scrolledFrameCreator(
             x=20, y=220, width=840, maxheight=height, minheight=780,
             root=self
         )
         COORDS = (20, 20)
-        for req in self.patient.madeAppRequests:
+        for i, req in list(enumerate(all_requests)):
             X = COORDS[0]
             Y = COORDS[1]
             R = self.appRequestScrolledFrame
@@ -68,6 +100,14 @@ class PatientViewAppointments(Frame):
                 isPlaced=True,
                 # buttonFunction=lambda req=req: self.loadSingleAppointment(
                 #     req),
+            )
+            self.controller.scrolledTextCreator(
+                x=X+260, y=Y, width=60, height=40, root=R,
+                classname=f"req_number_{req.id}",
+                bg="#a8ebee", hasBorder=False,
+                text=f"#{i+1}", font=FONT, fg=BLACK,
+                isDisabled=True, isJustified=True,
+                hasVbar=False,
             )
             img = self.controller.decodingBase64Data(req.clinic.clinicImg)
             img = ImageOps.contain(img, (200, 200), Image.Resampling.BICUBIC)
@@ -152,13 +192,14 @@ class PatientViewAppointments(Frame):
                 ipath="assets/Appointments/Patient/ViewAppointments.png",
                 x=X+720, y=Y+20, classname=f"{req.id}_viewappointments", root=R,
                 isPlaced=True,
-                buttonFunction=lambda r=req: self.loadSingleAppointment(r),
+                buttonFunction=lambda r=req, i=i+1: self.viewApptsPerRequest(
+                    r, i),
             )
             self.controller.scrolledTextCreator(
                 x=X+735, y=Y+25, width=50, height=50, root=R,
                 classname=f"req_appointments_created_{req.id}",
-                bg=BG, hasBorder=False,
-                text=f"{len(req.appointments)}", font=FONT, fg=BLACK,
+                bg="#86cff5", hasBorder=False,
+                text=f"{len(req.appointments)}", font=FONT, fg=WHITE,
                 isDisabled=True, isJustified=True,
                 hasVbar=False,
             )
@@ -170,8 +211,97 @@ class PatientViewAppointments(Frame):
             )
             COORDS = (COORDS[0], COORDS[1] + 320)
 
-    def loadSingleAppointment(self, req: AppointmentRequest):
-        print(req.id)
+    def viewApptsPerRequest(self, req: AppointmentRequest, reqIndex: int):
+        height = len(req.appointments) * 220
+        self.appRequestScrolledFrame = self.controller.scrolledFrameCreator(
+            x=880, y=240, width=780, maxheight=height, minheight=400,
+            root=self
+        )
+        COORDS = (20, 0)
+        for i, appt in list(enumerate(req.appointments)):
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.appRequestScrolledFrame
+            FONT = ("Inter", 14)
+            BG = "#ffffff"
+            DOC = appt.doctor
+            start_date = appt.startTime.strftime("%d/%m/%y")
+            end_date = appt.endTime.strftime("%d/%m/%y")
+            start_time = appt.startTime.strftime("%I:%M%p")
+            end_time = appt.endTime.strftime("%I:%M%p")
+            disp_date = f"{start_date} - {end_date}"
+            disp_time = f"{start_time} - {end_time}"
+            self.controller.labelCreator(
+                ipath="assets/Appointments/Patient/AppointmentBG.png",
+                x=X, y=Y, classname=f"{appt.id}_app_bg", root=R,
+                isPlaced=True,
+                # buttonFunction=lambda req=req: self.loadSingleAppointment(
+                #     req),
+            )
+            # Appointment Count
+            self.controller.scrolledTextCreator(
+                x=X+20, y=Y, width=620, height=40, root=R,
+                classname=f"appt_count_{appt.id}",
+                bg="#bbe6fd", hasBorder=False,
+                text=f"Appointment #{i+1} for Request #{reqIndex}", font=("Inter Bold", 15), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="left",
+                hasVbar=False,
+            )
+
+            # Date
+            self.controller.scrolledTextCreator(
+                x=X+80, y=Y+40, width=180, height=60, root=R,
+                classname=f"appt_date_{appt.id}",
+                bg=BG, hasBorder=True, borderColor=BLACK,
+                text=disp_date, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified=True, justification="left",
+                hasVbar=False,
+            )
+            # Time
+            self.controller.scrolledTextCreator(
+                x=X+340, y=Y+40, width=180, height=60, root=R,
+                classname=f"appt_time_{appt.id}",
+                bg=BG, hasBorder=True, borderColor=BLACK,
+                text=disp_time, font=("Inter", 12), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="left",
+                hasVbar=False,
+            )
+            # Doctor Name
+            self.controller.scrolledTextCreator(
+                x=X+80, y=Y+120, width=180, height=60, root=R,
+                classname=f"appt_doctor_{appt.id}\n{DOC.speciality}",
+                bg=BG, hasBorder=True, borderColor=BLACK,
+                text=DOC.user.fullName, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified=True, justification="left",
+                hasVbar=False,
+            )
+            # Status Of Appointment
+            self.controller.scrolledTextCreator(
+                x=X+340, y=Y+120, width=180, height=60, root=R,
+                classname=f"appt_status_{appt.id}",
+                bg=BG, hasBorder=True, borderColor=BLACK,
+                text=appt.status, font=FONT, fg=BLACK,
+                isDisabled=True, isJustified=True, justification="left",
+                hasVbar=False,
+            )
+            # Go to Prescriptions for this Appointment
+            self.controller.buttonCreator(
+                ipath="assets/Appointments/Patient/ViewPrescriptions.png",
+                x=X+660, y=Y+50, classname=f"{appt.id}_viewprescriptions", root=R,
+                isPlaced=True,
+                buttonFunction=lambda a=appt: self.viewPrescriptions(a),
+            )
+            self.controller.scrolledTextCreator(
+                x=X+675, y=Y+55, width=50, height=50, root=R,
+                classname=f"appt_prescriptions_{appt.id}",
+                bg="#ccc3f7", hasBorder=False,
+                text=f"{len(appt.prescription)}", font=FONT, fg=WHITE,
+                isDisabled=True, isJustified=True,
+                hasVbar=False,
+            )
 
     def cancelRequest(self, req: AppointmentRequest):
         print(req.id)
+
+    def viewPrescriptions(self, appt: Appointment):
+        self.parent.primarypanel.loadViewPatients()

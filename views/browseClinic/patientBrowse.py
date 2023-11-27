@@ -166,14 +166,17 @@ class PatientBrowseClinic(Frame):
             self.latitudes[clinic.id] = {}
             self.latitudes[clinic.id]["latitude"] = clinicCoordinates.latitude
             self.latitudes[clinic.id]["longitude"] = clinicCoordinates.longitude
-            self.clinicsMap.set_marker(
-                self.latitudes[clinic.id]["latitude"],
-                self.latitudes[clinic.id]["longitude"],
-                text=clinic.name,
-                command=lambda event, c=clinic: [
-                    self.doubleClickTracker(c)
-                ]
-            )
+            try:
+                self.clinicsMap.set_marker(
+                    self.latitudes[clinic.id]["latitude"],
+                    self.latitudes[clinic.id]["longitude"],
+                    text=clinic.name,
+                    command=lambda event, c=clinic: [
+                        self.doubleClickTracker(c)
+                    ]
+                )
+            except:
+                pass
             self.latitudes[clinic.id]["distance"] = round(GD((
                 self.latitudes[HOME]["latitude"], self.latitudes[HOME]["longitude"]
             ), (clinicCoordinates.latitude, clinicCoordinates.longitude)).km, 2)
