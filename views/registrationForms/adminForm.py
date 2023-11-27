@@ -69,12 +69,7 @@ class AdminRegistrationForm(Frame):
     def createButtons(self):
         self.OPT1STR = "Clinic Details"
         self.OPT2STR = "Upload Clinic Image"
-        self.OPT3STR = "Manage Doctors"
-        self.OPT4STR = "Other Information"
-        optList = [self.OPT1STR, self.OPT2STR,
-                   #    self.OPT3STR,
-                   #    self.OPT4STR
-                   ]
+        optList = [self.OPT1STR, self.OPT2STR]
         # creating a button arrangement of two per row
         # iterates over the list of options and creates a button for each
         for i, option in enumerate(optList):
@@ -118,11 +113,7 @@ class AdminRegistrationForm(Frame):
             self.loadClinicInformation(option)
         elif option == self.OPT2STR:
             self.loadUploadClinicImage(option)
-        elif option == self.OPT3STR:
-            self.loadManageDoctors(option)
-        elif option == self.OPT4STR:
-            self.loadOtherInformation(option)
-
+       
     def loadClinicInformation(self, option: str):
         frame = self.inputframe
         self.inputframe.grid()
@@ -155,7 +146,7 @@ class AdminRegistrationForm(Frame):
 
         self.savebutton.config(
             command=lambda: [
-                self.saveClinicInformation()]
+                self.saveClinicInformation() if self.validateClinicForm() else None]
         )
         self.loadCloseAndSaveButtons()
 
@@ -269,8 +260,14 @@ class AdminRegistrationForm(Frame):
         diff = timedelta(hours=end.hour, minutes=end.minute) - \
             timedelta(hours=start.hour, minutes=start.minute)
         # TODO: add validation for clinic hours
-        self.clinichrsVar.set(
-            f"{self.startTimeVar.get()} - {self.endTimeVar.get()}")
+        if diff.total_seconds() < 0:
+            messagebox.showerror(
+                title="Error", message="End time cannot be before start time.")
+            return
+        else:
+            self.clinichrsVar.set(
+                f"{self.startTimeVar.get()} - {self.endTimeVar.get()}")
+        
 
     def loadClinicInformationInput(self):
         WD = self.controller.widgetsDict
@@ -291,6 +288,42 @@ class AdminRegistrationForm(Frame):
         WD["cliniczipentry"].insert(0, self.cliniczipVar.get())
         self.startTimeMenu.config(text=self.startTimeVar.get())
         self.endTimeMenu.config(text=self.endTimeVar.get())
+    
+    def validateClinicForm(self):
+        WD = self.controller.widgetsDict
+        if WD["clinicnameentry"].get() == "" or WD["clinicnameentry"].get()=="Clinic Name":
+            messagebox.showerror(
+                title="Error", message="Please enter a clinic name.")
+            return False
+        elif WD["clinicaddressentry"].get() == "" or WD["clinicaddressentry"].get()=="Clinic Address":
+            messagebox.showerror(
+                title="Error", message="Please enter a clinic address.")
+            return False
+        elif WD["cliniccontactnumberentry"].get() == "" or re.match("^\+60[0-9]{7,10}$", WD["cliniccontactnumberentry"].get()) is None:
+            messagebox.showerror(
+                title="Error", message="Please enter a valid clinic contact number. e.g. +60XXXXXXXX")
+            return False
+        elif WD["cliniccityentry"].get() == "" or WD["cliniccityentry"].get()=="Clinic City":
+            messagebox.showerror(
+                title="Error", message="Please enter a clinic city.")
+            return False
+        elif self.clinicStateVar.get() == "" or self.clinicStateVar.get()=="State":
+            messagebox.showerror(
+                title="Error", message="Please select a clinic state.")
+            return False
+        elif WD["cliniczipentry"].get() == "" or re.match("^[0-9]{5}$", WD["cliniczipentry"].get()) is None:
+            messagebox.showerror(
+                title="Error", message="Please enter a valid clinic zip code.")
+            return False
+        return True
+    
+    def validateClinicImg(self):
+        if self.getBase64Data() == "":
+            messagebox.showerror(
+                title="Error", message="Please upload a clinic image.")
+            return False
+        return True
+        
 
     def saveClinicInformation(self):
         prisma = self.prisma
@@ -453,116 +486,87 @@ class AdminRegistrationForm(Frame):
         b64 = Base64.encode(byteIMG)
         return b64
 
-    def loadManageDoctors(self, option: str):
-        frame = self.inputframe
-        self.inputframe.grid()
-        self.inputframe.tkraise()
-        for widgetname, widget in self.inputframe.children.items():
-            if widgetname in ["padoption", "thumbnailoption", "fitoption", "uploadclinicimg"]:
-                widget.grid_remove()
-            elif widgetname in ["imgplaceholder"]:
-                widget.place_forget()
-            elif widgetname.endswith("hostfr"):
-                widget.grid_remove()
-        infolabel = self.controller.textElement(
-            ipath="assets/Registration/InputFormTextBG.png", x=0, y=0,
-            classname="inputformtext", root=frame, text=f"Input your {option} here",
-            size=30, font=INTER
-        )
-        bg = self.controller.labelCreator(
-            ipath="assets/Registration/Admin/ClinicInfoLabelBg.png", x=0, y=80,
-            classname="clinicinfobg", root=frame
-        )
-        bg.tk.call("lower", bg._w)
-        self.loadCloseAndSaveButtons()
-
-    def loadOtherInformation(self, option: str):
-        frame = self.inputframe
-        self.inputframe.grid()
-        self.inputframe.tkraise()
-        infolabel = self.controller.textElement(
-            ipath="assets/Registration/InputFormTextBG.png", x=0, y=0,
-            classname="inputformtext", root=frame, text=f"Input your {option} here",
-            size=30, font=INTER
-        )
-        bg = self.controller.labelCreator(
-            ipath="assets/Registration/Admin/ClinicInfoLabelBg.png", x=0, y=80,
-            classname="clinicinfobg", root=frame
-        )
-        bg.tk.call("lower", bg._w)
-        self.loadCloseAndSaveButtons()
 
     def confirmSubmission(self):
-        prisma = self.prisma
-        # get the values from the entry boxes
-        self.country, self.state, self.city = self.parent.country.get(
-        ), self.parent.state.get(), self.parent.city.get()
-        dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
-        # datetimeObj
-        dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
-        clinicAdmin = prisma.clinicadmin.create(
-            data={
-                "user": {
-                    "create": {
-                        "fullName": self.parent.fullname.get(),
-                        "email": self.parent.email.get(),
-                        "nric_passport": self.parent.nric_passno.get(),
-                        "dateOfBirth": dateObj,
-                        "contactNo": self.parent.contactnumber.get(),
-                        "password": self.parent.encryptPassword(self.parent.password.get()),
-                        "race": self.parent.race.get().upper().replace(" ", "_"),
-                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
-                        "countryOfOrigin": self.parent.countryoforigin.get(),
-                        "addressLine1": self.parent.addressline1.get(),
-                        "addressLine2": self.parent.addressline2.get(),
-                        "postcode": self.parent.postcode.get(),
-                        "city": self.city,
-                        "state": self.state,
-                        "country": self.country,
-                    }
-                },
-                "clinic": {
-                    "create": {
-                        "name": self.clinicnameVar.get(),
-                        "address": self.clinicaddressVar.get(),
-                        "city": self.cliniccityVar.get(),
-                        "state": self.clinicStateVar.get().upper().replace(" ", "_"),
-                        "zip": self.cliniczipVar.get(),
-                        "clinicImg": self.getBase64Data(),
-                        "phoneNum": self.cliniccontactnumberVar.get(),
-                        "clinicHrs": self.clinichrsVar.get(),
-                    }
-                }
-            },
-            include={
-                "clinic": True,
-            }
-        )
         try:
-            govRegSystem = prisma.govregsystem.find_first_or_raise(
-                where={
-                    "state": self.state.upper().replace(" ", "_")
-                }
-            )
-        except RecordNotFoundError:
-            govRegSystem = prisma.govregsystem.create(
+            prisma = self.prisma
+            # get the values from the entry boxes
+            self.country, self.state, self.city = self.parent.country.get(
+            ), self.parent.state.get(), self.parent.city.get()
+            dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
+            # datetimeObj
+            dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
+            clinicAdmin = prisma.clinicadmin.create(
                 data={
-                    "state": self.state.upper().replace(" ", "_")
+                    "user": {
+                        "create": {
+                            "fullName": self.parent.fullname.get(),
+                            "email": self.parent.email.get(),
+                            "nric_passport": self.parent.nric_passno.get(),
+                            "dateOfBirth": dateObj,
+                            "contactNo": self.parent.contactnumber.get(),
+                            "password": self.parent.encryptPassword(self.parent.password.get()),
+                            "race": self.parent.race.get().upper().replace(" ", "_"),
+                            "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                            "countryOfOrigin": self.parent.countryoforigin.get(),
+                            "addressLine1": self.parent.addressline1.get(),
+                            "addressLine2": self.parent.addressline2.get(),
+                            "postcode": self.parent.postcode.get(),
+                            "city": self.city,
+                            "state": self.state,
+                            "country": self.country,
+                        }
+                    },
+                    "clinic": {
+                        "create": {
+                            "name": self.clinicnameVar.get(),
+                            "address": self.clinicaddressVar.get(),
+                            "city": self.cliniccityVar.get(),
+                            "state": self.clinicStateVar.get().upper().replace(" ", "_"),
+                            "zip": self.cliniczipVar.get(),
+                            "clinicImg": self.getBase64Data(),
+                            "phoneNum": self.cliniccontactnumberVar.get(),
+                            "clinicHrs": self.clinichrsVar.get(),
+                        }
+                    }
+                },
+                include={
+                    "clinic": True,
                 }
             )
-        clinicEnrolment = prisma.clinicenrolment.create(
-            data={
-                "clinic": {
-                    "connect": {
-                        "id": clinicAdmin.clinic.id
+            try:
+                govRegSystem = prisma.govregsystem.find_first_or_raise(
+                    where={
+                        "state": self.state.upper().replace(" ", "_")
                     }
-                },
-                "govRegDocSystem": {
-                    "connect": {
-                        "id": govRegSystem.id
+                )
+            except RecordNotFoundError:
+                govRegSystem = prisma.govregsystem.create(
+                    data={
+                        "state": self.state.upper().replace(" ", "_")
                     }
-                },
-                "status": "PENDING"
-            }
+                )
+            clinicEnrolment = prisma.clinicenrolment.create(
+                data={
+                    "clinic": {
+                        "connect": {
+                            "id": clinicAdmin.clinic.id
+                        }
+                    },
+                    "govRegDocSystem": {
+                        "connect": {
+                            "id": govRegSystem.id
+                        }
+                    },
+                    "status": "PENDING"
+                }
+            )
+            ToastNotification("Registration", f"{clinicAdmin.clinic.name} has been registered.\nPlease wait for GRD approval.", duration=3000, bootstyle="success", ).show_toast()
+            self.parent.loadSignIn()
+        except Exception as e:
+            print(e)
+            messagebox.showerror(
+                title="Error", message="Please make sure all fields are filled in correctly.")
+            return
 
-        )
+    

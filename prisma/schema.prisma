@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  interface            = "sync"
   recursive_type_depth = "-1"
+  interface            = "sync"
 }
 
 datasource db {
@@ -97,9 +97,9 @@ model Appointment {
   patientAccepted Boolean            @default(false)
   docAcceptAt     DateTime?
   patientAcceptAt DateTime?
+  doctorId        String?
   appRequestId    Int
   appRequest      AppointmentRequest @relation(fields: [appRequestId], references: [id], onDelete: Cascade)
-  doctorId        String?
   doctor          Doctor?            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   prescription    Prescription[]
 
@@ -117,9 +117,9 @@ model AppointmentRequest {
   specialityWanted Speciality    @default(NONE)
   additionalInfo   String?       @db.Text
   reqStatus        ApptStatus    @default(PENDING)
-  clinicId         String?
   patientId        String?
   adminId          String?
+  clinicId         String?
   clinic           Clinic?       @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   patient          Patient?      @relation(fields: [patientId], references: [id], onDelete: Cascade)
   approvedBy       ClinicAdmin?  @relation(fields: [adminId], references: [id], onDelete: Cascade)
@@ -316,26 +316,4 @@ enum GovRegSystem_state {
   SELANGOR
   TERENGGANU
   WILAYAH_PERSEKUTUAN
-}
-
-enum AppointmentRequest_specialityWanted {
-  GENERAL_PRACTICE
-  DERMATOLOGY
-  CARDIOLOGY
-  GYNAECOLOGY
-  NEUROLOGY
-  OPHTHALMOLOGY
-  ORTHOPAEDICS
-  PAEDIATRICS
-  UROLOGY
-  OTHER
-  NONE
-}
-
-enum AppointmentRequest_reqStatus {
-  PENDING
-  CONFIRMED
-  ONGOING
-  CANCELLED
-  COMPLETED
 }

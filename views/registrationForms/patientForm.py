@@ -72,7 +72,7 @@ class PatientRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validatePatientForm() else None
         )
 
     def initializeFormVars(self):
@@ -214,46 +214,63 @@ class PatientRegistrationForm(Frame):
             size=30, font=INTER,
             yIndex=-2/3 if option == self.OPT5STR else 0
         )
+    
+    def validatePatientForm(self):
+        if self.bloodType.get() == "":
+            messagebox.showerror(title="Error", message="Please select your blood type")
+            return False
+        elif self.height.get() == 0 or self.weight.get() == 0:
+            messagebox.showerror(title="Error", message="Please enter your height and weight")
+            return False
+        return True
+        
 
     def confirmSubmission(self):
-        prisma = self.prisma
-        self.country, self.state, self.city = self.parent.country.get(
-        ), self.parent.state.get(), self.parent.city.get()
-        dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
-        # datetimeObj
-        dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
-        patient = prisma.patient.create(
-            data={
-                "user": {
-                    "create": {
-                        "fullName": self.parent.fullname.get(),
-                        "email": self.parent.email.get(),
-                        "nric_passport": self.parent.nric_passno.get(),
-                        "dateOfBirth": dateObj,
-                        "contactNo": self.parent.contactnumber.get(),
-                        "password": self.parent.encryptPassword(self.parent.password.get()),
-                        "race": self.parent.race.get().upper().replace(" ", "_"),
-                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
-                        "countryOfOrigin": self.parent.countryoforigin.get(),
-                        "addressLine1": self.parent.addressline1.get(),
-                        "addressLine2": self.parent.addressline2.get(),
-                        "postcode": self.parent.postcode.get(),
-                        "city": self.city,
-                        "state": self.state,
-                        "country": self.country,
-                    }
-                },
-                "healthRecord": {
-                    "create": {
-                        "allergies": self.vars[self.OPT3STR].get(),
-                        "bloodType": self.bloodType.get(),
-                        "height": self.height.get(),
-                        "weight": self.weight.get(),
-                        "currentMedication": self.vars[self.OPT2STR].get(),
-                        "pastMedication": self.vars[self.OPT1STR].get(),
-                        "pastSurgery": self.vars[self.OPT5STR].get(),
-                        "familyHistory": self.vars[self.OPT4STR].get(),
+        try:
+            prisma = self.prisma
+            self.country, self.state, self.city = self.parent.country.get(
+            ), self.parent.state.get(), self.parent.city.get()
+            dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
+            # datetimeObj
+            dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
+            patient = prisma.patient.create(
+                data={
+                    "user": {
+                        "create": {
+                            "fullName": self.parent.fullname.get(),
+                            "email": self.parent.email.get(),
+                            "nric_passport": self.parent.nric_passno.get(),
+                            "dateOfBirth": dateObj,
+                            "contactNo": self.parent.contactnumber.get(),
+                            "password": self.parent.encryptPassword(self.parent.password.get()),
+                            "race": self.parent.race.get().upper().replace(" ", "_"),
+                            "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                            "countryOfOrigin": self.parent.countryoforigin.get(),
+                            "addressLine1": self.parent.addressline1.get(),
+                            "addressLine2": self.parent.addressline2.get(),
+                            "postcode": self.parent.postcode.get(),
+                            "city": self.city,
+                            "state": self.state,
+                            "country": self.country,
+                        }
+                    },
+                    "healthRecord": {
+                        "create": {
+                            "allergies": self.vars[self.OPT3STR].get(),
+                            "bloodType": self.bloodType.get(),
+                            "height": self.height.get(),
+                            "weight": self.weight.get(),
+                            "currentMedication": self.vars[self.OPT2STR].get(),
+                            "pastMedication": self.vars[self.OPT1STR].get(),
+                            "pastSurgery": self.vars[self.OPT5STR].get(),
+                            "familyHistory": self.vars[self.OPT4STR].get(),
+                        }
                     }
                 }
-            }
-        )
+            )
+            toast = ToastNotification("Registration", f"{patient.user.fullName} has been registered", duration=3000, bootstyle="success", ).show_toast()
+            self.parent.loadSignIn()
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Error", "Please make sure all fields are filled in correctly.")
+            return

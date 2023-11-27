@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from views.dashboard.officerDashboard import GovOfficerDashboard
 from abc import ABC, abstractmethod
 import calendar
 import re
@@ -7,6 +11,7 @@ from tkinter import messagebox
 from prisma.models import Appointment
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
+from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from ttkbootstrap.dialogs import Messagebox, MessageDialog, Querybox
 from ttkbootstrap.dialogs.dialogs import DatePickerDialog
@@ -20,17 +25,18 @@ import tkintermapview
 
 
 class OfficerGRDRequests(Frame):
-    def __init__(self, parent=None, controller: ElementCreator = None):
+    def __init__(self, parent: GovOfficerDashboard, controller: ElementCreator = None):
         super().__init__(parent, width=1, height=1, bg="#dee8e0", name="clinicgrdrequests")
         self.controller = controller
         self.parent = parent
         gridGenerator(self, 84, 54, "#dee8e0")
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
-        
+
+        self.user = self.parent.user
         self.prisma = self.controller.mainPrisma
+
         self.createFrames()
         self.createElements()
-        self.loadClinicsRequests()
 
     def createFrames(self):
         pass
@@ -40,77 +46,132 @@ class OfficerGRDRequests(Frame):
             ipath=r"assets/Dashboard/OfficerAssets/OfficerClinicsRequestsBG.png",
             x=0, y=0, classname="grdrequestsbg", root=self
         )
-
-    def loadClinicsRequests(self):
-        prisma = self.prisma
-        clinicsrequests = prisma.clinicenrolment.find_many(
-            where={
-                "status":"PENDING"
-                },
-            include={
-                "clinic":True,
-                "govRegDocSystem":True
-                }   
+        self.controller.buttonCreator(
+            ipath=r"assets/Dashboard/OfficerAssets/officerrefreshbtn.png",
+            x=1420, y=140, classname="grdrequestsrefreshbtn", root=self,
+            buttonFunction=lambda: [self.refreshClinicsRequests()]
         )
-        h = len(clinicsrequests) * 120
+
+
+        self.initializeOfficerGRDRequests()
+        self.loadClinicsRequestsFrame()
+
+    def loadClinicsRequestsFrame(self):
+        h = len(self.clinicsRequests.programmeRegistration) * 120
         if h < 600:
             h = 600
-        self.exampleScrolledFrame = ScrolledFrame(
+        self.clinicRequestsFrame = ScrolledFrame(
             master=self, width=1500, height=h, autohide=True, bootstyle="officer-bg"
         )
-        self.exampleScrolledFrame.grid_propagate(False)
-        self.exampleScrolledFrame.place(x=80, y=280, width=1500, height=620)
-        initialcoordinates = (20, 20)
-        for requests in clinicsrequests:
-            clinicid = requests.clinicId
-            clinicName = requests.clinic.name
-            contact = requests.clinic.phoneNum
-            opHrs = requests.clinic.clinicHrs
-
-            x = initialcoordinates[0]
-            y = initialcoordinates[1]
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsbg.png", x=x, y=y,
-                classname=f"clinic{clinicid}", root=self.exampleScrolledFrame,
-                text=clinicName, size=30, font=INTER,
+        self.clinicRequestsFrame.grid_propagate(False)
+        self.clinicRequestsFrame.place(x=80, y=280, width=1500, height=620)
+        COORDS = (20, 20)
+        for clinicEnrolment in self.clinicsRequests.programmeRegistration:
+            clinic = clinicEnrolment.clinic
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.clinicRequestsFrame
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{clinic.id}_req", root=R,
+                ipath="assets\Dashboard\clinicdetailsbg.png",
                 isPlaced=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=340, y=y+15,
-                classname=f"reg_id{clinicid}", root=self.exampleScrolledFrame,
-                text=clinicid, size=30, font=INTER,
-                isPlaced=True,
+            clinicName = self.controller.scrolledTextCreator(
+                x=75, y=Y+25, width=200, height=60, root=R, classname=f"{clinic.id}_name",
+                bg="#f1feff", hasBorder=False, text=clinic.name,
+                font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=540, y=y+15,
-                classname=f"contact{clinicid}", root=self.exampleScrolledFrame,
-                text=contact, size=30, font=INTER,
-                isPlaced=True,
+            clinicId = self.controller.scrolledTextCreator(
+                x=320, y=Y+25, width=200, height=70, root=R, classname=f"{clinic.id}_id",
+                bg="#f1feff", hasBorder=False, text=clinic.id,
+                font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True,
             )
 
-            self.controller.textElement(
-                ipath=r"assets\Dashboard\clinicdetailsrectangle.png", x=780, y=y+15,
-                classname=f"opHrs{clinicid}", root=self.exampleScrolledFrame,
-                text=opHrs, size=30, font=INTER,
-                isPlaced=True,
+            clinicPhone = self.controller.scrolledTextCreator(
+                x=540, y=Y+25, width=200, height=60, root=R, classname=f"{clinic.id}_phone_num",
+                bg="#f1feff", hasBorder=False, text=clinic.phoneNum,
+                font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True,
             )
 
-            self.controller.buttonCreator(
+            clinicHrs = self.controller.scrolledTextCreator(
+                x=770, y=Y+25, width=240, height=60, root=R, classname=f"{clinic.id}_hrs",
+                bg="#f1feff", hasBorder=False, text=clinic.clinicHrs,
+                font=("Inter", 14), fg=BLACK,
+                isDisabled=True, isJustified=True,
+            )
+
+            acceptbtn = self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/OfficerAcceptClinic.png",
-                classname=f"acceptclinic{clinicid}", root=self.exampleScrolledFrame,
-                x=1055, y=y+20, buttonFunction=lambda t = requests: [print(f"acceptclinic {clinicName}")],
+                classname=f"acceptclinic{clinic.id}", root=R,
+                x=1055, y=Y+20, buttonFunction=lambda t=clinic.id: self.acceptClinic(t),
                 isPlaced=True,
             )
-            self.controller.buttonCreator(
+            ToolTip(acceptbtn, f"Accept {clinic.name}")
+
+            rejectbtn = self.controller.buttonCreator(
                 ipath="assets/Dashboard/OfficerAssets/OfficerRejectClinic.png",
-                classname=f"rejectclinic{clinicid}", root=self.exampleScrolledFrame,
-                x=1055+216, y=y+20, buttonFunction=lambda t = requests: [print(f"rejectclinic {clinicName}")],
+                classname=f"rejectclinic{clinic.id}", root=R,
+                x=1055+216, y=Y+20, buttonFunction=lambda t=clinic.id: self.rejectClinic(t),
                 isPlaced=True
             )
+            ToolTip(rejectbtn, f"Reject {clinic.name}")
 
-            initialcoordinates = (
-                initialcoordinates[0], initialcoordinates[1] + 120
+            COORDS = (
+                COORDS[0], COORDS[1] + 120
             )
+
+    def initializeOfficerGRDRequests(self):
+        prisma = self.prisma
+        self.clinicsRequests = prisma.govregsystem.find_first(
+            where={
+                "supervisingOfficer": {"some": {"userId": self.user.id}},
+            },
+            include={
+                "programmeRegistration": {
+                    "where": {
+                        "status": "PENDING"
+                    },
+                    "include": {
+                        "clinic": True
+                    }
+                }
+            }
+        )
+    
+    def refreshClinicsRequests(self):
+        self.initializeOfficerGRDRequests()
+        self.loadClinicsRequestsFrame()
+
+    def acceptClinic(self, clinicid: str):
+        prisma = self.prisma
+        self.accept = prisma.clinicenrolment.update(
+            data={"status": "APPROVED"},
+            where={"clinicId_govRegId": {"clinicId": clinicid, "govRegId": self.clinicsRequests.id}},
+            include={"clinic": True}
+        )
+        
+
+        ToastNotification("Clinic Status", f"{self.accept.clinic.name} has been approved", duration=3000, bootstyle="success", ).show_toast()
+
+        self.initializeOfficerGRDRequests()
+        self.loadClinicsRequestsFrame()
+
+
+    def rejectClinic(self, clinicid: str):
+        prisma = self.prisma
+        self.reject = prisma.clinicenrolment.update(
+            data={"status": "REJECTED"},
+            where={ "clinicId_govRegId": {"clinicId":clinicid, "govRegId":self.clinicsRequests.id}},
+            include={"clinic": True}
+        )
+
+        ToastNotification("Clinic Status", f"{self.reject.clinic.name} has been rejected", duration=3000, bootstyle="success").show_toast()
+
+        self.initializeOfficerGRDRequests()
+        self.loadClinicsRequestsFrame()
 

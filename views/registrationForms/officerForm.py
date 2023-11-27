@@ -63,7 +63,7 @@ class OfficerRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validateOfficerInfo() else None
         )
 
     def createEntries(self):
@@ -140,68 +140,101 @@ class OfficerRegistrationForm(Frame):
         if dialog.date_selected is None:
             return
         date = dialog.date_selected.strftime("%d/%m/%Y")
+        if int(date.split("/")[2]) < 2018:
+            messagebox.showerror("Invalid Year", "Please select a year after 2018")
+            return
         entry.configure(state="normal")
         entry.delete(0, END)
         entry.insert(0, date)
         entry.configure(foreground=BLACK)
         entry.configure(state=READONLY)
 
-    def confirmSubmission(self):
-        prisma = self.prisma
+    #validate officer info
+    def validateOfficerInfo(self):
         WD = self.controller.widgetsDict
-        # get the values from the entry boxes
-        self.country, self.state, self.city = self.parent.country.get(
-        ), self.parent.state.get(), self.parent.city.get()
-        dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
-        # datetimeObj
-        dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
-        UTC = timezone("UTC")
-        KL = timezone("Asia/Kuala_Lumpur")
-        try:
-            govRegSystem = prisma.govregsystem.find_first_or_raise(
-                where={
-                    "state": self.jurisdictionState.get().upper().replace(" ", "_"),
-                }
-            )
-        except RecordNotFoundError:
-            govRegSystem = prisma.govregsystem.create(
-                data={
-                    "state": self.jurisdictionState.get().upper().replace(" ", "_"),
-                }
-            )
-        officer = prisma.govhealthofficer.create(
-            data={
-                "user": {
-                    "create": {
-                        "fullName": self.parent.fullname.get(),
-                        "email": self.parent.email.get(),
-                        "nric_passport": self.parent.nric_passno.get(),
-                        "dateOfBirth": dateObj,
-                        "contactNo": self.parent.contactnumber.get(),
-                        "password": self.parent.encryptPassword(self.parent.password.get()),
-                        "race": self.parent.race.get().upper().replace(" ", "_"),
-                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
-                        "countryOfOrigin": self.parent.countryoforigin.get(),
-                        "addressLine1": self.parent.addressline1.get(),
-                        "addressLine2": self.parent.addressline2.get(),
-                        "postcode": self.parent.postcode.get(),
-                        "city": self.city,
-                        "state": self.state,
-                        "country": self.country,
-                    }
-                },
-                "govRegId": WD["grdidentry"].get(),
-                "startDate": KL.convert(
-                    datetime.strptime(WD["startofdutyentry"].get(), "%d/%m/%Y")
-                ),
-                "endDate": KL.convert(
-                    datetime.strptime(WD["endofdutyentry"].get(), "%d/%m/%Y")
-                ),
-                "systemSupervising": {
-                    "connect": {
-                        "id": govRegSystem.id
-                    }
-                }
-            }
-        )
+        if WD["grdidentry"].get() == "Enter your GRD ID":
+            messagebox.showerror("Error", "Please enter your GRD ID")
+            return False
+        elif self.jurisdictionState.get() == "":
+            messagebox.showerror("Error", "Please select a state of jurisdiction")
+            return False
+        elif WD["startofdutyentry"].get() == "Select Start of Duty" or WD["endofdutyentry"].get() == "Select End of Duty":
+            messagebox.showerror("Error", "Please select a date of duty")
+            return False
+        startDate = datetime.strptime(WD["startofdutyentry"].get(), "%d/%m/%Y")
+        endDate = datetime.strptime(WD["endofdutyentry"].get(), "%d/%m/%Y")
+        if startDate == endDate:
+            messagebox.showerror("Error", "Start and end date cannot be the same")
+            return False
+        elif startDate > endDate:
+            messagebox.showerror("Error", "Please select a valid start date and end date")
+            return False
+        return True
         
+
+    def confirmSubmission(self):
+        try:
+            prisma = self.prisma
+            WD = self.controller.widgetsDict
+            # get the values from the entry boxes
+            self.country, self.state, self.city = self.parent.country.get(
+            ), self.parent.state.get(), self.parent.city.get()
+            dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
+            # datetimeObj
+            dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
+            UTC = timezone("UTC")
+            KL = timezone("Asia/Kuala_Lumpur")
+            try:
+                govRegSystem = prisma.govregsystem.find_first_or_raise(
+                    where={
+                        "state": self.jurisdictionState.get().upper().replace(" ", "_"),
+                    }
+                )
+            except RecordNotFoundError:
+                govRegSystem = prisma.govregsystem.create(
+                    data={
+                        "state": self.jurisdictionState.get().upper().replace(" ", "_"),
+                    }
+                )
+            officer = prisma.govhealthofficer.create(
+                data={
+                    "user": {
+                        "create": {
+                            "fullName": self.parent.fullname.get(),
+                            "email": self.parent.email.get(),
+                            "nric_passport": self.parent.nric_passno.get(),
+                            "dateOfBirth": dateObj,
+                            "contactNo": self.parent.contactnumber.get(),
+                            "password": self.parent.encryptPassword(self.parent.password.get()),
+                            "race": self.parent.race.get().upper().replace(" ", "_"),
+                            "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                            "countryOfOrigin": self.parent.countryoforigin.get(),
+                            "addressLine1": self.parent.addressline1.get(),
+                            "addressLine2": self.parent.addressline2.get(),
+                            "postcode": self.parent.postcode.get(),
+                            "city": self.city,
+                            "state": self.state,
+                            "country": self.country,
+                        }
+                    },
+                    "govRegId": WD["grdidentry"].get(),
+                    "startDate": KL.convert(
+                        datetime.strptime(WD["startofdutyentry"].get(), "%d/%m/%Y")
+                    ),
+                    "endDate": KL.convert(
+                        datetime.strptime(WD["endofdutyentry"].get(), "%d/%m/%Y")
+                    ),
+                    "systemSupervising": {
+                        "connect": {
+                            "id": govRegSystem.id
+                        }
+                    }
+                }
+            )
+            toast = ToastNotification("Registration", f"{officer.user.fullName} has been registered as a government health officer", duration=3000, bootstyle="success").show_toast()
+            self.parent.loadSignIn()
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Error", "Please make sure all fields are filled in correctly.")
+            return
+            

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tkinter import messagebox
 
 from typing import TYPE_CHECKING
 
@@ -72,7 +73,7 @@ class DoctorRegistrationForm(Frame):
         self.completeRegBtn = self.controller.buttonCreator(
             ipath="assets/Registration/CompleteRegButton.png",
             x=1420, y=880, classname="completeregbutton", root=self.parent,
-            buttonFunction=lambda: self.confirmSubmission()
+            buttonFunction=lambda: self.confirmSubmission() if self.validateDoctorForm() else None
         )
 
     def initializeFormVars(self):
@@ -176,39 +177,59 @@ class DoctorRegistrationForm(Frame):
             classname="inputformtext", root=self.inputframe, text=f"Input your {option} here",
             size=30, font=INTER
         )
+    
+    def validateDoctorForm(self):
+        if self.vars[self.OPT1STR].get() == "":
+            messagebox.showerror(title="Error", message="Please fill in  your employment history")
+            return False
+        elif self.vars[self.OPT2STR].get() == "":
+            messagebox.showerror(title="Error", message="Please fill in your education history")
+            return False
+        elif self.vars[self.OPT3STR].get() == "":
+            messagebox.showerror(title="Error", message="Please select a specialization")
+            return False
+        return True
 
     def confirmSubmission(self):
-        prisma = self.prisma
-        WD = self.controller.widgetsDict
-        # get the values from the entry boxes
-        self.country, self.state, self.city = self.parent.country.get(
-        ), self.parent.state.get(), self.parent.city.get()
-        dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
-        # datetimeObj
-        dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
-        doctor = prisma.doctor.create(
-            data={
-                "user": {
-                    "create": {
-                        "fullName": self.parent.fullname.get(),
-                        "email": self.parent.email.get(),
-                        "nric_passport": self.parent.nric_passno.get(),
-                        "dateOfBirth": dateObj,
-                        "contactNo": self.parent.contactnumber.get(),
-                        "password": self.parent.encryptPassword(self.parent.password.get()),
-                        "race": self.parent.race.get().upper().replace(" ", "_"),
-                        "gender": self.parent.gender.get().upper().replace(" ", "_"),
-                        "countryOfOrigin": self.parent.countryoforigin.get(),
-                        "addressLine1": self.parent.addressline1.get(),
-                        "addressLine2": self.parent.addressline2.get(),
-                        "postcode": self.parent.postcode.get(),
-                        "city": self.city,
-                        "state": self.state,
-                        "country": self.country,
-                    }
-                },
-                "employmentHistory": self.vars[self.OPT1STR].get(),
-                "educationHistory": self.vars[self.OPT2STR].get(),
-                "speciality": self.vars[self.OPT3STR].get().upper().replace(" ", "_"),
-            }
-        )
+        try:
+            prisma = self.prisma
+            WD = self.controller.widgetsDict
+            # get the values from the entry boxes
+            self.country, self.state, self.city = self.parent.country.get(
+            ), self.parent.state.get(), self.parent.city.get()
+            dateStr = self.parent.dateOfBirthEntry.get()  # "%d/%m/%Y"
+            # datetimeObj
+            dateObj = datetime.strptime(dateStr, "%d/%m/%Y")
+            doctor = prisma.doctor.create(
+                data={
+                    "user": {
+                        "create": {
+                            "fullName": self.parent.fullname.get(),
+                            "email": self.parent.email.get(),
+                            "nric_passport": self.parent.nric_passno.get(),
+                            "dateOfBirth": dateObj,
+                            "contactNo": self.parent.contactnumber.get(),
+                            "password": self.parent.encryptPassword(self.parent.password.get()),
+                            "race": self.parent.race.get().upper().replace(" ", "_"),
+                            "gender": self.parent.gender.get().upper().replace(" ", "_"),
+                            "countryOfOrigin": self.parent.countryoforigin.get(),
+                            "addressLine1": self.parent.addressline1.get(),
+                            "addressLine2": self.parent.addressline2.get(),
+                            "postcode": self.parent.postcode.get(),
+                            "city": self.city,
+                            "state": self.state,
+                            "country": self.country,
+                        }
+                    },
+                    "employmentHistory": self.vars[self.OPT1STR].get(),
+                    "educationHistory": self.vars[self.OPT2STR].get(),
+                    "speciality": self.vars[self.OPT3STR].get().upper().replace(" ", "_"),
+                }
+            )
+            toast = ToastNotification("Registration", f"{doctor.user.fullName} has been registered as a doctor", duration=3000,
+                            bootstyle="success", ).show_toast()
+            self.parent.loadSignIn()
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Error", "Please make sure all fields are filled in correctly.")
+            return
