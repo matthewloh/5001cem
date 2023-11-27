@@ -40,10 +40,11 @@ class DoctorDashboard(Frame):
         self.user = self.parent.user
         self.createFrames()
         self.createElements()
-        self.ScrolledFrame()
+        self.DisplayUpComingAppointment()
         self.createPatientList()
-        self.createNavigateButton()
+        self.createButtonForDashboard()
         self.getClinicData()
+  
 
     def createFrames(self):
         pass
@@ -57,7 +58,7 @@ class DoctorDashboard(Frame):
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
-    def ScrolledFrame(self):
+    def DisplayUpComingAppointment(self):
         prisma = self.prisma
         doctor = prisma.doctor.find_first(
             where={
@@ -66,7 +67,8 @@ class DoctorDashboard(Frame):
         )
         viewAppointment = prisma.appointment.find_many(
             where={
-                "doctorId": doctor.id
+                "doctorId": doctor.id,
+                "status": "PENDING"
             },
             include={
                 "appRequest": {
@@ -141,7 +143,6 @@ class DoctorDashboard(Frame):
                 x=X+688, y=Y, buttonFunction=lambda a=appointments: [
                 self.loadIntoPatientView(a)],
                 isPlaced=True,
-                
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AddPrescription.png",
@@ -154,7 +155,7 @@ class DoctorDashboard(Frame):
                 ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Done.png",
                 classname=f"Done{appointments.id}", root=R,
                 x=857, y=Y, buttonFunction=lambda a=appointments: [
-                    self.markAppointmentAsCompleted(a)],
+                    self.ChangeAppointmentStatus(a)],
                 isPlaced=True,
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
@@ -166,19 +167,27 @@ class DoctorDashboard(Frame):
     # "assets/Dashboard/DoctorAssets/DoctorClinic.png",
     # "assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
 
-    def markAppointmentAsCompleted(self, appointment):
-        try:
-            update_query = {
-                "where": {"id": appointment.id},
-                "data": {"status": "COMPLETED", "completedAt": datetime.now()}
-            }
+    def ChangeAppointmentStatus(self, appointment):
+        confirmation = messagebox.askquestion(
+        "Double Confirmation",
+        f"Do you confirm the appointment is done?",
+        )
 
-            self.prisma.appointment.update(**update_query)
+        if confirmation == 'yes':
+            try:
+                update_query = {
+                    "where": {"id": appointment.id},
+                    "data": {"status": "COMPLETED", "completedAt": datetime.now()}
+                }
 
-           
-        except Exception as e:
-            print(f"Failed to change status to Completed {e}")
+                self.prisma.appointment.update(**update_query)
 
+                print(f"Appointment has marked as COMPLETED.")
+            except Exception as e:
+                print(f"Appointment status remain unchange {e}")
+        else:
+            # Handle the case where the user clicks 'no' or closes the dialog
+            print(f"Status remain the same")
 
     def getClinicData(self):
         prisma = self.prisma
@@ -214,12 +223,21 @@ class DoctorDashboard(Frame):
                 isDisabled=True, isJustified=True, justification="center", isPlaced=True,
             )
 
-    def createNavigateButton(self):
+    def createButtonForDashboard(self):
         self.navigateToClinicPage = self.controller.buttonCreator(
         ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1265, y=505,
-        classname="ButtonToYourClinic", root=self, buttonFunction=lambda: self.loadBrowseClinic(),
+        classname="ButtonToClinic", root=self, buttonFunction=lambda: self.loadBrowseClinic(),
         isPlaced=True,
-)
+    )
+        self.navigateToClinicPage = self.controller.buttonCreator(
+        ipath="assets/Dashboard/DoctorAssets/DoctorListButton/RefreshButton.png", x=975, y=116,
+        classname="ButtonRefreshButton", root=self, buttonFunction=lambda: self.refreshPage(),
+        isPlaced=True,
+    )
+        
+    def refreshPage(self):
+    # Call the function to reload the clinic page
+        self.DisplayUpComingAppointment()
 
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
@@ -298,8 +316,6 @@ class DoctorDashboard(Frame):
                 "user": True
             }
         )
-        #for patient in patients:
-           # print(patient)
 
     def loadIntoAppointmentView(self, appointment: Appointment):
         try:
@@ -316,13 +332,13 @@ class DoctorDashboard(Frame):
     def loadIntoPatientView(self, appointment: Appointment):
         patient = appointment.appRequest.patient
         try:
-            self.appointments.primarypanel.grid()
-            self.appointments.primarypanel.tkraise()
+            self.patientRequests.primarypanel.grid()
+            self.patientRequests.primarypanel.tkraise()
         except:
-            self.appointments = MainViewAppointmentsInterface(
+            self.patientRequests = MainPatientRequestsInterface(
                 controller=self.controller, parent=self.parent)
-            self.appointments.loadRoleAssets(doctor=True)
-        self.appointments.primarypanel.loadpatient(patient=patient)
+            self.patientRequests.loadRoleAssets(doctor=True)
+        self.patientRequests.primarypanel.loadpatient(patient=patient)
 
        
         
