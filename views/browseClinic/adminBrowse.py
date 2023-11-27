@@ -239,28 +239,28 @@ class AdminBrowseClinic(Frame):
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=40, y=160, width=640, height=60, root=self.clinicInfoFrame, classname=f"{req.id}_address",
+            x=40, y=160, width=640, height=60, root=self.clinicInfoFrame, classname="clinic_address",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicAddress}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=40, y=280, width=300, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_contactno",
+            x=40, y=280, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_contactno",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicContactNo}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=380, y=280, width=300, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_city",
+            x=380, y=280, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_city",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicCity}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=380, y=400, width=300, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_zip",
+            x=380, y=400, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_zip",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicZip}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
@@ -273,7 +273,7 @@ class AdminBrowseClinic(Frame):
         endTime = KL.convert(req.endTime).strftime(fmt)
         formatted = f"Start: {startTime}\nEnd: {endTime}"
         self.controller.scrolledTextCreator(
-            x=X+480, y=Y, width=240, height=100, root=self.clinicInfoFrame, classname=f"{req.id}_opHours",
+            x=X+480, y=Y, width=240, height=100, root=self.clinicInfoFrame, classname="clinic_opHours",
             bg="#f1feff", hasBorder=False,
             text=f"{clinicOpHrs}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified="center",

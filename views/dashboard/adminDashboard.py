@@ -14,6 +14,8 @@ from views.mainGRDRequests import MainGRDRequestsInterface
 from views.mainPatientRequests import MainPatientRequestsInterface
 from views.mainViewAppointments import MainViewAppointmentsInterface
 from prisma.models import Doctor
+from datetime import datetime, timedelta
+import datetime as dt
 from tkinter import messagebox
 
 class ClinicAdminDashboard(Frame):
@@ -222,17 +224,39 @@ class ClinicAdminDashboard(Frame):
         )
 
     def loadAvailableDoctorsByTimeSlot(self, option: str):
-        print(option)
+        doctors = self.appointmentsAndDoctors[option]
+        h = len(doctors) * 100
+        if h < 350:
+            h = 350
+        self.statusScrolledFrame = ScrolledFrame(
+            master=self, width=900, height=h, autohide=True, bootstyle="minty-bg")
+        self.statusScrolledFrame.place(
+            x=680, y=670, width=900, height=350
+        )
+        initialCoordinates = (20, 20)
+        for doctor in doctors:
+            x = initialCoordinates[0]
+            y = initialCoordinates[1]
+            self.controller.textElement(
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrolldashboardbutton.png",
+                x=x, y=y, classname=f"doctorstatusbg{doctor.id}", root=self.statusScrolledFrame,
+                text=f"{doctor.user.fullName}", size=30, font=INTER,
+                isPlaced=True,
+                buttonFunction=lambda d=doctor: [print(d)]
+            )
+            initialCoordinates = (
+                initialCoordinates[0], initialCoordinates[1] + 100
+            )
 
     def loadDoctorsBySpeciality(self, option):
         doctors = self.specialitiesAndDoctors[option]
         h = len(doctors) * 100
-        if h < 375:
-            h = 375
+        if h < 350:
+            h = 350
         self.doctorsScrolledFrame = ScrolledFrame(
-            master=self, width=920, height=h, autohide=True, bootstyle="minty-bg")
+            master=self, width=900, height=h, autohide=True, bootstyle="minty-bg")
         self.doctorsScrolledFrame.place(
-            x=685, y=150, width=900, height=350
+            x=680, y=150, width=900, height=350
         )
         initialCoordinates = (20, 20)
         for doctor in doctors:
@@ -254,7 +278,6 @@ class ClinicAdminDashboard(Frame):
             "adminDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/Add&DeleteDoctor.png",
                 "assets/Appointments/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/Add&DeleteList/AddDoctor.png",
                 "assets/Appointments/ReturnButton.png",
             ]
         }
@@ -269,13 +292,8 @@ class ClinicAdminDashboard(Frame):
             x=60, y=40, classname="doctorreturnbutton", root=self.doctorListFrame,
             buttonFunction=lambda: [self.doctorListFrame.grid_remove()],
         )
-        self.Addbutton = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][2],
-            x=1540, y=40, classname="addbutton", root=self.doctorListFrame,
-            buttonFunction=lambda: [print('add')],
-        )
         self.returnDoctorListbutton = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][3],
+            ipath=d["adminDashboard"][2],
             x=20, y=40, classname="return_to_doctorlist", root=self.manageDoctorFrame,
             buttonFunction=lambda: [self.manageDoctorFrame.grid_remove()],
         )
@@ -418,12 +436,35 @@ class ClinicAdminDashboard(Frame):
         else:
             return
     
-
-    def createManageDoctor(self):
+    def createManageDoctor(self, req: Doctor):
+        age = dt.datetime.now().year - req.user.dateOfBirth.year
+        nameGenderAge = f"Doctor: {req.user.fullName}\n{req.user.gender}, {age} years old"
+        doctorSpeciality = f"Speciality:{req.speciality}"
+        educationHistory = f"EducationHistory:{req.educationHistory}"
+        employmentHistory = f"EmploymentHistory:{req.employmentHistory}"
         self.controller.scrolledTextCreator(
-            x=260, y=260, width=540, height=60, root=self.manageDoctorFrame, classname="manage_speciality",
+            x=260, y=260, width=540, height=60, root=self.manageDoctorFrame, classname="manage_doctorname_gender_age",
             bg=WHITE, hasBorder=BLACK,
-            text=f"{Doctor.speciality}", font=("Inter", 12), fg=BLACK,
+            text=f"{nameGenderAge}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=260, y=360, width=540, height=60, root=self.manageDoctorFrame, classname="manage_speciality",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{doctorSpeciality}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=500, width=760, height=160, root=self.manageDoctorFrame, classname="manage_educationhistory",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{educationHistory}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=740, width=760, height=160, root=self.manageDoctorFrame, classname="manage_employmenthistory",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{employmentHistory}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
         )
