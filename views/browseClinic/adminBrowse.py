@@ -9,7 +9,7 @@ import threading
 from tkinter import *
 from tkinter import messagebox
 from views.citystatesdict import states_dict
-from prisma.models import Appointment
+from prisma.models import Clinic
 from ttkbootstrap.constants import *
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
@@ -206,75 +206,78 @@ class AdminBrowseClinic(Frame):
             buttonFunction=lambda: [print('test')]
         )
 
-    def createClinicInfoEntries(self):
-        CREATOR = self.controller.ttkEntryCreator
-        X, Y, W, H, R, CN, PH = "x", "y", "width", "height", "root", "classname", "placeholder"
-        param = {
-            "clinicname": {
-                X: 40,
-                Y: 40,
-                W: 640,
-                H: 80,
-                CN: "clinicnameentry",
-                R: self,
-                PH: "Clinic Name"
+    def resetClinicInfo(self, req: Clinic):
+        prisma = self.prisma
+        prisma.clinic.update(
+            where={
+                "AND": [{"status": "APPROVED"}, {"clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}}]
             },
-            "clinicaddress": {
-                X: 40,
-                Y: 160,
-                W: 640,
-                H: 80,
-                CN: "clinicaddressentry",
-                R: self,
-                PH: "Clinic Address"
-            },
-            "cliniccontactnumber": {
-                X: 40,
-                Y: 280,
-                W: 300,
-                H: 80,
-                CN: "cliniccontactnumberentry",
-                R: self,
-                PH: "Clinic Contact Number"
-            },
-            "cliniccity": {
-                X: 380,
-                Y: 280,
-                W: 300,
-                H: 80,
-                CN: "cliniccityentry",
-                R: self,
-                PH: "Clinic City"
-            },
-            "cliniczip": {
-                X: 380,
-                Y: 400,
-                W: 300,
-                H: 80,
-                CN: "cliniczipentry",
-                R: self,
-                PH: "Clinic Zip"
-            },
-        }
-        for p in param:
-            CREATOR(**param[p])
-        self.clinicStateVar = StringVar()
-        states = list(states_dict.keys())
-        self.menuframe = self.controller.frameCreator(
-            x=40, y=400, framewidth=300, frameheight=80,
-            bg=WHITE, classname="clinicstateframe", root=self
+            include={
+                "clinic": True,
+                "govRegDocSystem": True
+            }
         )
-        self.clinicStateMenu = self.controller.menubuttonCreator(
-            x=0, y=0, width=300, height=80,
-            root=self.menuframe, classname="reg_clinicstate",
-            text=f"State", listofvalues=states,
-            variable=self.clinicStateVar, font=("Helvetica", 12),
-            command=lambda:
-                ToastNotification(title="Success", bootstyle="success", duration=3000,
-                                  message=f"State Selected: {self.clinicStateVar.get()}").show_toast()
+        self.controller.threadCreator(self.manageClinic, confirmed=True)
+        
+    def manageClinicInfo(self, req: Clinic):
+            self.controller.threadCreator(
+            self.createManageClinicInfo, req=req)
+
+    def createManageClinicInfo(self, req: Clinic): 
+        clinicName = f"Clinic:{req.name}" 
+        clinicAddress = f"Address:{req.address}"
+        clinicContactNo = f"ContactNo:{req.phoneNum}"
+        clinicCity = f"City:{req.city}"
+        clinicZip = f"Zip:{req.zip}"
+        clinicOpHrs = f"OpHrs:{req.clinicHrs}"
+
+        self.controller.scrolledTextCreator(
+            x=40, y=40, width=640, height=60, root=self.clinicInfoFrame, classname=f"{req.id}_name",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicName}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
         )
-        self.startTimeVar = StringVar()
-        self.startTimeVar.set("12:00AM")
-        self.endTimeVar = StringVar()
-        self.endTimeVar.set("12:00PM")
-        self.loadClinicHoursMenu()
+        self.controller.scrolledTextCreator(
+            x=40, y=160, width=640, height=60, root=self.clinicInfoFrame, classname=f"{req.id}_address",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicAddress}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=40, y=280, width=300, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_contactno",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicContactNo}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=380, y=280, width=300, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_city",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicCity}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=380, y=400, width=300, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_zip",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicZip}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )    
+        KL = timezone("Asia/Kuala_Lumpur")
+        # "DD/MM/YYYY HH:MM"
+        fmt = "%d/%m/%Y %H:%M"
+        startTime = KL.convert(req.startTime).strftime(fmt)
+        endTime = KL.convert(req.endTime).strftime(fmt)
+        formatted = f"Start: {startTime}\nEnd: {endTime}"
+        self.controller.scrolledTextCreator(
+            x=X+480, y=Y, width=240, height=100, root=self.clinicInfoFrame, classname=f"{req.id}_opHours",
+            bg="#f1feff", hasBorder=False,
+            text=f"{clinicOpHrs}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified="center",
+            hasVbar=False
+            )
+            
+        
