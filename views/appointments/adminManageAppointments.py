@@ -70,6 +70,7 @@ class AdminManageAppointments(Frame):
                 "assets/Appointments/ReturnButton.png",
                 "assets/Appointments/Creation/BookAppointment.png",
                 "assets/Appointments/ReturnButton.png",
+                "assets/Appointments/Management/UpdateInformation.png"
             ]
         }
         # Appointment Dashboard
@@ -82,7 +83,7 @@ class AdminManageAppointments(Frame):
             ipath=d["appointmentButtons"][1],
             x=1140, y=800, classname="managebutton", root=self,
             buttonFunction=lambda: [
-                self.manageAppointmentsFrame.grid,self.manageAppointmentsFrame.tkraise],
+                self.manageAppointmentsFrame.grid,self.manageAppointmentsFrame.tkraise()],
         )
         self.refreshBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],
@@ -110,6 +111,11 @@ class AdminManageAppointments(Frame):
             x=20, y=60, classname="returnmanagement", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [
                 self.manageAppointmentsFrame.grid_remove()],
+        )
+        self.updateInfoBtn = self.controller.buttonCreator(
+            ipath=d["appointmentButtons"][6],
+            x=800, y=660, classname="updateinfo", root=self.manageAppointmentsFrame,
+            buttonFunction=lambda: [print('update')],
         )
 
     def appointmentList(self):
