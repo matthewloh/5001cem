@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from views.mainDashboard import Dashboard
 import calendar
+from prisma.models import Appointment
+from prisma.models import Patient
 import datetime as dt
 import re
 import threading
@@ -24,6 +26,7 @@ from ttkbootstrap.toast import ToastNotification
 from views.mainBrowseClinic import MainBrowseClinic
 from views.mainPatientRequests import MainPatientRequestsInterface
 from views.mainViewAppointments import MainViewAppointmentsInterface
+from datetime import datetime
 
 
 class DoctorDashboard(Frame):
@@ -37,7 +40,10 @@ class DoctorDashboard(Frame):
         self.user = self.parent.user
         self.createFrames()
         self.createElements()
+        self.ScrolledFrame()
         self.createPatientList()
+        self.createNavigateButton()
+        self.getClinicData()
 
     def createFrames(self):
         pass
@@ -51,6 +57,170 @@ class DoctorDashboard(Frame):
             x=0, y=0, classname="primarypanelbg", root=self
         )
 
+    def ScrolledFrame(self):
+        prisma = self.prisma
+        doctor = prisma.doctor.find_first(
+            where={
+                "userId": self.user.id
+            }
+        )
+        viewAppointment = prisma.appointment.find_many(
+            where={
+                "doctorId": doctor.id
+            },
+            include={
+                "appRequest": {
+                    "include": {
+                        "patient": {
+                            "include": {
+                                "user": True
+                            }
+                        }
+                    }
+                },
+                 "prescription": True
+            }
+        )
+
+        h = len(viewAppointment) * 120
+        if h < 760:
+            h = 760
+        self.appointmentListFrame = ScrolledFrame(
+            master=self, width=1500, height=h, autohide=True, bootstyle="DoctorDashboard.bg"
+        )
+        self.appointmentListFrame.grid_propagate(False)
+        self.appointmentListFrame.place(x=97, y=278, width=950, height=721)
+        COORDS = (3, 3)
+        for appointments in viewAppointment:
+
+            patientName = appointments.appRequest.patient.user.fullName
+            patientContact = appointments.appRequest.patient.user.contactNo
+
+            X = COORDS[0]
+            Y = COORDS[1]
+            R = self.appointmentListFrame
+            self.controller.labelCreator(
+                x=X, y=Y, classname=f"{appointments.id}_bg", root=R,
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/DashboardAppointmentbutton.png",
+                isPlaced=True,
+            )
+            UpAppPatientName = self.controller.scrolledTextCreator(
+                x=X+15, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_name",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientName}", font=("Inter", 20), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            UpAppPatientContact = self.controller.scrolledTextCreator(
+                x=X+175, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_phone_num",
+                bg="#3D405B", hasBorder=False,
+                text=f"{patientContact}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            patientAppDate = appointments.startTime
+
+            date_part = patientAppDate.date()
+            time_part = patientAppDate.time()
+
+            date_string = date_part.strftime('%Y-%m-%d')
+            time_string = time_part.strftime('%H:%M:%S')
+            UpAppDate = self.controller.scrolledTextCreator(
+                x=X+345, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_date",
+                bg="#3D405B", hasBorder=False,
+                text=f"{date_string}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            UpAppTime = self.controller.scrolledTextCreator(
+                x=X+510, y=Y+32, width=145, height=60, root=R, classname=f"{appointments.id}_App_time",
+                bg="#3D405B", hasBorder=False,
+                text=f"{time_string}", font=("Inter", 18), fg=WHITE,
+                isDisabled=True, isJustified=True, justification="center",
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/HealthRecord.png",
+                classname=f"HealthReocrd{appointments.id}", root=R,
+                x=X+688, y=Y, buttonFunction=lambda a=appointments: [
+                self.loadIntoPatientView(a)],
+                isPlaced=True,
+                
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/AddPrescription.png",
+                classname=f"AcceptPrescripton{appointments.id}", root=R,
+                x=774, y=Y, buttonFunction=lambda a=appointments: [
+                self.loadIntoAppointmentView(a)],
+                isPlaced=True,
+            )
+            self.controller.buttonCreator(
+                ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Done.png",
+                classname=f"Done{appointments.id}", root=R,
+                x=857, y=Y, buttonFunction=lambda a=appointments: [
+                    self.markAppointmentAsCompleted(a)],
+                isPlaced=True,
+            )
+            COORDS = (COORDS[0], COORDS[1] + 120)
+
+    # def createImageClinic(self):
+        # prisma = self.prisma
+        # viewClinicImg = prisma.clinic.find_many(
+        # )
+    # "assets/Dashboard/DoctorAssets/DoctorClinic.png",
+    # "assets/Dashboard/DoctorAssets/DoctorPrescriptionRequest.png",
+
+    def markAppointmentAsCompleted(self, appointment):
+        try:
+            update_query = {
+                "where": {"id": appointment.id},
+                "data": {"status": "COMPLETED", "completedAt": datetime.now()}
+            }
+
+            self.prisma.appointment.update(**update_query)
+
+           
+        except Exception as e:
+            print(f"Failed to change status to Completed {e}")
+
+
+    def getClinicData(self):
+        prisma = self.prisma
+        viewClinicList = prisma.clinic.find_many(
+            where={
+                "doctor":{
+                    "some": {
+                        "userId": self.user.id
+                    }
+                }
+            },
+        )
+
+        if viewClinicList:
+            clinic = viewClinicList[0]  
+
+
+            # clinic data
+            clinic_name = clinic.name
+            clinic_address = clinic.address
+
+            ClinicName = self.controller.scrolledTextCreator(
+               x=1315, y=165, width=260, height=34, classname=f"clinic_name_dashboard",
+               root=self, bg="#ECECEC", hasBorder=TRUE,
+               text=f"{clinic_name}", font=("Inter", 18), fg=BLACK,
+               isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            ClinicAddress = self.controller.scrolledTextCreator(
+                x=1350, y=238, width=220, height=140, classname=f"clinic_address_dashboard",
+                root=self, bg="#ECECEC", hasBorder=True,
+                text=f"{clinic_address}", font=("Inter", 18), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+    def createNavigateButton(self):
+        self.navigateToClinicPage = self.controller.buttonCreator(
+        ipath="assets/Dashboard/DoctorAssets/DoctorListButton/YourClinicMoreDetails.png", x=1265, y=505,
+        classname="ButtonToYourClinic", root=self, buttonFunction=lambda: self.loadBrowseClinic(),
+        isPlaced=True,
+)
+
     def loadAssets(self):
         self.pfp = self.controller.buttonCreator(
             ipath="assets/Dashboard/DoctorAssets/DoctorProfilePicture.png",
@@ -59,9 +229,9 @@ class DoctorDashboard(Frame):
         )
         d = {
             "doctor": [
-                r"assets/Dashboard/DoctorAssets/DoctorYourClinic.png",
-                r"assets/Dashboard/DoctorAssets/DoctorPatientPrescriptions.png",
-                r"assets/Dashboard/DoctorAssets/DoctorPatientScheduling.png",
+                "assets/Dashboard/DoctorAssets/DoctorYourClinic.png",
+                "assets/Dashboard/DoctorAssets/DoctorPatientPrescriptions.png",
+                "assets/Dashboard/DoctorAssets/DoctorPatientScheduling.png",
             ],
         }
         self.browseClinic = self.controller.buttonCreator(
@@ -111,24 +281,51 @@ class DoctorDashboard(Frame):
         prisma = self.prisma
         patients = prisma.patient.find_many(
             include={
-                "appointments": {
+                "madeAppRequests": {
                     "include": {
-                        "doctor": {
+                        "appointments": {
                             "include": {
-                                "user": True
+                                "doctor": {
+                                    "include": {
+                                        "user": True
+                                    }
+                                },
+                                "prescription": True
                             }
-                        },
-                        "prescription": True
+                        }
                     }
-
                 },
                 "user": True
             }
         )
-        for patient in patients:
-            singlePatientsApps = patient.appointments
-            for app in singlePatientsApps:
-                prescriptions = app.prescription
-                for p in prescriptions:
-                    t = p.title
-                    d = p.desc
+        #for patient in patients:
+           # print(patient)
+
+    def loadIntoAppointmentView(self, appointment: Appointment):
+        try:
+            self.patientRequests.primarypanel.grid()
+            self.patientRequests.primarypanel.tkraise()
+        except:
+            self.patientRequests = MainPatientRequestsInterface(
+                controller=self.controller, parent=self.parent)
+            self.patientRequests.loadRoleAssets(doctor=True)
+        self.patientRequests.primarypanel.loadAppointment(
+            appointment=appointment)
+
+
+    def loadIntoPatientView(self, appointment: Appointment):
+        patient = appointment.appRequest.patient
+        try:
+            self.appointments.primarypanel.grid()
+            self.appointments.primarypanel.tkraise()
+        except:
+            self.appointments = MainViewAppointmentsInterface(
+                controller=self.controller, parent=self.parent)
+            self.appointments.loadRoleAssets(doctor=True)
+        self.appointments.primarypanel.loadpatient(patient=patient)
+
+       
+        
+    
+
+
