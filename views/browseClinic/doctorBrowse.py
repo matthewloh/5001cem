@@ -38,7 +38,7 @@ class DoctorBrowseClinic(Frame):
         self.createElements()
         self.getClinicInformation()
         self.loadClinic()
-        self.ScrolledFrame()
+        self.LoadClinicDoctor()
 
 
     def createFrames(self):
@@ -53,7 +53,7 @@ class DoctorBrowseClinic(Frame):
 
     def getClinicInformation(self):
         prisma = self.prisma
-        viewClinicList = prisma.clinic.find_many(
+        viewClinicList = prisma.clinic.find_many(    #need to change to find_first?
             where={
                 "doctor":{
                     "some": {
@@ -194,7 +194,7 @@ class DoctorBrowseClinic(Frame):
             #)
     
 
-    def ScrolledFrame(self):   
+    def LoadClinicDoctor(self):   
         prisma = self.prisma
         clinicOfDoctor = prisma.clinic.find_first(
             where={

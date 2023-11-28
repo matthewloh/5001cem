@@ -19,7 +19,9 @@ from datetime import datetime, timedelta
 import datetime as dt
 from pendulum import timezone
 import tkintermapview
+from tkinter import filedialog
 from prisma.models import doctorPrescription
+from prisma.models import Patient
 
 class DoctorViewPatientRequests(Frame):
     def __init__(self, parent=None, controller: ElementCreator = None):
@@ -35,6 +37,7 @@ class DoctorViewPatientRequests(Frame):
         self.createFormEntries()
         self.createbutton() 
         self.submitPrescription()
+  
         # self.loadAppointment()
         # self.ScrolledFrame()
 
@@ -61,7 +64,7 @@ class DoctorViewPatientRequests(Frame):
 
         self.presDesc = ScrolledText(
             master=self, autohide=True, width=640, height=345,
-            wrap='word' #No enter for next line
+            wrap='word' 
         )
         self.presDesc.place(
             x=40, y=521, w=839, h=288,
@@ -70,14 +73,13 @@ class DoctorViewPatientRequests(Frame):
 
         self.presDescTextArea.bind("<Return>", lambda event: "break")
 
+
     def createbutton(self):
         self.submitButton = self.controller.buttonCreator(
             ipath="assets/Dashboard/DoctorAssets/DoctorListButton/Pressubmitbutton.png", x=314 , y=948,
             classname = "doctorSubmitbutton" , root=self, buttonFunction=lambda: self.submitPrescription(),
         )
 
-    
-        
     def submitPrescription(self):
         title = self.presTitle.get("1.0", "end-1c")
         desc = self.presDesc.get("1.0", "end-1c")
@@ -133,7 +135,7 @@ class DoctorViewPatientRequests(Frame):
             master=self, width=1500, height=h, autohide=True, bootstyle="border.bg"
         )
         self.viewPrescriptionList.grid_propagate(False)
-        self.viewPrescriptionList.place(x=949, y=282, width=681, height=721)
+        self.viewPrescriptionList.place(x=749, y=282, width=681, height=721)
         COORDS = (5, 5)
         for prescriptions in viewPrescriptionList:
 
@@ -181,3 +183,90 @@ class DoctorViewPatientRequests(Frame):
             )
             COORDS = (COORDS[0], COORDS[1] + 120)
 
+    def loadpatient(self, patient:Patient):
+        self.currentPatient : Patient = patient
+        patientID = patient.id
+        print(patientID)
+        self.getPatientHealthRecord(patient)
+        pass
+
+
+    def getPatientHealthRecord(self, patient: Patient):
+        prisma = self.prisma
+        viewHealthRecord = prisma.patient.find_first(
+            where={
+                "id": self.currentPatient.id  
+            },
+            include={
+                "healthRecord": True,
+            }
+        )
+        if viewHealthRecord:
+            healthRecord = viewHealthRecord.healthRecord 
+
+            allergies = healthRecord.allergies 
+            bloodtype = healthRecord.bloodType
+            currentMedication = healthRecord.currentMedication
+            familyHistory = healthRecord.familyHistory
+            height = healthRecord.height
+            pastMedication = healthRecord.pastMedication
+            pastSurgery = healthRecord.pastSurgery
+            weight = healthRecord.weight
+                
+            allergiesRecord = self.controller.scrolledTextCreator(
+               x=1142, y=245, width=468, height=50, classname=f"allergiesRecords",
+               root=self, bg="#D1E8E2", hasBorder=TRUE,
+               text=f"{allergies}", font=("Inter", 20), fg=BLACK,
+               isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            currentMedicationRecord = self.controller.scrolledTextCreator(
+                x=1142, y=345, width=468, height=50, classname=f"currentMedicationRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{currentMedication}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            heightRecord = self.controller.scrolledTextCreator(
+                x=1142, y=445, width=468, height=50, classname=f"heightRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{height}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            familyHistoryRecord = self.controller.scrolledTextCreator(
+                x=1142, y=545, width=468, height=50, classname=f" familyHistoryRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{pastSurgery}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            heightRecord = self.controller.scrolledTextCreator(
+                x=1142, y=645, width=468, height=50, classname=f"heightRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{bloodtype}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            familyHistoryRecord = self.controller.scrolledTextCreator(
+                x=1142, y=745, width=468, height=50, classname=f"familyHistoryRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{familyHistory}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            pastMedicineRecord = self.controller.scrolledTextCreator(
+                x=1142, y=845, width=468, height=50, classname=f"pastMedicineRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{pastMedication}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+            weightRecord = self.controller.scrolledTextCreator(
+                x=1142, y=945, width=468, height=50, classname=f"weightRecords",
+                root=self, bg="#D1E8E2", hasBorder=True,
+                text=f"{weight}", font=("Inter", 20), fg=BLACK,
+                isDisabled=True, isJustified=True, justification="center", isPlaced=True,
+            )
+
+    

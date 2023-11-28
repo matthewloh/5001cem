@@ -233,6 +233,13 @@ model doctorPrescription {
   details   String
 }
 
+model doctorAssignClinic {
+  id       Int             @id @default(autoincrement())
+  doctorId String
+  clinicId String
+  status   EnrolmentStatus @default(PENDING)
+}
+
 model GovHealthOfficerToGovRegSystem {
   A String
   B String
