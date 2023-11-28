@@ -153,14 +153,8 @@ class OfficerBrowseClinic(Frame):
                 "id": clinicId
             }
         )
-        ToastNotification("Success", f"Deleted Clinic {clinicId}", duration=3000, bootstyle=SUCCESS).show_toast()
+        ToastNotification("Success", f"Deleted Clinic {self.approvedClinics.name}", duration=3000, bootstyle=SUCCESS).show_toast()
 
         self.initializeManageClinicsSystem()
         self.loadManageClinicsFrame()
         
-
-    # def loadClinicsRequests(self):
-    #     pass
-
-    # def loadViewDoctorSchedule(self):
-    #     pass

@@ -39,7 +39,6 @@ class GovOfficerDashboard(Frame):
         self.grid(row=0, column=12, columnspan=84, rowspan=54, sticky=NSEW)
         self.prisma = self.controller.mainPrisma
         self.user = self.parent.user
-        self.createFrames()
         self.createElements()
 
     def createFrames(self):
@@ -164,10 +163,11 @@ class GovOfficerDashboard(Frame):
                 text=f"{numOfDoctors} doctor(s)", font=("Inter", 12), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
+            numOfPatients = len(clinic.appRequests) if not clinic.appRequests == None else 0
             clinicPatients = self.controller.scrolledTextCreator(
                 x=X+620, y=Y, width=180, height=60, root=R, classname=f"{clinic.id}_patients",
                 bg="#f1feff", hasBorder=False,
-                text="patient", font=("Inter", 12), fg=BLACK,
+                text=f"{numOfPatients} patient(s)", font=("Inter", 12), fg=BLACK,
                 isDisabled=True, isJustified=True,
             )
 
@@ -195,6 +195,7 @@ class GovOfficerDashboard(Frame):
 
     def refreshClinicsSideFrame(self):
         self.initializeGovRegSystem()
+        self.initializeApprovedClinicDetails()
         self.loadClinicsIntoSideFrame()
         self.loadClinicsIntoBottomFrame()
         
@@ -301,7 +302,8 @@ class GovOfficerDashboard(Frame):
                     {
                         "clinic": {
                             "include": {
-                                "doctor": True
+                                "doctor": True,
+                                "appRequests": True
                             }
                         }
                     }

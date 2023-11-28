@@ -226,7 +226,7 @@ class DoctorRegistrationForm(Frame):
                     "speciality": self.vars[self.OPT3STR].get().upper().replace(" ", "_"),
                 }
             )
-            toast = ToastNotification("Registration", f"{doctor.user.fullName} has been registered as a doctor", duration=3000,
+            toast = ToastNotification("Registration", f"{self.parent.fullname.get()} has been registered as a doctor", duration=3000,
                             bootstyle="success", ).show_toast()
             self.parent.loadSignIn()
         except Exception as e:

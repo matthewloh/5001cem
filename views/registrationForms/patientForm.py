@@ -219,8 +219,8 @@ class PatientRegistrationForm(Frame):
         if self.bloodType.get() == "":
             messagebox.showerror(title="Error", message="Please select your blood type")
             return False
-        elif self.height.get() == 0 or self.weight.get() == 0:
-            messagebox.showerror(title="Error", message="Please enter your height and weight")
+        elif self.height.get() <=0 or self.weight.get() <= 0:
+            messagebox.showerror(title="Error", message="Please enter a valid height and weight")
             return False
         return True
         
@@ -268,7 +268,7 @@ class PatientRegistrationForm(Frame):
                     }
                 }
             )
-            toast = ToastNotification("Registration", f"{patient.user.fullName} has been registered", duration=3000, bootstyle="success", ).show_toast()
+            toast = ToastNotification("Registration", f"{self.parent.fullname.get()} has been registered", duration=3000, bootstyle="success", ).show_toast()
             self.parent.loadSignIn()
         except Exception as e:
             print(e)
