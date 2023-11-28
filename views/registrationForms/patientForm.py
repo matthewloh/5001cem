@@ -219,8 +219,8 @@ class PatientRegistrationForm(Frame):
         if self.bloodType.get() == "":
             messagebox.showerror(title="Error", message="Please select your blood type")
             return False
-        elif self.height.get() == 0 or self.weight.get() == 0:
-            messagebox.showerror(title="Error", message="Please enter your height and weight")
+        elif self.height.get() <=0 or self.weight.get() <= 0:
+            messagebox.showerror(title="Error", message="Please enter a valid height and weight")
             return False
         return True
         
