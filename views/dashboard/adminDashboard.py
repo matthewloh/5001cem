@@ -453,15 +453,14 @@ class ClinicAdminDashboard(Frame):
             self.createManageDoctor, req=req)
 
     def createManageDoctor(self, req: Doctor):
-        age = dt.datetime.now().year - req.user.dateOfBirth.year
-        nameGenderAge = f"Doctor: {req.user.fullName}\n{req.user.gender}, {age} years old"
+        doctorName = f"Doctor: {req.user.fullName}"
         doctorSpeciality = f"Speciality:{req.speciality}"
         educationHistory = f"EducationHistory:{req.educationHistory}"
         employmentHistory = f"EmploymentHistory:{req.employmentHistory}"
         self.controller.scrolledTextCreator(
             x=260, y=260, width=540, height=60, root=self.manageDoctorFrame, classname="manage_doctorname_gender_age",
             bg=WHITE, hasBorder=BLACK,
-            text=f"{nameGenderAge}", font=("Inter", 12), fg=BLACK,
+            text=f"{doctorName}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )

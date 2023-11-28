@@ -114,7 +114,7 @@ class AdminManageAppointments(Frame):
         )
         self.updateInfoBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][6],
-            x=800, y=660, classname="updateinfo", root=self.manageAppointmentsFrame,
+            x=820, y=720, classname="updateinfo", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [print('update')],
         )
 
@@ -505,29 +505,21 @@ class AdminManageAppointments(Frame):
             messagebox.showerror(
                 title="Aborting...", message="Invalid time interval value")
         self.create_app_load_time_menu()
-    
 
-    def loadViewPatientRequest(self, appReq: AppointmentRequest):
-        self.parent.patientRequests = MainPatientRequestsInterface(
-            controller=self.controller, parent=self.parent)
-        self.parent.patientRequests.loadRoleAssets(clinicAdmin=True)
-        self.parent.patientRequests.primarypanel.createManagePatientRequest(
-            req=appReq)
+    def loadAppointmentCreation2(self):
+        self.manageAppointmentsFrame.grid()
+        self.manageAppointmentsFrame.tkraise()
+        self.create_app_load_menubuttons2()
 
-    def loadAppointmentCreation(self):
-        self.createAppointmentsFrame.grid()
-        self.createAppointmentsFrame.tkraise()
-        self.create_app_load_menubuttons()
+    def create_app_load_menubuttons2(self):
+        self.create_app_load_request_menu2()
+        self.create_app_load_timeslots2()
+        self.create_app_load_doctor_menu2()
+        self.create_app_load_datepicker2()
 
-    def create_app_load_menubuttons(self):
-        self.create_app_load_request_menu()
-        self.create_app_load_timeslots()
-        self.create_app_load_doctor_menu()
-        self.create_app_load_datepicker()
-
-    def create_app_load_doctor_menu(self):
+    def create_app_load_doctor_menu2(self):
         prisma = self.prisma
-        R = self.createAppointmentsFrame
+        R = self.manageAppointmentsFrame
         self.doctors = prisma.doctor.find_many(
             where={
                 "clinicId": self.parent.primarypanel.clinic.id
@@ -544,7 +536,7 @@ class AdminManageAppointments(Frame):
                 f"{doctor.user.fullName} - {doctor.speciality}" for doctor in self.doctors],
             variable=self.currDoc,
             command=lambda: [
-                self.create_app_set_doctor(self.currDoc.get())
+                self.create_app_set_doctor2(self.currDoc.get())
             ],
             text="Select Doctor",
         )
@@ -553,9 +545,9 @@ class AdminManageAppointments(Frame):
         self.doctor_menu.configure(
             text=f"{self.doctor.user.fullName} - {self.doctor.speciality}"
         )
-        self.create_app_set_doctor(self.currDoc.get())
+        self.create_app_set_doctor2(self.currDoc.get())
 
-    def create_app_set_doctor(self, option: str):
+    def create_app_set_doctor2(self, option: str):
         self.doctor = list(
             filter(
                 lambda doctor: f"{doctor.user.fullName} - {doctor.speciality}" == option,
@@ -563,14 +555,14 @@ class AdminManageAppointments(Frame):
             )
         )[0]
     
-    def create_app_load_datepicker(self):
+    def create_app_load_datepicker2(self):
         entry, button = self.controller.entrywithDatePickerCreator(
-            x=140, y=780, width=320, height=80, root=self.createAppointmentsFrame, classname="create_app_datepicker",
+            x=140, y=780, width=320, height=80, root=self.manageAppointmentsFrame, classname="create_app_datepicker",
         )
 
-    def create_app_load_request_menu(self):
+    def create_app_load_request_menu2(self):
         prisma = self.prisma
-        R = self.createAppointmentsFrame
+        R = self.manageAppointmentsFrame
         self.patientReqs = prisma.appointmentrequest.find_many(
             where={
                 "clinicId": self.parent.primarypanel.clinic.id
@@ -602,9 +594,9 @@ class AdminManageAppointments(Frame):
         self.patient_requests.configure(
             text=f"{self.patientReq.patient.user.fullName} - I.D: {self.patientReq.id} - {self.patientReq.specialityWanted}"
         )
-        self.create_app_set_request(self.currReq.get())
+        self.create_app_set_request2(self.currReq.get())
 
-    def create_app_set_request(self, option: str):
+    def create_app_set_request2(self, option: str):
         self.patientReq = list(
             filter(
                 lambda req: f"{req.patient.user.fullName} - I.D: {req.id} - {req.specialityWanted}" == option,
@@ -612,8 +604,8 @@ class AdminManageAppointments(Frame):
             )
         )[0]
 
-    def create_app_load_timeslots(self):
-        R = self.createAppointmentsFrame
+    def create_app_load_timeslots2(self):
+        R = self.manageAppointmentsFrame
         self.time_slot = StringVar()
         self.custom_start_time = StringVar()
         self.custom_end_time = StringVar()
@@ -624,7 +616,7 @@ class AdminManageAppointments(Frame):
             ipath="assets/Appointments/Creation/SetTimeSlot.png",
             x=280, y=360, classname="create_app_set_time_interval_button", root=R,
             buttonFunction=lambda: [
-                self.create_app_set_time_interval()
+                self.create_app_set_time_interval2()
             ],
         )
         self.time_type = IntVar()
@@ -635,7 +627,7 @@ class AdminManageAppointments(Frame):
             text="Use Default Time", cursor="hand2",
             command=lambda: [
                 self.time_type.set(1),
-                self.create_app_load_time_menu()
+                self.create_app_load_time_menu2()
             ]
         )
         self.setUseDefaultTime.place(x=460, y=360, width=120, height=60)
@@ -645,7 +637,7 @@ class AdminManageAppointments(Frame):
             text="Use Custom Time", cursor="hand2",
             command=lambda: [
                 self.time_type.set(2),
-                self.create_app_load_time_menu()
+                self.create_app_load_time_menu2()
             ]
         )
         self.useCustomTime.place(x=600, y=360, width=120, height=60)
@@ -655,13 +647,13 @@ class AdminManageAppointments(Frame):
             text="Set Own Time", cursor="hand2",
             command=lambda: [
                 self.time_type.set(3),
-                self.create_app_load_time_menu()
+                self.create_app_load_time_menu2()
             ]
         )
         self.setOwnTime.place(x=740, y=360, width=120, height=60)
-        self.create_app_load_time_menu()
+        self.create_app_load_time_menu2()
 
-    def create_app_load_time_menu(self):
+    def create_app_load_time_menu2(self):
         R = self.createAppointmentsFrame
         DEFAULTTIME = "create_app_timeslot_menu"
         CUSTOMSTART = "create_app_custom_start_time"
@@ -689,7 +681,7 @@ class AdminManageAppointments(Frame):
             except:
                 pass
         elif self.time_type.get() == 2:
-            self.load_custom_start_time_end_time(
+            self.load_custom_start_time_end_time2(
                 R, CUSTOMSTART, CUSTOMEND, s_time, e_time)
             try:
                 self.controller.widgetsDict[f"{DEFAULTTIME}hostfr"].grid_remove(
@@ -719,7 +711,7 @@ class AdminManageAppointments(Frame):
                     if start_time >= end_time:
                         raise ValueError(
                             "Start time cannot be later than end time")
-                    self.load_custom_start_time_end_time(
+                    self.load_custom_start_time_end_time2(
                         R, CUSTOMSTART, CUSTOMEND, s_time, e_time)
                     self.create_app_custom_start_time.configure(
                         text=start_time.strftime("%I:%M%p")
@@ -753,7 +745,7 @@ class AdminManageAppointments(Frame):
                         parent=self.create_app_set_time_interval_button
                     )
 
-    def load_custom_start_time_end_time(self, R, CUSTOMSTART, CUSTOMEND, s_time, e_time):
+    def load_custom_start_time_end_time2(self, R, CUSTOMSTART, CUSTOMEND, s_time, e_time):
         self.create_app_custom_start_time = self.controller.timeMenuButtonCreator(
             x=140, y=420, width=340, height=80, root=R, classname=CUSTOMSTART,
             variable=self.custom_start_time,
@@ -777,7 +769,7 @@ class AdminManageAppointments(Frame):
             isTimeSlotFmt=False
         )
 
-    def create_app_set_time_interval(self):
+    def create_app_set_time_interval2(self):
         try:
             self.time_interval.set(int(Querybox.get_integer(
                 title="Set Time Interval",
