@@ -66,6 +66,7 @@ model Doctor {
   appointments       Appointment[]
   doctorApptSchedule DoctorApptSchedule[]
   clinic             Clinic?              @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+  invitedByClinic    DoctorClinicInvite[]
 
   @@index([userId])
   @@index([clinicId])
@@ -164,6 +165,20 @@ model Clinic {
   doctor             Doctor[]
   clinicRegistration ClinicEnrolment[]
   appRequests        AppointmentRequest[]
+  employedDoctors    DoctorClinicInvite[]
+}
+
+model DoctorClinicInvite {
+  inviteStatus InviteStatus @default(PENDING)
+
+  doctorId String
+  clinicId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  clinic   Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, clinicId])
+  @@index([doctorId])
+  @@index([clinicId])
 }
 
 model ClinicEnrolment {
@@ -279,6 +294,12 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
 
 enum EnrolmentStatus {
