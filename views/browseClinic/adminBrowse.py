@@ -124,7 +124,8 @@ class AdminBrowseClinic(Frame):
             self.viewClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][0],
                 x=X+1280, y=Y+30, classname=f"viewclinic{clinicId}", root=R,
-                buttonFunction=lambda: [self.clinicInfoFrame.grid(), self.clinicInfoFrame.tkraise()],
+                buttonFunction=lambda c=clinics.clinic: [
+                    self.manageClinicInfo(c)],
                 isPlaced=True
             )
             self.deleteClinicbutton = self.controller.buttonCreator(
@@ -181,10 +182,10 @@ class AdminBrowseClinic(Frame):
             prisma = self.prisma
             prisma.clinicenrolment.update(
                 where={
-                "clinicId":self.user.id
+                    "clinicId": self.user.id
                 },
                 data={
-                    "clinicAdmin":{
+                    "clinicAdmin": {
                         "disconnect": True
                     }
                 }
@@ -218,13 +219,13 @@ class AdminBrowseClinic(Frame):
             }
         )
         self.controller.threadCreator(self.manageClinic, confirmed=True)
-        
+
     def manageClinicInfo(self, req: Clinic):
-            self.controller.threadCreator(
+        self.controller.threadCreator(
             self.createManageClinicInfo, req=req)
 
-    def createManageClinicInfo(self, req: Clinic): 
-        clinicName = f"Clinic:{req.name}" 
+    def createManageClinicInfo(self, req: Clinic):
+        clinicName = f"Clinic:{req.name}"
         clinicAddress = f"Address:{req.address}"
         clinicContactNo = f"ContactNo:{req.phoneNum}"
         clinicCity = f"City:{req.city}"
@@ -265,19 +266,25 @@ class AdminBrowseClinic(Frame):
             text=f"{clinicZip}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
-        )    
+        )
         KL = timezone("Asia/Kuala_Lumpur")
         # "DD/MM/YYYY HH:MM"
-        fmt = "%d/%m/%Y %H:%M"
-        startTime = KL.convert(req.startTime).strftime(fmt)
-        endTime = KL.convert(req.endTime).strftime(fmt)
-        formatted = f"Start: {startTime}\nEnd: {endTime}"
+
+        fmt = "%I:%M%p"
+        # startTime = req.clinicHrs.split(" - ")[0]
+        # endTime = req.clinicHrs.split(" - ")[1]
+        # startTime = datetime.strptime(startTime, fmt)
+        # endTime = datetime.strptime(endTime, fmt)
+        # startTime = KL.convert(startTime).strftime(fmt)
+        # endTime = KL.convert(endTime).strftime(fmt)
+        # formatted = f"Start: {startTime}\nEnd: {endTime}"
         self.controller.scrolledTextCreator(
-            x=X+480, y=Y, width=240, height=100, root=self.clinicInfoFrame, classname="clinic_opHours",
+            x=480, y=400, width=240, height=100, root=self.clinicInfoFrame, classname="clinic_opHours",
             bg="#f1feff", hasBorder=False,
             text=f"{clinicOpHrs}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified="center",
             hasVbar=False
-            )
-            
-        
+        )
+
+        self.clinicInfoFrame.grid()
+        self.clinicInfoFrame.tkraise()

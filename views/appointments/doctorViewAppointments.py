@@ -99,7 +99,7 @@ class DoctorViewAppointments(Frame):
             # If the doctor is not found, retrieve all clinics
             clinics = prisma.clinic.find_many()
 
-        h = len(str(Clinics)) * 120
+        h = len(Clinics) * 120
         if h < 760:
             h = 760
         self.appointmentListFrame = ScrolledFrame(

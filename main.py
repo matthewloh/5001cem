@@ -7,13 +7,9 @@ import bcrypt
 import ttkbootstrap as ttk
 from ttkbootstrap.utility import enable_high_dpi_awareness
 from ttkbootstrap.constants import *
-from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.dialogs import MessageDialog
-from ttkbootstrap.scrolled import ScrolledFrame, ScrolledText
 from dotenv import load_dotenv
-from prisma import Prisma
-from pendulum import timezone
 from nonstandardimports import *
 from views.mainDashboard import Dashboard
 from views.registration import RegistrationPage
@@ -252,14 +248,5 @@ def runGui():
     window.mainloop()
 
 
-def runGuiThreaded():
-    t = Thread(ThreadStart(runGui))
-    t.ApartmentState = ApartmentState.STA
-    t.Start()
-    t.Daemon = True
-    t.Join()
-
-
 if __name__ == "__main__":
     runGui()
-    # runGuiThreaded()
