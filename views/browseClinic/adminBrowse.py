@@ -195,18 +195,6 @@ class AdminBrowseClinic(Frame):
         else:
             return
 
-    def addDoctorButtons(self):
-        self.closebutton = self.controller.buttonCreator(
-            ipath="assets/Registration/Close.png", x=100, y=820,
-            classname="reg_closebutton", root=self.clinicInfoFrame,
-            buttonFunction=lambda: [print('remain')]
-        )
-        self.savebutton = self.controller.buttonCreator(
-            ipath="assets/Registration/Save.png", x=400, y=820,
-            classname="reg_savebutton", root=self.clinicInfoFrame,
-            buttonFunction=lambda: [print('test')]
-        )
-
     def resetClinicInfo(self, req: Clinic):
         prisma = self.prisma
         prisma.clinic.update(
@@ -229,39 +217,47 @@ class AdminBrowseClinic(Frame):
         clinicAddress = f"Address:{req.address}"
         clinicContactNo = f"ContactNo:{req.phoneNum}"
         clinicCity = f"City:{req.city}"
+        clinicState = f"State:{req.state}"
         clinicZip = f"Zip:{req.zip}"
         clinicOpHrs = f"OpHrs:{req.clinicHrs}"
 
         self.controller.scrolledTextCreator(
-            x=40, y=40, width=640, height=60, root=self.clinicInfoFrame, classname=f"{req.id}_name",
+            x=560, y=260, width=640, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_name",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicName}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=40, y=160, width=640, height=60, root=self.clinicInfoFrame, classname="clinic_address",
+            x=560, y=380, width=640, height=80, root=self.clinicInfoFrame, classname="clinic_address",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicAddress}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=40, y=280, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_contactno",
+            x=560, y=500, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_contactno",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicContactNo}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=380, y=280, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_city",
+            x=900, y=500, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_city",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicCity}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=380, y=400, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_zip",
+            x=560, y=620, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_state",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{clinicState}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False
+        )
+        self.controller.scrolledTextCreator(
+            x=900, y=620, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_zip",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicZip}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
@@ -279,7 +275,7 @@ class AdminBrowseClinic(Frame):
         # endTime = KL.convert(endTime).strftime(fmt)
         # formatted = f"Start: {startTime}\nEnd: {endTime}"
         self.controller.scrolledTextCreator(
-            x=480, y=400, width=240, height=100, root=self.clinicInfoFrame, classname="clinic_opHours",
+            x=560, y=760, width=640, height=80, root=self.clinicInfoFrame, classname="clinic_opHours",
             bg="#f1feff", hasBorder=False,
             text=f"{clinicOpHrs}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified="center",

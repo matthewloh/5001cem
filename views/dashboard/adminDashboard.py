@@ -436,6 +436,22 @@ class ClinicAdminDashboard(Frame):
         else:
             return
     
+    def resetDoctorInfo(self, req: Doctor):
+        prisma = self.prisma
+        prisma.doctor.update(
+            where={
+                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+            },
+            include={
+                "user": True,
+            }
+        )
+        self.controller.threadCreator(self.manageDoctorInfo, confirmed=True)
+    
+    def manageDoctorInfo(self, req: Doctor):
+        self.controller.threadCreator(
+            self.createManageDoctor, req=req)
+
     def createManageDoctor(self, req: Doctor):
         age = dt.datetime.now().year - req.user.dateOfBirth.year
         nameGenderAge = f"Doctor: {req.user.fullName}\n{req.user.gender}, {age} years old"
@@ -468,3 +484,6 @@ class ClinicAdminDashboard(Frame):
             text=f"{employmentHistory}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
         )
+
+        self.manageDoctorFrame.grid()
+        self.manageDoctorFrame.tkraise()
