@@ -19,6 +19,7 @@ from resource.basewindow import gridGenerator
 from resource.static import *
 from resource.basewindow import ElementCreator
 from datetime import datetime, timedelta
+from PIL import Image, ImageOps, ImageTk
 import datetime as dt
 from pendulum import timezone
 import tkintermapview
@@ -37,7 +38,6 @@ class AdminBrowseClinic(Frame):
         self.createElements()
         self.createButton()
         self.manageClinic()
-        self.addDoctorButtons()
 
     def createFrames(self):
         self.clinicInfoFrame = self.controller.frameCreator(
@@ -54,7 +54,7 @@ class AdminBrowseClinic(Frame):
             x=0, y=0, classname="manageclinicbg", root=self
         )
         self.imgLabels = [
-            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/ClinicInformation.png",
+            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/ClinicInfo.png",
              0, 0, "clinicinfobg", self.clinicInfoFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
@@ -62,18 +62,19 @@ class AdminBrowseClinic(Frame):
     def createButton(self):
         d = {
             "adminDashboard": [
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
-                "assets/Appointments/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/updatelist.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
             ]
         }
-        self.Refreshbutton = self.controller.buttonCreator(
+        self.UpdateListbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][0],
-            x=1385, y=135, classname="manageclinicrefresh", root=self,
-            buttonFunction=lambda: print("manage clinic requests"), isPlaced=True,
+            x=1300, y=160, classname="manageclinicrefresh", root=self,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.manageClinic)], isPlaced=True,
         )
         self.Returnbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][1],
-            x=60, y=40, classname="clinicreturnbutton", root=self.clinicInfoFrame,
+            x=60, y=60, classname="clinicreturnbutton", root=self.clinicInfoFrame,
             buttonFunction=lambda: [self.clinicInfoFrame.grid_remove()],
         )
 
@@ -96,7 +97,7 @@ class AdminBrowseClinic(Frame):
         )
         self.manageClinicScrolledFrame.grid_propagate(False)
         self.manageClinicScrolledFrame.place(
-            x=60, y=280, width=1540, height=640)
+            x=60, y=300, width=1540, height=640)
 
         COORDS = (20, 20)
         for clinics in manageclinics:
@@ -110,7 +111,7 @@ class AdminBrowseClinic(Frame):
             R = self.manageClinicScrolledFrame
             FONT = ("Inter", 12)
             self.controller.labelCreator(
-                ipath=r"assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollbutton.png",
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/list.png",
                 x=X, y=Y, classname=f"manageClinic{clinicId}", root=R,
                 isPlaced=True,
             )
@@ -123,48 +124,48 @@ class AdminBrowseClinic(Frame):
             }
             self.viewClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][0],
-                x=X+1280, y=Y+30, classname=f"viewclinic{clinicId}", root=R,
+                x=X+1260, y=Y+35, classname=f"viewclinic{clinicId}", root=R,
                 buttonFunction=lambda c=clinics.clinic: [
                     self.manageClinicInfo(c)],
                 isPlaced=True
             )
             self.deleteClinicbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][1],
-                x=X+1360, y=Y+30, classname=f"deleteclinic{clinicId}", root=R,
+                x=X+1360, y=Y+35, classname=f"deleteclinic{clinicId}", root=R,
                 buttonFunction=lambda: [self.controller.threadCreator(
                     self.deleteClinic)],
                 isPlaced=True
             )
             clinicName = self.controller.scrolledTextCreator(
-                x=X+40, y=Y+30, width=240, height=70, root=R, classname=f"{clinicId}_name",
+                x=X+40, y=Y+40, width=240, height=80, root=R, classname=f"{clinicId}_name",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.name, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicId = self.controller.scrolledTextCreator(
-                x=X+320, y=Y+25, width=200, height=70, root=R, classname=f"{clinicId}_id",
+                x=X+320, y=Y+35, width=200, height=80, root=R, classname=f"{clinicId}_id",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinicId, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicContact = self.controller.scrolledTextCreator(
-                x=X+560, y=Y+30, width=200, height=60, root=R, classname=f"{clinicId}_contact",
+                x=X+560, y=Y+40, width=200, height=80, root=R, classname=f"{clinicId}_contact",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.phoneNum, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicOpHrs = self.controller.scrolledTextCreator(
-                x=X+800, y=Y+25, width=200, height=60, root=R, classname=f"{clinicId}_opHrs",
+                x=X+800, y=Y+35, width=200, height=80, root=R, classname=f"{clinicId}_opHrs",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.clinicHrs, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicAddress = self.controller.scrolledTextCreator(
-                x=X+1040, y=Y+25, width=200, height=60, root=R, classname=f"{clinicId}_address",
+                x=X+1040, y=Y+30, width=200, height=80, root=R, classname=f"{clinicId}_address",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.address, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
@@ -213,6 +214,7 @@ class AdminBrowseClinic(Frame):
             self.createManageClinicInfo, req=req)
 
     def createManageClinicInfo(self, req: Clinic):
+        R = self.clinicInfoFrame
         clinicName = f"Clinic:{req.name}"
         clinicAddress = f"Address:{req.address}"
         clinicContactNo = f"ContactNo:{req.phoneNum}"
@@ -220,67 +222,81 @@ class AdminBrowseClinic(Frame):
         clinicState = f"State:{req.state}"
         clinicZip = f"Zip:{req.zip}"
         clinicOpHrs = f"OpHrs:{req.clinicHrs}"
+        clinicImage = f"Img:{req.clinicImg}"
 
         self.controller.scrolledTextCreator(
-            x=560, y=260, width=640, height=80, root=self.clinicInfoFrame, classname=f"{req.id}_name",
+            x=100, y=300, width=640, height=80, root=R, classname=f"{req.id}_name",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicName}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=560, y=380, width=640, height=80, root=self.clinicInfoFrame, classname="clinic_address",
+            x=100, y=420, width=640, height=80, root=R, classname="clinic_address",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicAddress}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=560, y=500, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_contactno",
+            x=100, y=540, width=300, height=80, root=R, classname="clinic_contactno",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicContactNo}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=900, y=500, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_city",
+            x=440, y=540, width=300, height=80, root=R, classname="clinic_city",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicCity}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=560, y=620, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_state",
+            x=100, y=660, width=300, height=80, root=R, classname="clinic_state",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicState}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=900, y=620, width=300, height=80, root=self.clinicInfoFrame, classname="clinic_zip",
+            x=440, y=660, width=300, height=80, root=R, classname="clinic_zip",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicZip}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         KL = timezone("Asia/Kuala_Lumpur")
-        # "DD/MM/YYYY HH:MM"
-
         fmt = "%I:%M%p"
-        # startTime = req.clinicHrs.split(" - ")[0]
-        # endTime = req.clinicHrs.split(" - ")[1]
-        # startTime = datetime.strptime(startTime, fmt)
-        # endTime = datetime.strptime(endTime, fmt)
-        # startTime = KL.convert(startTime).strftime(fmt)
-        # endTime = KL.convert(endTime).strftime(fmt)
-        # formatted = f"Start: {startTime}\nEnd: {endTime}"
         self.controller.scrolledTextCreator(
-            x=560, y=760, width=640, height=80, root=self.clinicInfoFrame, classname="clinic_opHours",
-            bg="#f1feff", hasBorder=False,
-            text=f"{clinicOpHrs}", font=("Inter", 12), fg=BLACK,
-            isDisabled=True, isJustified="center",
+            x=100, y=800, width=640, height=80, root=R, classname="clinic_opHours",
+            bg="#463f9d", hasBorder=False,
+            text=f"{clinicOpHrs}", font=("Inter", 12), fg=WHITE,
+            isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
+        img = self.controller.decodingBase64Data(req.clinicImg)
+        img = ImageOps.contain(img, (520, 520), Image.Resampling.BICUBIC)
+        self.clinicImage = self.controller.buttonCreator(
+            x=980, y=320, classname=f"req_loadedclinic_image_{clinicImage}", root=R,
+            ipath="assets/BrowseClinic/Patient/BrowseSingleClinic/ClinicImagePlaceholder.png",
+            bg=WHITE,isPlaced=True,
+            )
+        self.controller.imageDict[f"req_loadedclinic_image_{clinicImage}"] = ImageTk.PhotoImage(
+                img
+            )
+        newImage = self.controller.imageDict[f"req_loadedclinic_image_{clinicImage}"]
+        self.clinicImage.configure(image=newImage, width=520, height=520)
+        self.clinicImage.place(x=980, y=320, width=520, height=520)
+        self.controller.scrolledTextCreator(
+                x=1140, y=860, width=200, height=80, root=R,
+                classname=f"req_loadedclinic_name_{clinicImage}",
+                bg="#ecf2ff", hasBorder=False,
+                text=req.name, font=("Inter", 12), fg=BLACK,
+                isDisabled=True, isJustified=True,
+                hasVbar=False,
+            )
 
         self.clinicInfoFrame.grid()
         self.clinicInfoFrame.tkraise()
+

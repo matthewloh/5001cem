@@ -50,7 +50,7 @@ class AdminManageAppointments(Frame):
 
     def appointmentImgLabels(self):
         self.bg = self.controller.labelCreator(
-            ipath="assets/Appointments/Homepage/AppointmentViewBg.png",
+            ipath="assets/Appointments/Homepage/AppointmentBg.png",
             x=0, y=0, classname="appointmenthomepage", root=self
         )
         self.imgLabels = [
@@ -66,10 +66,10 @@ class AdminManageAppointments(Frame):
             "appointmentButtons": [
                 "assets/Appointments/Homepage/CreateAppointments.png",
                 "assets/Appointments/Homepage/ManageAppointments.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/scrollrefreshbutton.png",
-                "assets/Appointments/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/updatelist.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
                 "assets/Appointments/Creation/BookAppointment.png",
-                "assets/Appointments/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
                 "assets/Appointments/Management/UpdateInformation.png"
             ]
         }
@@ -82,12 +82,11 @@ class AdminManageAppointments(Frame):
         self.managementButton = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][1],
             x=1140, y=800, classname="managebutton", root=self,
-            buttonFunction=lambda: [
-                self.manageAppointmentsFrame.grid(),self.manageAppointmentsFrame.tkraise()],
+            buttonFunction=lambda: [self.loadAppointmentManagement()],
         )
-        self.refreshBtn = self.controller.buttonCreator(
+        self.UpdateBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][2],
-            x=1450, y=120, classname="viewAppointmentrefresh", root=self,
+            x=1320, y=120, classname="viewAppointmentrefresh", root=self,
             buttonFunction=lambda:
                 [self.controller.threadCreator(
                     target=self.appointmentList)],
@@ -103,7 +102,8 @@ class AdminManageAppointments(Frame):
         self.bookAppointmentBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][4],
             x=820, y=720, classname="bookappointment", root=self.createAppointmentsFrame,
-            buttonFunction=lambda: [print('book')],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.createAppointment)],
         )
         # Appointment Management
         self.returnmanagementBtn = self.controller.buttonCreator(
@@ -115,9 +115,72 @@ class AdminManageAppointments(Frame):
         self.updateInfoBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][6],
             x=820, y=720, classname="updateinfo", root=self.manageAppointmentsFrame,
-            buttonFunction=lambda: [print('update')],
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.updateAppointment)],
         )
 
+    def createAppointment(self):
+        result = messagebox.askyesno(
+            "Create New Appointment", "Are you sure you want to create a new appointment?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.appointment.update(
+                where={
+                "clinicId": self.parent.primarypanel.clinic.id
+                },
+                include={
+                    "patient":{
+                        "include":{
+                            "createdAt":{
+                                "include":{
+                                    "doctor":{
+                                        "include":{
+                                            "user":True
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }           
+        )
+            self.controller.threadCreator(
+                self.loadAppointmentCreation, cancelled=True)
+        else:
+            return
+    
+    def updateAppointment(self):
+        result = messagebox.askyesno(
+            "Update Appointment Information", "Are you sure you want to update appointment information?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.appointment.update(
+                where={
+                "clinicId": self.parent.primarypanel.clinic.id
+                },
+                include={
+                    "patient":{
+                        "include":{
+                            "updatedAt":{
+                                "include":{
+                                    "doctor":{
+                                        "include":{
+                                            "user":True
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }           
+        )
+            self.controller.threadCreator(
+                self.loadAppointmentManagement, cancelled=True)
+        else:
+            return
+        
     def appointmentList(self):
         prisma = self.prisma
         app = prisma.appointment.find_many(
@@ -148,20 +211,20 @@ class AdminManageAppointments(Frame):
             R = self.viewAppointmentScrolledFrame
             FONT = ("Inter", 12)
             self.controller.labelCreator(
-                ipath="assets/Appointments/Homepage/AppItemBg.png",
+                ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/list.png",
                 x=X, y=Y, classname=f"appointmentlist{appointment.id}", root=R,
                 isPlaced=True,
             )
 
             self.controller.scrolledTextCreator(
-                x=X+20, y=Y, width=220, height=100, root=R, classname=f"{appointment.id}_patient_name",
+                x=X+20, y=Y+30, width=220, height=100, root=R, classname=f"{appointment.id}_patient_name",
                 bg="#f1feff", hasBorder=False,
                 text=f"{appointment.appRequest.patient.user.fullName}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             self.controller.scrolledTextCreator(
-                x=X+240, y=Y, width=240, height=100, root=R, classname=f"{appointment.id}_doctor_name",
+                x=X+240, y=Y+30, width=240, height=100, root=R, classname=f"{appointment.id}_doctor_name",
                 bg="#f1feff", hasBorder=False,
                 text=f"{appointment.doctor.user.fullName}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
@@ -174,21 +237,21 @@ class AdminManageAppointments(Frame):
             endTime = KL.convert(appointment.endTime).strftime(fmt)
             formatted = f"Start: {startTime}\nEnd: {endTime}"
             self.controller.scrolledTextCreator(
-                x=X+480, y=Y, width=240, height=100, root=R, classname=f"{appointment.id}_dateandtime_time",
+                x=X+480, y=Y+10, width=240, height=120, root=R, classname=f"{appointment.id}_dateandtime_time",
                 bg="#f1feff", hasBorder=False,
                 text=formatted, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             self.controller.scrolledTextCreator(
-                x=X+720, y=Y, width=140, height=100, root=R, classname=f"{appointment.id}_doctor_accept",
+                x=X+720, y=Y+30, width=140, height=100, root=R, classname=f"{appointment.id}_doctor_accept",
                 bg="#f1feff", hasBorder=False,
                 text=f"{appointment.docAccepted}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             self.controller.scrolledTextCreator(
-                x=X+860, y=Y, width=140, height=100, root=R, classname=f"{appointment.id}_patient_accept",
+                x=X+860, y=Y+30, width=140, height=100, root=R, classname=f"{appointment.id}_patient_accept",
                 bg="#f1feff", hasBorder=False,
                 text=f"{appointment.patientAccepted}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
@@ -196,7 +259,7 @@ class AdminManageAppointments(Frame):
             )
             self.controller.buttonCreator(
                 ipath="assets/Appointments/Homepage/ViewAppRequest.png",
-                x=X+1040, y=Y+20, classname=f"viewbutton{appointment.id}", root=R,
+                x=X+1027, y=Y+30, classname=f"viewbutton{appointment.id}", root=R,
                 buttonFunction=lambda a=appointment.appRequest: [
                     self.controller.threadCreator(
                         target=self.loadViewPatientRequest, appReq=a
@@ -206,12 +269,13 @@ class AdminManageAppointments(Frame):
             )
             self.controller.buttonCreator(
                 ipath="assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
-                x=X+1360, y=Y+20, classname=f"deletebutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
-                buttonFunction=lambda: [print('delete')],
+                x=X+1320, y=Y+30, classname=f"deletebutton{appointment.id}", root=self.viewAppointmentScrolledFrame,
+                buttonFunction=lambda:[self.controller.threadCreator(
+                    self.deleteAppointment)],
                 isPlaced=True
             )
             self.controller.scrolledTextCreator(
-                x=X+1140, y=Y, width=160, height=100, root=R, classname=f"{appointment.id}_status",
+                x=X+1140, y=Y+30, width=160, height=100, root=R, classname=f"{appointment.id}_status",
                 bg="#f1feff", hasBorder=False,
                 text=f"{appointment.status}", font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
@@ -220,6 +284,27 @@ class AdminManageAppointments(Frame):
             COORDS = (
                 COORDS[0], COORDS[1] + 120
             )
+
+    def deleteAppointment(self):
+        result = messagebox.askyesno(
+            "Delete Appointment", "Are you sure you want to delete this appointment?",
+        )
+        if result:
+            prisma = self.prisma
+            prisma.appointment.update(
+                where={
+                "appointmentId":self.user.id
+                },
+                data={
+                    "status":{
+                        "disconnect": True
+                    }
+                }
+            )
+            self.controller.threadCreator(
+                self.appointmentList, cancelled=True)
+        else:
+            return
 
     def loadViewPatientRequest(self, appReq: AppointmentRequest):
         self.parent.patientRequests = MainPatientRequestsInterface(
@@ -506,18 +591,18 @@ class AdminManageAppointments(Frame):
                 title="Aborting...", message="Invalid time interval value")
         self.create_app_load_time_menu()
 
-    def loadAppointmentCreation2(self):
+    def loadAppointmentManagement(self):
         self.manageAppointmentsFrame.grid()
         self.manageAppointmentsFrame.tkraise()
-        self.create_app_load_menubuttons2()
+        self.update_app_load_menubuttons()
 
-    def create_app_load_menubuttons2(self):
-        self.create_app_load_request_menu2()
-        self.create_app_load_timeslots2()
-        self.create_app_load_doctor_menu2()
-        self.create_app_load_datepicker2()
+    def update_app_load_menubuttons(self):
+        self.update_app_load_request_menu()
+        self.update_app_load_timeslots()
+        self.update_app_load_doctor_menu()
+        self.update_app_load_datepicker()
 
-    def create_app_load_doctor_menu2(self):
+    def update_app_load_doctor_menu(self):
         prisma = self.prisma
         R = self.manageAppointmentsFrame
         self.doctors = prisma.doctor.find_many(
@@ -536,7 +621,7 @@ class AdminManageAppointments(Frame):
                 f"{doctor.user.fullName} - {doctor.speciality}" for doctor in self.doctors],
             variable=self.currDoc,
             command=lambda: [
-                self.create_app_set_doctor2(self.currDoc.get())
+                self.update_app_set_doctor(self.currDoc.get())
             ],
             text="Select Doctor",
         )
@@ -545,9 +630,9 @@ class AdminManageAppointments(Frame):
         self.doctor_menu.configure(
             text=f"{self.doctor.user.fullName} - {self.doctor.speciality}"
         )
-        self.create_app_set_doctor2(self.currDoc.get())
+        self.update_app_set_doctor(self.currDoc.get())
 
-    def create_app_set_doctor2(self, option: str):
+    def update_app_set_doctor(self, option: str):
         self.doctor = list(
             filter(
                 lambda doctor: f"{doctor.user.fullName} - {doctor.speciality}" == option,
@@ -555,12 +640,12 @@ class AdminManageAppointments(Frame):
             )
         )[0]
     
-    def create_app_load_datepicker2(self):
+    def update_app_load_datepicker(self):
         entry, button = self.controller.entrywithDatePickerCreator(
             x=140, y=780, width=320, height=80, root=self.manageAppointmentsFrame, classname="create_app_datepicker",
         )
 
-    def create_app_load_request_menu2(self):
+    def update_app_load_request_menu(self):
         prisma = self.prisma
         R = self.manageAppointmentsFrame
         self.patientReqs = prisma.appointmentrequest.find_many(
@@ -583,7 +668,7 @@ class AdminManageAppointments(Frame):
                 f"{req.patient.user.fullName} - I.D: {req.id} - {req.specialityWanted}" for req in self.patientReqs],
             variable=self.currReq,
             command=lambda: [
-                self.create_app_set_request(self.currReq.get()),
+                self.update_app_set_request(self.currReq.get()),
                 print(self.patientReq.preferredDate,
                       self.patientReq.preferredTime)
             ],
@@ -594,9 +679,9 @@ class AdminManageAppointments(Frame):
         self.patient_requests.configure(
             text=f"{self.patientReq.patient.user.fullName} - I.D: {self.patientReq.id} - {self.patientReq.specialityWanted}"
         )
-        self.create_app_set_request2(self.currReq.get())
+        self.update_app_set_request(self.currReq.get())
 
-    def create_app_set_request2(self, option: str):
+    def update_app_set_request(self, option: str):
         self.patientReq = list(
             filter(
                 lambda req: f"{req.patient.user.fullName} - I.D: {req.id} - {req.specialityWanted}" == option,
@@ -604,7 +689,7 @@ class AdminManageAppointments(Frame):
             )
         )[0]
 
-    def create_app_load_timeslots2(self):
+    def update_app_load_timeslots(self):
         R = self.manageAppointmentsFrame
         self.time_slot = StringVar()
         self.custom_start_time = StringVar()
@@ -616,7 +701,7 @@ class AdminManageAppointments(Frame):
             ipath="assets/Appointments/Creation/SetTimeSlot.png",
             x=280, y=360, classname="create_app_set_time_interval_button", root=R,
             buttonFunction=lambda: [
-                self.create_app_set_time_interval2()
+                self.update_app_set_time_interval()
             ],
         )
         self.time_type = IntVar()
@@ -627,7 +712,7 @@ class AdminManageAppointments(Frame):
             text="Use Default Time", cursor="hand2",
             command=lambda: [
                 self.time_type.set(1),
-                self.create_app_load_time_menu2()
+                self.update_app_load_time_menu()
             ]
         )
         self.setUseDefaultTime.place(x=460, y=360, width=120, height=60)
@@ -637,7 +722,7 @@ class AdminManageAppointments(Frame):
             text="Use Custom Time", cursor="hand2",
             command=lambda: [
                 self.time_type.set(2),
-                self.create_app_load_time_menu2()
+                self.update_app_load_time_menu()
             ]
         )
         self.useCustomTime.place(x=600, y=360, width=120, height=60)
@@ -647,14 +732,14 @@ class AdminManageAppointments(Frame):
             text="Set Own Time", cursor="hand2",
             command=lambda: [
                 self.time_type.set(3),
-                self.create_app_load_time_menu2()
+                self.update_app_load_time_menu()
             ]
         )
         self.setOwnTime.place(x=740, y=360, width=120, height=60)
-        self.create_app_load_time_menu2()
+        self.update_app_load_time_menu()
 
-    def create_app_load_time_menu2(self):
-        R = self.createAppointmentsFrame
+    def update_app_load_time_menu(self):
+        R = self.manageAppointmentsFrame
         DEFAULTTIME = "create_app_timeslot_menu"
         CUSTOMSTART = "create_app_custom_start_time"
         CUSTOMEND = "create_app_custom_end_time"
@@ -681,7 +766,7 @@ class AdminManageAppointments(Frame):
             except:
                 pass
         elif self.time_type.get() == 2:
-            self.load_custom_start_time_end_time2(
+            self.update_custom_start_time_end_time(
                 R, CUSTOMSTART, CUSTOMEND, s_time, e_time)
             try:
                 self.controller.widgetsDict[f"{DEFAULTTIME}hostfr"].grid_remove(
@@ -711,7 +796,7 @@ class AdminManageAppointments(Frame):
                     if start_time >= end_time:
                         raise ValueError(
                             "Start time cannot be later than end time")
-                    self.load_custom_start_time_end_time2(
+                    self.update_custom_start_time_end_time(
                         R, CUSTOMSTART, CUSTOMEND, s_time, e_time)
                     self.create_app_custom_start_time.configure(
                         text=start_time.strftime("%I:%M%p")
@@ -745,7 +830,7 @@ class AdminManageAppointments(Frame):
                         parent=self.create_app_set_time_interval_button
                     )
 
-    def load_custom_start_time_end_time2(self, R, CUSTOMSTART, CUSTOMEND, s_time, e_time):
+    def update_custom_start_time_end_time(self, R, CUSTOMSTART, CUSTOMEND, s_time, e_time):
         self.create_app_custom_start_time = self.controller.timeMenuButtonCreator(
             x=140, y=420, width=340, height=80, root=R, classname=CUSTOMSTART,
             variable=self.custom_start_time,
@@ -769,7 +854,7 @@ class AdminManageAppointments(Frame):
             isTimeSlotFmt=False
         )
 
-    def create_app_set_time_interval2(self):
+    def update_app_set_time_interval(self):
         try:
             self.time_interval.set(int(Querybox.get_integer(
                 title="Set Time Interval",
@@ -782,5 +867,5 @@ class AdminManageAppointments(Frame):
         except:
             messagebox.showerror(
                 title="Aborting...", message="Invalid time interval value")
-        self.create_app_load_time_menu()
+        self.update_app_load_time_menu()
     
