@@ -231,7 +231,7 @@ class OfficerRegistrationForm(Frame):
                     }
                 }
             )
-            toast = ToastNotification("Registration", f"{officer.user.fullName} has been registered as a government health officer", duration=3000, bootstyle="success").show_toast()
+            toast = ToastNotification("Registration", f"{self.parent.fullname.get()} has been registered as a government health officer", duration=3000, bootstyle="success").show_toast()
             self.parent.loadSignIn()
         except Exception as e:
             print(e)

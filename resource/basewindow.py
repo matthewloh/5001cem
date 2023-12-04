@@ -483,8 +483,6 @@ class ElementCreator(ttk.Window):
         elif validation == "isContactNo":
             add_regex_validation(
                 widget=entry, pattern="^\+60[0-9]{8,10}$")
-        elif validation == "isCaptcha":
-            add_validation(widget=entry, func=validateCaptcha)
         elif validation == "isFullName":
             add_regex_validation(
             widget=entry, pattern="^[a-zA-Z\s\-]+$")

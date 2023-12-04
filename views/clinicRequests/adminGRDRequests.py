@@ -45,15 +45,12 @@ class AdminGRDRequest(Frame):
             x=0, y=0, classname="grdrequestsbg", root=self
         )
 
-        
-
         self.controller.buttonCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/adminrefreshbtn.png",
             x=680+440, y=351+84, classname="grdrequestsrefresh", root=self, 
-            buttonFunction=lambda:print("refresh grd requests"), isPlaced=True
+            buttonFunction=lambda:self.loadClinicRequestStatus(), isPlaced=True
         )
 
-        
 
     def loadClinicRequestStatus(self):
         prisma = self.prisma
