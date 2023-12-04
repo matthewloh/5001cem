@@ -625,24 +625,10 @@ class AdminManageAppointments(Frame):
                 f"{req.appointments}" ],
             variable=self.currApp,
             command=lambda: [
-                self.update_app_set_appointment(self.currDoc.get())
+                self.update_app_set_appointment(self.currApp.get())
             ],
             text="Select Appointment",
         )
-        self.currApp.set(
-            f"{req.appointments}")
-        self.appointment_menu.configure(
-            text=f"{req.appointments}"
-        )
-        self.update_app_set_appointment(self.currDoc.get())
-
-    def update_app_set_appointment(self, option: str, req:AppointmentRequest):
-        self.appointment = list(
-            filter(
-                lambda req: f"{req.appointments}"== option,
-                self.appointments
-            )
-        )[0]
 
     def update_app_load_doctor_menu(self):
         prisma = self.prisma
