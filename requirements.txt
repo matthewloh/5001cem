@@ -1,4 +1,3 @@
-pywin32
 tkwebview2 
 prisma
 ttkbootstrap

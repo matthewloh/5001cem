@@ -50,7 +50,7 @@ class Dashboard(Frame):
         ]
         self.staticBtns = [
             (r"assets/Dashboard/SignOut.png", 20, 980, "signoutbtn",
-             self, lambda:[self.grid_remove()]),
+             self, lambda: [self.grid_remove()]),
             (r"assets/Dashboard/Settings.png", 120, 980, "settingsbtn",
              self, lambda: print("hello")),
         ]

@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  interface            = "sync"
   recursive_type_depth = "-1"
+  interface            = "sync"
 }
 
 datasource db {
@@ -216,6 +216,13 @@ model doctorPrescription {
   time      String
   duration  String
   details   String
+}
+
+model doctorAssignClinic {
+  id       Int             @id @default(autoincrement())
+  doctorId String
+  clinicId String
+  status   EnrolmentStatus @default(PENDING)
 }
 
 model GovHealthOfficerToGovRegSystem {
