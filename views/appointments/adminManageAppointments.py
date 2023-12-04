@@ -108,7 +108,7 @@ class AdminManageAppointments(Frame):
         # Appointment Management
         self.returnmanagementBtn = self.controller.buttonCreator(
             ipath=d["appointmentButtons"][5],
-            x=20, y=60, classname="returnmanagement", root=self.manageAppointmentsFrame,
+            x=20, y=80, classname="returnmanagement", root=self.manageAppointmentsFrame,
             buttonFunction=lambda: [
                 self.manageAppointmentsFrame.grid_remove()],
         )
@@ -601,6 +601,48 @@ class AdminManageAppointments(Frame):
         self.update_app_load_timeslots()
         self.update_app_load_doctor_menu()
         self.update_app_load_datepicker()
+        self.update_appointment()
+
+    def update_appointment(self, req:AppointmentRequest):
+        prisma = self.prisma
+        R = self.manageAppointmentsFrame
+        self.appointments = prisma.appointment.find_many(
+            where={
+                "appRequest": {"is": {"clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}}}
+            },
+            include={
+                "doctor": {"include": {"user": True}},
+                "appRequest": {"include": {"clinic": True, "patient": {"include": {"user": True, "healthRecord": True}}, "appointments": True}},
+                "prescription": True,
+
+            }
+        )
+        self.appointment: AppointmentRequest = self.appointment[0]
+        self.currApp = StringVar()
+        self.appointment_menu = self.controller.menubuttonCreator(
+            x=1040, y=140, width=560, height=80, root=R, classname="update_app_appointment_menu",
+            listofvalues=[
+                f"{req.appointments}" ],
+            variable=self.currApp,
+            command=lambda: [
+                self.update_app_set_appointment(self.currDoc.get())
+            ],
+            text="Select Appointment",
+        )
+        self.currApp.set(
+            f"{req.appointments}")
+        self.appointment_menu.configure(
+            text=f"{req.appointments}"
+        )
+        self.update_app_set_appointment(self.currDoc.get())
+
+    def update_app_set_appointment(self, option: str, req:AppointmentRequest):
+        self.appointment = list(
+            filter(
+                lambda req: f"{req.appointments}"== option,
+                self.appointments
+            )
+        )[0]
 
     def update_app_load_doctor_menu(self):
         prisma = self.prisma
