@@ -43,10 +43,14 @@ class AdminBrowseClinic(Frame):
         self.clinicInfoFrame = self.controller.frameCreator(
             x=0, y=0, classname="clinicinfo", root=self, framewidth=1680, frameheight=1080
         )
+        self.editClinicFrame = self.controller.frameCreator(
+            x=0, y=0, classname="editclinicframe", root=self, framewidth=1680, frameheight=1080
+        )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
         self.clinicInfoFrame.grid_remove()
+        self.editClinicFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
@@ -55,27 +59,49 @@ class AdminBrowseClinic(Frame):
         )
         self.imgLabels = [
             ("assets/Dashboard/ClinicAdminAssets/ManageClinic/ClinicInfo.png",
-             0, 0, "clinicinfobg", self.clinicInfoFrame)
+             0, 0, "clinicinfobg", self.clinicInfoFrame),
+            ("assets/Dashboard/ClinicAdminAssets/ManageClinic/EditInfo.png",
+             0, 0, "editclinicbg", self.editClinicFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
     def createButton(self):
         d = {
-            "adminDashboard": [
+            "clinicDashboard": [
                 "assets/Dashboard/ClinicAdminAssets/ScrollFrame/updatelist.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/Update.png",
+                "assets/Dashboard/ClinicAdminAssets/Save.png"
             ]
         }
         self.UpdateListbutton = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][0],
+            ipath=d["clinicDashboard"][0],
             x=1300, y=160, classname="manageclinicrefresh", root=self,
             buttonFunction=lambda: [self.controller.threadCreator(
                     target=self.manageClinic)], isPlaced=True,
         )
         self.Returnbutton = self.controller.buttonCreator(
-            ipath=d["adminDashboard"][1],
-            x=60, y=60, classname="clinicreturnbutton", root=self.clinicInfoFrame,
+            ipath=d["clinicDashboard"][1],
+            x=60, y=60, classname="clinic_info", root=self.clinicInfoFrame,
             buttonFunction=lambda: [self.clinicInfoFrame.grid_remove()],
+        )
+        self.ReturnListbutton = self.controller.buttonCreator(
+            ipath=d["clinicDashboard"][2],
+            x=60, y=60, classname="edit_clinic", root=self.editClinicFrame,
+            buttonFunction=lambda: [self.editClinicFrame.grid_remove()],
+        )
+        self.updateInfobutton = self.controller.buttonCreator(
+            ipath=d["clinicDashboard"][3],
+            x=1440, y=50, classname="update_clinicinfo", root=self.clinicInfoFrame,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.editClinicInfo)],
+        )
+        self.editInfobutton = self.controller.buttonCreator(
+            ipath=d["clinicDashboard"][4],
+            x=1440, y=50, classname="edit_clinicinfo", root=self.editClinicFrame,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.editClinicInfo)],
         )
 
     def manageClinic(self):
@@ -118,54 +144,61 @@ class AdminBrowseClinic(Frame):
 
             d = {
                 "clinicButton": [
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/edit.png",
                     "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
                     "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
                 ]
             }
-            self.viewClinicbutton = self.controller.buttonCreator(
+            self.editdoctorbutton = self.controller.buttonCreator(
                 ipath=d["clinicButton"][0],
+                x=X+1160, y=Y+35, classname=f"editclinic{clinicId}", root=R,
+                buttonFunction=lambda c=clinics.clinic: [self.editClinicInfo(c)],
+                isPlaced=True
+            )
+            self.viewClinicbutton = self.controller.buttonCreator(
+                ipath=d["clinicButton"][1],
                 x=X+1260, y=Y+35, classname=f"viewclinic{clinicId}", root=R,
                 buttonFunction=lambda c=clinics.clinic: [
                     self.manageClinicInfo(c)],
                 isPlaced=True
             )
             self.deleteClinicbutton = self.controller.buttonCreator(
-                ipath=d["clinicButton"][1],
+                ipath=d["clinicButton"][2],
                 x=X+1360, y=Y+35, classname=f"deleteclinic{clinicId}", root=R,
                 buttonFunction=lambda: [self.controller.threadCreator(
                     self.deleteClinic)],
                 isPlaced=True
             )
             clinicName = self.controller.scrolledTextCreator(
-                x=X+40, y=Y+40, width=240, height=80, root=R, classname=f"{clinicId}_name",
+                x=X+20, y=Y+40, width=240, height=80, root=R, classname=f"{clinicId}_name",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.name, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicId = self.controller.scrolledTextCreator(
-                x=X+320, y=Y+35, width=200, height=80, root=R, classname=f"{clinicId}_id",
+                x=X+260, y=Y+35, width=200, height=80, root=R, classname=f"{clinicId}_id",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinicId, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicContact = self.controller.scrolledTextCreator(
-                x=X+560, y=Y+40, width=200, height=80, root=R, classname=f"{clinicId}_contact",
+                x=X+480, y=Y+40, width=200, height=80, root=R, classname=f"{clinicId}_contact",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.phoneNum, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicOpHrs = self.controller.scrolledTextCreator(
-                x=X+800, y=Y+35, width=200, height=80, root=R, classname=f"{clinicId}_opHrs",
+                x=X+700, y=Y+35, width=200, height=80, root=R, classname=f"{clinicId}_opHrs",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.clinicHrs, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
                 hasVbar=False
             )
             clinicAddress = self.controller.scrolledTextCreator(
-                x=X+1040, y=Y+30, width=200, height=80, root=R, classname=f"{clinicId}_address",
+                x=X+920, y=Y+30, width=200, height=80, root=R, classname=f"{clinicId}_address",
                 bg="#f1feff", hasBorder=False,
                 text=clinics.clinic.address, font=FONT, fg=BLACK,
                 isDisabled=True, isJustified="center",
@@ -196,7 +229,7 @@ class AdminBrowseClinic(Frame):
         else:
             return
 
-    def resetClinicInfo(self, req: Clinic):
+    def viewClinicInfo(self, req: Clinic):
         prisma = self.prisma
         prisma.clinic.update(
             where={
@@ -207,7 +240,7 @@ class AdminBrowseClinic(Frame):
                 "govRegDocSystem": True
             }
         )
-        self.controller.threadCreator(self.manageClinic, confirmed=True)
+        self.controller.threadCreator(self.manageClinicInfo, confirmed=True)
 
     def manageClinicInfo(self, req: Clinic):
         self.controller.threadCreator(
@@ -225,7 +258,7 @@ class AdminBrowseClinic(Frame):
         clinicImage = f"Img:{req.clinicImg}"
 
         self.controller.scrolledTextCreator(
-            x=100, y=300, width=640, height=80, root=R, classname=f"{req.id}_name",
+            x=100, y=300, width=640, height=80, root=R, classname="clinic_name",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinicName}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
@@ -299,4 +332,100 @@ class AdminBrowseClinic(Frame):
 
         self.clinicInfoFrame.grid()
         self.clinicInfoFrame.tkraise()
+
+    def resetClinicInfo(self, req: Clinic):
+        prisma = self.prisma
+        prisma.clinic.update(
+            where={
+                "AND": [{"status": "APPROVED"}, {"clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}}]
+            },
+            include={
+                "clinic": True,
+                "govRegDocSystem": True
+            }
+        )
+        self.controller.threadCreator(self.manageClinic, confirmed=True)
+
+    def editClinicInfo(self, req: Clinic):
+        self.controller.threadCreator(
+            self.editManageClinic, req=req)
+        
+    def editManageClinic(self, req: Clinic):
+        R=self.editClinicFrame
+        self.seedDataBtn = self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/EditSeed.png",
+            x=680, y=180, classname="clinicdatabtn", root=R,
+            buttonFunction=lambda c=req: self.clinicSeed_data(c)
+        )
+        EC= self.controller.ttkEntryCreator
+        self.clinicname = EC(
+            x=100, y=300, width=640, height=80, root=R, classname="edit_clinicname_gender_age",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.clinicaddress = EC(
+            x=100, y=420, width=640, height=80, root=R, classname="edit_clinicaddress",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.cliniccontactno = EC(
+            x=100, y=540, width=300, height=80, root=R, classname="edit_contactno",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.cliniccity = EC(
+            x=440, y=540, width=300, height=80, root=R, classname="edit_city",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.clinicstate = EC(
+            x=100, y=660, width=300, height=80, root=R, classname="edit_state",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.cliniczip = EC(
+            x=440, y=660, width=300, height=80, root=R, classname="edit_zip",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.clinichours = EC(
+            x=100, y=800, width=640, height=80, root=R, classname="edit_hours",
+            font=("Inter", 12), fg=BLACK,
+        )
+        img = self.controller.decodingBase64Data(req.clinicImg)
+        img = ImageOps.contain(img, (520, 520), Image.Resampling.BICUBIC)
+        self.clinicimage = self.controller.buttonCreator(
+            x=980, y=320, classname=f"req_loadedclinic_image_{req.clinicImg}", root=R,
+            ipath="assets/BrowseClinic/Patient/BrowseSingleClinic/ClinicImagePlaceholder.png",
+            bg=WHITE,isPlaced=True,
+            )
+        self.controller.imageDict[f"req_loadedclinic_image_{req.clinicImg}"] = ImageTk.PhotoImage(
+                img
+            )
+        newImage = self.controller.imageDict[f"req_loadedclinic_image_{req.clinicImg}"]
+        self.clinicimage.configure(image=newImage, width=520, height=520)
+        self.clinicimage.place(x=980, y=320, width=520, height=520)
+        self.controller.scrolledTextCreator(
+                x=1140, y=860, width=200, height=80, root=R,
+                classname=f"req_loadedclinic_name_{req.clinicImg}",
+                bg="#ecf2ff", hasBorder=False,
+                text=req.name, font=("Inter", 12), fg=BLACK,
+                isDisabled=True, isJustified=True,
+                hasVbar=False,
+            )
+
+        self.editClinicFrame.grid()
+        self.editClinicFrame.tkraise()
+
+    def clinicSeed_data(self, req:Clinic):
+        self.clinicname.delete(0, END)
+        self.clinicname.insert(0,f"Clinic:{req.name}")
+        self.clinicaddress.delete(0, END)
+        self.clinicaddress.insert(0,f"Address:{req.address}")
+        self.cliniccontactno.delete(0, END)
+        self.cliniccontactno.insert(0,f"ContactNo:{req.phoneNum}")
+        self.cliniccity.delete(0, END)
+        self.cliniccity.insert(0,f"City:{req.city}")
+        self.clinicstate.delete(0, END)
+        self.clinicstate.insert(0,f"State:{req.state}")
+        self.cliniczip.delete(0, END)
+        self.cliniczip.insert(0,f"Zip:{req.zip}")
+        self.clinichours.delete(0, END)
+        self.clinichours.insert(0,f"OpHrs:{req.clinicHrs}")
+        self.clinicimage.set(0, END)
+        self.clinicimage.configure(0,f"Img:{req.clinicImg}")
 

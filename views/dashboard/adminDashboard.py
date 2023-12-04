@@ -108,14 +108,18 @@ class ClinicAdminDashboard(Frame):
         self.doctorListFrame = self.controller.frameCreator(
             x=0, y=0, classname="listframe", root=self, framewidth=1680, frameheight=1080
         )
-        self.manageDoctorFrame = self.controller.frameCreator(
+        self.viewDoctorFrame = self.controller.frameCreator(
             x=0, y=0, classname="doctorframe", root=self, framewidth=1680, frameheight=1080
+        )
+        self.editDoctorFrame = self.controller.frameCreator(
+            x=0, y=0, classname="editdoctorframe", root=self, framewidth=1680, frameheight=1080
         )
         self.unloadStackedFrames()
 
     def unloadStackedFrames(self):
         self.doctorListFrame.grid_remove()
-        self.manageDoctorFrame.grid_remove()
+        self.viewDoctorFrame.grid_remove()
+        self.editDoctorFrame.grid_remove()
 
     def createElements(self):
         self.bg = self.controller.labelCreator(
@@ -126,7 +130,9 @@ class ClinicAdminDashboard(Frame):
             ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/DoctorList.png",
              0, 0, "listimage", self.doctorListFrame),
             ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/DoctorInfo.png",
-             0, 0, "doctorimage", self.manageDoctorFrame)
+             0, 0, "doctorimage", self.viewDoctorFrame),
+            ("assets/Dashboard/ClinicAdminAssets/Add&DeleteList/EditDoctor.png",
+             0, 0, "editdoctorbg", self.editDoctorFrame)
         ]
         self.controller.settingsUnpacker(self.imgLabels, "label")
 
@@ -265,7 +271,10 @@ class ClinicAdminDashboard(Frame):
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/View&DeleteDoctor.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
                 "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
-                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/updatelist.png"
+                "assets/Dashboard/ClinicAdminAssets/ScrollFrame/updatelist.png",
+                "assets/Dashboard/ClinicAdminAssets/AdminDashboard/ReturnButton.png",
+                "assets/Dashboard/ClinicAdminAssets/Update.png",
+                "assets/Dashboard/ClinicAdminAssets/Save.png"
             ]
         }
         self.Listbutton = self.controller.buttonCreator(
@@ -281,8 +290,8 @@ class ClinicAdminDashboard(Frame):
         )
         self.returnDoctorListbutton = self.controller.buttonCreator(
             ipath=d["adminDashboard"][2],
-            x=60, y=60, classname="return_to_doctorlist", root=self.manageDoctorFrame,
-            buttonFunction=lambda: [self.manageDoctorFrame.grid_remove()],
+            x=60, y=60, classname="return_to_doctorlist", root=self.viewDoctorFrame,
+            buttonFunction=lambda: [self.viewDoctorFrame.grid_remove()],
         )
         self.UpdateBtn = self.controller.buttonCreator(
             ipath=d["adminDashboard"][3],
@@ -292,6 +301,24 @@ class ClinicAdminDashboard(Frame):
                     target=self.doctorList)],
                 isPlaced=True
         )
+        self.returnDoctorInfobutton = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][4],
+            x=60, y=60, classname="return_to_doctorinfo", root=self.editDoctorFrame,
+            buttonFunction=lambda: [self.editDoctorFrame.grid_remove()],
+        )
+        self.updateInfobutton = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][5],
+            x=1430, y=50, classname="update_doctorinfo", root=self.viewDoctorFrame,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.editDoctorInfo)],
+        )
+        self.editInfobutton = self.controller.buttonCreator(
+            ipath=d["adminDashboard"][6],
+            x=1440, y=50, classname="edit_doctorinfo", root=self.editDoctorFrame,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.editDoctorInfo)],
+        )
+
 
     def doctorList(self):
         prisma = self.prisma
@@ -326,19 +353,26 @@ class ClinicAdminDashboard(Frame):
 
             d = {
                 "scrollButton": [
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/edit.png",
                     "assets/Dashboard/ClinicAdminAssets/ScrollFrame/view.png",
-                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png",
+                    "assets/Dashboard/ClinicAdminAssets/ScrollFrame/delete.png", 
                 ]
             }
-            self.viewdoctorbutton = self.controller.buttonCreator(
+            self.editdoctorbutton = self.controller.buttonCreator(
                 ipath=d["scrollButton"][0],
-                x=X+1220, y=Y+35, classname=f"viewbutton{doctor.id}", root=R,
+                x=X+1120, y=Y+35, classname=f"editbutton{doctor.id}", root=R,
+                buttonFunction=lambda d=doctor: [self.editDoctorInfo(d)],
+                isPlaced=True
+            )
+            self.viewdoctorbutton = self.controller.buttonCreator(
+                ipath=d["scrollButton"][1],
+                x=X+1240, y=Y+35, classname=f"viewbutton{doctor.id}", root=R,
                 buttonFunction=lambda d=doctor: [self.manageDoctorInfo(d)],
                 isPlaced=True
             )
             self.deletedoctorbutton = self.controller.buttonCreator(
-                ipath=d["scrollButton"][1],
-                x=X+1340, y=Y+35, classname=f"deletebutton{doctor.id}", root=R,
+                ipath=d["scrollButton"][2],
+                x=X+1360, y=Y+35, classname=f"deletebutton{doctor.id}", root=R,
                 buttonFunction=lambda: [self.controller.threadCreator(
                     self.deleteDoctor)],
                 isPlaced=True
@@ -397,7 +431,7 @@ class ClinicAdminDashboard(Frame):
         else:
             return
     
-    def resetDoctorInfo(self, req: Doctor):
+    def viewDoctorInfo(self, req: Doctor):
         prisma = self.prisma
         prisma.doctor.update(
             where={
@@ -416,6 +450,7 @@ class ClinicAdminDashboard(Frame):
             self.createManageDoctor, req=req)
 
     def createManageDoctor(self, req: Doctor):
+        R = self.viewDoctorFrame
         doctorName = f"Doctor: {req.user.fullName}"
         doctorSpeciality = f"Speciality:{req.speciality}"
         educationHistory = f"EducationHistory:{req.educationHistory}"
@@ -425,50 +460,122 @@ class ClinicAdminDashboard(Frame):
         doctorApptSchedule = f"Schedule:{req.doctorApptSchedule}"
         
         self.controller.scrolledTextCreator(
-            x=280, y=320, width=480, height=60, root=self.manageDoctorFrame, classname="manage_doctorname_gender_age",
+            x=280, y=320, width=480, height=60, root=R, classname="manage_doctorname_gender_age",
             bg=WHITE, hasBorder=BLACK,
             text=f"{doctorName}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=280, y=420, width=480, height=60, root=self.manageDoctorFrame, classname="manage_speciality",
+            x=280, y=420, width=480, height=60, root=R, classname="manage_speciality",
             bg=WHITE, hasBorder=BLACK,
             text=f"{doctorSpeciality}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
             hasVbar=False
         )
         self.controller.scrolledTextCreator(
-            x=80, y=540, width=680, height=100, root=self.manageDoctorFrame, classname="manage_educationhistory",
+            x=80, y=540, width=680, height=100, root=R, classname="manage_educationhistory",
             bg=WHITE, hasBorder=BLACK,
             text=f"{educationHistory}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
         )
         self.controller.scrolledTextCreator(
-            x=80, y=700, width=680, height=100, root=self.manageDoctorFrame, classname="manage_employmenthistory",
+            x=80, y=700, width=680, height=100, root=R, classname="manage_employmenthistory",
             bg=WHITE, hasBorder=BLACK,
             text=f"{employmentHistory}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
         )
         self.controller.scrolledTextCreator(
-            x=900, y=320, width=680, height=100, root=self.manageDoctorFrame, classname="manage_clinic",
+            x=900, y=320, width=680, height=100, root=R, classname="manage_clinic",
             bg=WHITE, hasBorder=BLACK,
             text=f"{clinic}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
         )
         self.controller.scrolledTextCreator(
-            x=900, y=480, width=680, height=100, root=self.manageDoctorFrame, classname="manage_appointments",
+            x=900, y=480, width=680, height=100, root=R, classname="manage_appointments",
             bg=WHITE, hasBorder=BLACK,
             text=f"{appointments}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
         )
         self.controller.scrolledTextCreator(
-            x=900, y=640, width=680, height=100, root=self.manageDoctorFrame, classname="manage_schedules",
+            x=900, y=640, width=680, height=100, root=R, classname="manage_schedules",
             bg=WHITE, hasBorder=BLACK,
             text=f"{doctorApptSchedule}", font=("Inter", 12), fg=BLACK,
             isDisabled=True, isJustified=True, justification="left",
         )
 
+        self.viewDoctorFrame.grid()
+        self.viewDoctorFrame.tkraise()
 
-        self.manageDoctorFrame.grid()
-        self.manageDoctorFrame.tkraise()
+    def resetDoctorInfo(self, req: Doctor):
+        prisma = self.prisma
+        prisma.doctor.update(
+            where={
+                "clinic": {"is": {"admin": {"some": {"userId": self.user.id}}}}
+            },
+            include={
+                "user": True,
+                "clinic": True,
+                "appointment": True
+            }
+        )
+        self.controller.threadCreator(self.editDoctorInfo, confirmed=True)
+
+    def editDoctorInfo(self, req: Doctor):
+        self.controller.threadCreator(
+            self.editManageDoctor, req=req)
+
+    def editManageDoctor(self, req: Doctor):
+        R=self.editDoctorFrame
+        self.seedDataBtn = self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/EditSeed.png",
+            x=680, y=180, classname="doctordatabtn", root=R,
+            buttonFunction=lambda d=req: self.doctorSeed_data(d)
+        )
+        EC= self.controller.ttkEntryCreator
+        self.doctorname = EC(
+            x=280, y=320, width=480, height=60, root=R, classname="edit_doctorname_gender_age",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.doctorspeciality = EC(
+            x=280, y=420, width=480, height=60, root=R, classname="edit_speciality",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.educationhistory = EC(
+            x=80, y=540, width=680, height=100, root=R, classname="edit_educationhistory",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.employmenthistory = EC(
+            x=80, y=700, width=680, height=100, root=R, classname="edit_employmenthistory",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.clinicname = EC(
+            x=900, y=320, width=680, height=100, root=R, classname="edit_clinic",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.doctorappointment = EC(
+            x=900, y=480, width=680, height=100, root=R, classname="edit_appointments",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.appschedules = EC(
+            x=900, y=640, width=680, height=100, root=R, classname="edit_schedules",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.editDoctorFrame.grid()
+        self.editDoctorFrame.tkraise()
+
+    def doctorSeed_data(self, req:Doctor):
+        self.doctorname.delete(0, END)
+        self.doctorname.insert(0,f"Doctor: {req.user.fullName}")
+        self.doctorspeciality.delete(0, END)
+        self.doctorspeciality.insert(0,f"Speciality:{req.speciality}")
+        self.educationhistory.delete(0, END)
+        self.educationhistory.insert(0,f"EducationHistory:{req.educationHistory}")
+        self.employmenthistory.delete(0, END)
+        self.employmenthistory.insert(0,f"EmploymentHistory:{req.employmentHistory}")
+        self.clinicname.delete(0, END)
+        self.clinicname.insert(0,f"Clinic:{req.clinic}")
+        self.doctorappointment.delete(0, END)
+        self.doctorappointment.insert(0,f"App:{req.appointments}")
+        self.appschedules.delete(0, END)
+        self.appschedules.insert(0,f"Schedule:{req.doctorApptSchedule}")

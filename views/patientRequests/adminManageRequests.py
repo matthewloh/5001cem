@@ -41,7 +41,12 @@ class AdminManagePatientRequests(Frame):
             x=0, y=0, framewidth=1680, frameheight=1080, classname="managepatientsclinicframe", root=self,
             bg="#dee8e0"
         )
+        self.editPatientsClinicFrame = self.controller.frameCreator(
+            x=0, y=0, framewidth=1680, frameheight=1080, classname="editpatientsclinicframe", root=self,
+            bg="#dee8e0"
+        )
         self.managePatientsClinicFrame.grid_remove()
+        self.editPatientsClinicFrame.grid_remove()
 
     def createElements(self):
         self.createLabels()
@@ -55,6 +60,10 @@ class AdminManagePatientRequests(Frame):
         self.controller.labelCreator(
             ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/ManagePatientRequest.png",
             x=0, y=0, classname="managepatientrequest", root=self.managePatientsClinicFrame
+        )
+        self.controller.labelCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/PatientInfo.png",
+            x=0, y=0, classname="editpatientrequest", root=self.editPatientsClinicFrame
         )
 
     def createButtons(self):
@@ -275,6 +284,12 @@ class AdminManagePatientRequests(Frame):
             self.createManagePatientRequest, req=req)
 
     def createManagePatientRequest(self, req: AppointmentRequest):
+        self.updateInfobutton = self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/Update.png",
+            x=1480, y=30, classname="update_patientinfo", root=self.managePatientsClinicFrame,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.createManagePatientRequest)],
+        )
         self.managePatientsClinicFrame.grid()
         self.managePatientsClinicFrame.tkraise()
         # Patient Name, Gender and Age (DOB)
@@ -371,8 +386,78 @@ class AdminManagePatientRequests(Frame):
         pass
     
     def manageAppointment(self, req: AppointmentRequest):
-        pass
+        self.controller.threadCreator(
+            self.editManageAppointment, req=req)
+        
+    def editManageAppointment(self, req: AppointmentRequest):
+        R=self.editPatientsClinicFrame
+        self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/Back.png",
+            x=20, y=40, classname="edit_req_back", root=R,
+            buttonFunction=lambda: [
+                self.editPatientsClinicFrame.grid_remove()],
+        )
+        self.seedDataBtn = self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/PatientRequests/PatientSeed.png",
+            x=540, y=40, classname="patientdatabtn", root=R,
+            buttonFunction=lambda a=req: self.patientSeed_data(a)
+        )
+        self.saveInfobutton = self.controller.buttonCreator(
+            ipath="assets/Dashboard/ClinicAdminAssets/Save.png",
+            x=1480, y=30, classname="save_patientinfo", root=R,
+            buttonFunction=lambda: [self.controller.threadCreator(
+                    target=self.createManagePatientRequest)],
+        )
+        EC= self.controller.ttkEntryCreator
+        self.patientinfo = EC(
+            x=260, y=260, width=540, height=60, root=R, classname="edit_patientinfo",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.patientbloodtype = EC(
+            x=260, y=360, width=540, height=60, root=R, classname="edit_bloodtype",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.patientPMH = EC(
+            x=40, y=500, width=760, height=160, root=R, classname="edit_PMH",
+            font=("Inter", 12), fg=BLACK,
+        )
+        self.patientCMH = EC(
+            x=40, y=740, width=760, height=160, root=R, classname="edit_CMH",
+            font=("Inter", 12), fg=BLACK,
+        )
+        # Request Information
+        # Appointment Preferences of Patient
+        KL = timezone("Asia/Kuala_Lumpur")
+        createdAt = KL.convert(req.createdAt).strftime("%A, %d/%m/%Y, %I:%M%p")
+        appPreferences = f"Preferred Date: {req.preferredDate}\nPreferred Time: {req.preferredTime}\nSpeciality Wanted: {req.specialityWanted}"
+        numOfAppointments = len(req.appointments)
+        requestInfoHistory = f"Request Status: {req.reqStatus}\nRequest Date: {createdAt}\nNumber of Appointments: {numOfAppointments}\nMost recent approval by: {req.approvedBy.user.fullName if req.approvedBy else 'None'}"
+        self.controller.scrolledTextCreator(
+            x=880, y=260, width=760, height=160, root=R, classname="edit_req_appointment_preferences",
+            bg=WHITE, hasBorder=BLACK,
+            text=f"{appPreferences}", font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.controller.scrolledTextCreator(
+            x=880, y=500, width=760, height=160, root=R, classname="edit_req_request_info_history",
+            bg=WHITE, hasBorder=BLACK,
+            text=requestInfoHistory, font=("Inter", 12), fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+        )
+        self.editPatientsClinicFrame.grid()
+        self.editPatientsClinicFrame.tkraise()
 
+    def patientSeed_data(self, req: AppointmentRequest):
+        age = dt.datetime.now().year - req.patient.user.dateOfBirth.year
+        self.patientinfo.delete(0, END)
+        self.patientinfo.insert(0,f"Patient: {req.patient.user.fullName}\n{req.patient.user.gender}, {age} years old")
+        self.patientbloodtype.delete(0, END)
+        self.patientbloodtype.insert(0,f"Blood type: {req.patient.healthRecord.bloodType}\nHeight : {req.patient.healthRecord.height} cm & Weight : {req.patient.healthRecord.weight} kg")
+        self.patientPMH.delete(0, END)
+        self.patientPMH.insert(0,f"Surgeries: {req.patient.healthRecord.pastSurgery}\nPast Medications: {req.patient.healthRecord.pastMedication}\nFamily History: {req.patient.healthRecord.familyHistory}")
+        self.patientCMH.delete(0, END)
+        self.patientCMH.insert(0,f"Allergies: {req.patient.healthRecord.allergies}\nCurrent Medications: {req.patient.healthRecord.currentMedication}\nCurrent Symptoms: {req.additionalInfo}")
+    
     def deleteRequest(self, req: AppointmentRequest):
         result = messagebox.askyesno(
             "Delete Request", "Are you sure you want to delete this request?",
