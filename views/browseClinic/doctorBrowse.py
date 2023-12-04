@@ -217,7 +217,7 @@ class DoctorBrowseClinic(Frame):
         if h < 760:
             h = 760
         self.appointmentListFrame = ScrolledFrame(
-            master=self, width=1500, height=h, autohide=True, bootstyle="DoctorDashboard.bg"
+            master=self, width=1500, height=225, autohide=True, bootstyle="DoctorDashboard.bg"
         )
         self.appointmentListFrame.grid_propagate(False)
         self.appointmentListFrame.place(x=23, y=782, width=877, height=225)

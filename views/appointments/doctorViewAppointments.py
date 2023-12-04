@@ -165,16 +165,13 @@ class DoctorViewAppointments(Frame):
             COORDS = (COORDS[0], COORDS[1] + 120)
 
     def submit_request(self, doctor_id, clinic_id):
-        # You can perform the submission logic here, for example, using Prisma
         prisma = self.prisma
-        # Assuming your model is named 'doctor_assign_clinic' in Prisma
         prisma.doctorassignclinic.create({
             "doctorId": doctor_id,
             "clinicId": clinic_id,
-            "status": "PENDING",  # You may want to adjust this default value
+            "status": "PENDING", 
         })
 
-        # Optionally, you can provide feedback to the user
         messagebox.showinfo("Request Submitted", "Your request has been submitted successfully.")
         
     def copy_location(self, location):
@@ -201,7 +198,6 @@ class DoctorViewAppointments(Frame):
     )
            
     def refreshPage(self):
-    # Call the function to reload the clinic page
         self.createButtonRefresh()
 
     
