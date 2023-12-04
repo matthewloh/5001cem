@@ -43,7 +43,7 @@ class PatientCreateRequests(Frame):
 
     def createElements(self):
         self.controller.labelCreator(
-            ipath="assets/Dashboard/PatientAssets/PatientRequestPrescription.png",
+            ipath="assets/Prescriptions/Patient/BG.png",
             x=0, y=0, classname="requestspanelbg", root=self
         )
         self.createButtons()
