@@ -17,7 +17,7 @@ from resource.basewindow import gridGenerator
 from resource.static import *
 from resource.basewindow import ElementCreator
 import datetime as dt
-from prisma.models import AppointmentRequest
+from prisma.models import AppointmentRequest, Appointment
 from pendulum import timezone
 
 
@@ -193,28 +193,68 @@ class AdminManageAppointments(Frame):
         )
         if result:
             prisma = self.prisma
+            UTC = timezone("UTC")
+            KL = timezone("Asia/Kuala_Lumpur")
+            if self.time_type.get() == 1:
+                start = self.time_slot.get().split(" - ")[0]
+                end = self.time_slot.get().split(" - ")[1]
+                date_start = self.update_app_date_picker_entry.get() + " " + start
+                date_end = self.update_app_date_picker_entry.get() + " " + end
+                dt_date_and_start = dt.datetime.strptime(
+                    date_start, "%d/%m/%Y %I:%M%p")
+                dt_date_and_end = dt.datetime.strptime(
+                    date_end, "%d/%m/%Y %I:%M%p")
+                start_time = UTC.convert(KL.convert(dt_date_and_start))
+                end_time = UTC.convert(KL.convert(dt_date_and_end))
+            elif self.time_type.get() == 2:
+                date_start = self.update_app_date_picker_entry.get() + " " + \
+                    self.custom_start_time.get()
+                date_end = self.update_app_date_picker_entry.get() + " " + \
+                    self.custom_end_time.get()
+                dt_date_and_start = dt.datetime.strptime(
+                    date_start, "%d/%m/%Y %I:%M%p")
+                dt_date_and_end = dt.datetime.strptime(
+                    date_end, "%d/%m/%Y %I:%M%p")
+                start_time = UTC.convert(KL.convert(dt_date_and_start))
+                end_time = UTC.convert(KL.convert(dt_date_and_end))
+            elif self.time_type.get() == 3:
+                # %d/%m/%Y %I:%M%p
+                date_start = self.update_app_date_picker_entry.get() + " " + \
+                    self.custom_start_time.get()
+                date_end = self.update_app_date_picker_entry.get() + " " + \
+                    self.custom_end_time.get()
+                dt_date_and_start = dt.datetime.strptime(
+                    date_start, "%d/%m/%Y %I:%M%p")
+                dt_date_and_end = dt.datetime.strptime(
+                    date_end, "%d/%m/%Y %I:%M%p")
+                start_time = UTC.convert(KL.convert(dt_date_and_start))
+                end_time = UTC.convert(KL.convert(dt_date_and_end))
+            else:
+                raise ValueError("Invalid time type")
             prisma.appointment.update(
                 where={
-                    "clinicId": self.parent.primarypanel.clinic.id
+                    "id": self.updating_appointment.id
                 },
-                include={
-                    "patient": {
-                        "include": {
-                            "updatedAt": {
-                                "include": {
-                                    "doctor": {
-                                        "include": {
-                                            "user": True
-                                        }
-                                    }
-                                }
-                            }
+                data={
+                    "appRequest": {
+                        "connect": {
+                            "id": self.patientReq.id
                         }
-                    }
+                    },
+                    "doctor": {
+                        "connect": {
+                            "id": self.doctor.id
+                        }
+                    },
+                    "startTime": start_time,
+                    "endTime": end_time,
                 }
             )
-            self.controller.threadCreator(
-                self.loadAppointmentManagement, cancelled=True)
+            messagebox.showinfo(
+                "Appointment Updated", "Appointment has been updated successfully"
+            )
+            self.manageAppointmentsFrame.grid_remove()
+            self.controller.threadCreator(self.appointmentList)
         else:
             return
 
@@ -271,7 +311,7 @@ class AdminManageAppointments(Frame):
             )
             KL = timezone("Asia/Kuala_Lumpur")
             # "DD/MM/YYYY HH:MM"
-            fmt = "%d/%m/%Y %H:%M"
+            fmt = "%d/%m/%Y %I:%M%p"
             startTime = KL.convert(appointment.startTime).strftime(fmt)
             endTime = KL.convert(appointment.endTime).strftime(fmt)
             formatted = f"Start: {startTime}\nEnd: {endTime}"
@@ -635,13 +675,9 @@ class AdminManageAppointments(Frame):
         self.update_app_load_menubuttons()
 
     def update_app_load_menubuttons(self):
-        self.update_app_load_request_menu()
-        self.update_app_load_timeslots()
-        self.update_app_load_doctor_menu()
-        self.update_app_load_datepicker()
-        self.update_appointment()
+        self.update_app_load_appointments()
 
-    def update_appointment(self, req: AppointmentRequest):
+    def update_app_load_appointments(self):
         prisma = self.prisma
         R = self.manageAppointmentsFrame
         self.appointments = prisma.appointment.find_many(
@@ -652,15 +688,14 @@ class AdminManageAppointments(Frame):
                 "doctor": {"include": {"user": True}},
                 "appRequest": {"include": {"clinic": True, "patient": {"include": {"user": True, "healthRecord": True}}, "appointments": True}},
                 "prescription": True,
-
             }
         )
-        self.appointment: AppointmentRequest = self.appointment[0]
+        self.updating_appointment: Appointment = self.appointments[0]
         self.currApp = StringVar()
         self.appointment_menu = self.controller.menubuttonCreator(
             x=1040, y=140, width=560, height=80, root=R, classname="update_app_appointment_menu",
             listofvalues=[
-                f"{req.appointments}"],
+                f"Appointment ID: {appointment.id} - Patient: {appointment.appRequest.patient.user.fullName}, Doctor: {appointment.doctor.user.fullName}" for appointment in self.appointments],
             variable=self.currApp,
             command=lambda: [
                 self.update_app_set_appointment(self.currApp.get())
@@ -668,19 +703,58 @@ class AdminManageAppointments(Frame):
             text="Select Appointment",
         )
         self.currApp.set(
-            f"{req.appointments}")
-        self.appointment_menu.configure(
-            text=f"{req.appointments}"
+            f"Appointment ID: {self.updating_appointment.id} - Patient: {self.updating_appointment.appRequest.patient.user.fullName}, Doctor: {self.updating_appointment.doctor.user.fullName}"
         )
-        self.update_app_set_appointment(self.currDoc.get())
+        self.appointment_menu.configure(
+            text=f"Appointment ID: {self.updating_appointment.id} - Patient: {self.updating_appointment.appRequest.patient.user.fullName}, Doctor: {self.updating_appointment.doctor.user.fullName}"
+        )
+        self.update_app_set_appointment(self.currApp.get())
 
-    def update_app_set_appointment(self, option: str, req:AppointmentRequest):
-        self.appointment = list(
+    def update_app_set_appointment(self, option: str):
+        self.updating_appointment = list(
             filter(
-                lambda req: f"{req.appointments}"== option,
+                lambda appointment: f"Appointment ID: {appointment.id} - Patient: {appointment.appRequest.patient.user.fullName}, Doctor: {appointment.doctor.user.fullName}" == option,
                 self.appointments
             )
         )[0]
+        # Set request, Set Time Slot, Set Doctor, Set Date
+        self.update_app_load_appointment_info()
+
+    def update_app_load_appointment_info(self):
+        self.update_app_load_request_menu()
+        self.update_app_load_doctor_menu()
+        self.update_app_load_timeslots()
+        self.update_app_load_datepicker()
+        # self.update_app_load_appointment_info_request()
+        self.patient_requests.configure(
+            text=f"{self.updating_appointment.appRequest.patient.user.fullName} - I.D: {self.updating_appointment.appRequest.id} - {self.updating_appointment.appRequest.specialityWanted}"
+        )
+        self.update_app_set_request(
+            f"{self.updating_appointment.appRequest.patient.user.fullName} - I.D: {self.updating_appointment.appRequest.id} - {self.updating_appointment.appRequest.specialityWanted}")
+        # self.update_app_load_appointment_info_timeslot()
+        KL = timezone("Asia/Kuala_Lumpur")
+        start_time = KL.convert(self.updating_appointment.startTime)
+        end_time = KL.convert(self.updating_appointment.endTime)
+        date = start_time.strftime("%d/%m/%Y")
+        self.update_app_timeslot_menu.configure(
+            text=f"{start_time.strftime('%I:%M%p')} - {end_time.strftime('%I:%M%p')}"
+        )
+        # self.update_app_custom_start_time.configure(
+        #     text=start_time.strftime("%I:%M%p")
+        # )
+        # self.update_app_custom_end_time.configure(
+        #     text=end_time.strftime("%I:%M%p")
+        # )
+        self.update_app_date_picker_entry.configure(state="normal")
+        self.update_app_date_picker_entry.delete(0, END)
+        self.update_app_date_picker_entry.insert(0, date)
+        # "DD/MM/YYYY %I:%M%p"
+        # self.update_app_load_appointment_info_doctor()
+        self.update_app_doctor_menu.configure(
+            text=f"{self.updating_appointment.doctor.user.fullName} - {self.updating_appointment.doctor.speciality}"
+        )
+        self.update_app_set_doctor(
+            f"{self.updating_appointment.doctor.user.fullName} - {self.updating_appointment.doctor.speciality}")
 
     def update_app_load_doctor_menu(self):
         prisma = self.prisma
@@ -695,8 +769,8 @@ class AdminManageAppointments(Frame):
         )
         self.doctor: Doctor = self.doctors[0]
         self.currDoc = StringVar()
-        self.doctor_menu = self.controller.menubuttonCreator(
-            x=140, y=600, width=400, height=80, root=R, classname="create_app_doctor_menu",
+        self.update_app_doctor_menu = self.controller.menubuttonCreator(
+            x=140, y=600, width=400, height=80, root=R, classname="update_app_doctor_menu",
             listofvalues=[
                 f"{doctor.user.fullName} - {doctor.speciality}" for doctor in self.doctors],
             variable=self.currDoc,
@@ -707,7 +781,7 @@ class AdminManageAppointments(Frame):
         )
         self.currDoc.set(
             f"{self.doctor.user.fullName} - {self.doctor.speciality}")
-        self.doctor_menu.configure(
+        self.update_app_doctor_menu.configure(
             text=f"{self.doctor.user.fullName} - {self.doctor.speciality}"
         )
         self.update_app_set_doctor(self.currDoc.get())
@@ -721,8 +795,8 @@ class AdminManageAppointments(Frame):
         )[0]
 
     def update_app_load_datepicker(self):
-        entry, button = self.controller.entrywithDatePickerCreator(
-            x=140, y=780, width=320, height=80, root=self.manageAppointmentsFrame, classname="create_app_datepicker",
+        self.update_app_date_picker_entry, self.update_app_date_picker_button = self.controller.entrywithDatePickerCreator(
+            x=140, y=780, width=320, height=80, root=self.manageAppointmentsFrame, classname="update_app_datepicker",
         )
 
     def update_app_load_request_menu(self):
@@ -743,7 +817,7 @@ class AdminManageAppointments(Frame):
         self.patientReq: AppointmentRequest = self.patientReqs[0]
         self.currReq = StringVar()
         self.patient_requests = self.controller.menubuttonCreator(
-            x=140, y=240, width=720, height=80, root=R, classname="create_app_patient_requests",
+            x=140, y=240, width=720, height=80, root=R, classname="update_app_patient_requests",
             listofvalues=[
                 f"{req.patient.user.fullName} - I.D: {req.id} - {req.specialityWanted}" for req in self.patientReqs],
             variable=self.currReq,
@@ -777,9 +851,9 @@ class AdminManageAppointments(Frame):
         self.time_interval = IntVar()
         self.time_interval.set(30)
 
-        self.create_app_set_time_interval_button = self.controller.buttonCreator(
+        self.update_app_set_time_interval_button = self.controller.buttonCreator(
             ipath="assets/Appointments/Creation/SetTimeSlot.png",
-            x=280, y=360, classname="create_app_set_time_interval_button", root=R,
+            x=280, y=360, classname="update_app_set_time_interval_button", root=R,
             buttonFunction=lambda: [
                 self.update_app_set_time_interval()
             ],
@@ -820,13 +894,16 @@ class AdminManageAppointments(Frame):
 
     def update_app_load_time_menu(self):
         R = self.manageAppointmentsFrame
-        DEFAULTTIME = "create_app_timeslot_menu"
-        CUSTOMSTART = "create_app_custom_start_time"
-        CUSTOMEND = "create_app_custom_end_time"
+        DEFAULTTIME = "update_app_timeslot_menu"
+        CUSTOMSTART = "update_app_custom_start_time"
+        CUSTOMEND = "update_app_custom_end_time"
+        KL = timezone("Asia/Kuala_Lumpur")
+        start_time = KL.convert(self.updating_appointment.startTime)
+        end_time = KL.convert(self.updating_appointment.endTime)
         s_time = self.parent.primarypanel.clinic.clinicHrs.split(" - ")[0]
         e_time = self.parent.primarypanel.clinic.clinicHrs.split(" - ")[1]
         if self.time_type.get() == 1:
-            self.create_app_timeslot_menu = self.controller.timeMenuButtonCreator(
+            self.update_app_timeslot_menu = self.controller.timeMenuButtonCreator(
                 x=140, y=420, width=720, height=80, root=R, classname=DEFAULTTIME,
                 variable=self.time_slot,
                 command=lambda: [
@@ -836,6 +913,12 @@ class AdminManageAppointments(Frame):
                 startTime=s_time, endTime=e_time,
                 interval=self.time_interval.get(),
                 isTimeSlotFmt=True
+            )
+            self.update_app_timeslot_menu.configure(
+                text=f"{start_time.strftime('%I:%M%p')} - {end_time.strftime('%I:%M%p')}"
+            )
+            self.time_slot.set(
+                f"{start_time.strftime('%I:%M%p')} - {end_time.strftime('%I:%M%p')}"
             )
             try:
                 self.controller.widgetsDict[f"{CUSTOMSTART}hostfr"].grid_remove(
@@ -848,6 +931,14 @@ class AdminManageAppointments(Frame):
         elif self.time_type.get() == 2:
             self.update_custom_start_time_end_time(
                 R, CUSTOMSTART, CUSTOMEND, s_time, e_time)
+            self.update_app_custom_start_time.configure(
+                text=start_time.strftime("%I:%M%p")
+            )
+            self.update_app_custom_end_time.configure(
+                text=end_time.strftime("%I:%M%p")
+            )
+            self.custom_start_time.set(start_time.strftime("%I:%M%p"))
+            self.custom_end_time.set(end_time.strftime("%I:%M%p"))
             try:
                 self.controller.widgetsDict[f"{DEFAULTTIME}hostfr"].grid_remove(
                 )
@@ -862,7 +953,7 @@ class AdminManageAppointments(Frame):
                 title="Entering Custom Time",
                 prompt="Please enter the start and end time in the format of 12:00PM - 08:00PM",
                 initialvalue=f"{s_time} - {e_time}",
-                parent=self.create_app_set_time_interval_button
+                parent=self.update_app_set_time_interval_button
             )
             while True:
                 if start_time_end_time is None:
@@ -878,10 +969,10 @@ class AdminManageAppointments(Frame):
                             "Start time cannot be later than end time")
                     self.update_custom_start_time_end_time(
                         R, CUSTOMSTART, CUSTOMEND, s_time, e_time)
-                    self.create_app_custom_start_time.configure(
+                    self.update_app_custom_start_time.configure(
                         text=start_time.strftime("%I:%M%p")
                     )
-                    self.create_app_custom_end_time.configure(
+                    self.update_app_custom_end_time.configure(
                         text=end_time.strftime("%I:%M%p")
                     )
                     self.custom_start_time.set(start_time)
@@ -907,11 +998,11 @@ class AdminManageAppointments(Frame):
                         title="Entering Custom Time",
                         prompt="Please enter the start and end time in the format of 12:00PM - 08:00PM",
                         initialvalue=f"{s_time} - {e_time}",
-                        parent=self.create_app_set_time_interval_button
+                        parent=self.update_app_set_time_interval_button
                     )
 
     def update_custom_start_time_end_time(self, R, CUSTOMSTART, CUSTOMEND, s_time, e_time):
-        self.create_app_custom_start_time = self.controller.timeMenuButtonCreator(
+        self.update_app_custom_start_time = self.controller.timeMenuButtonCreator(
             x=140, y=420, width=340, height=80, root=R, classname=CUSTOMSTART,
             variable=self.custom_start_time,
             command=lambda: [
@@ -922,7 +1013,7 @@ class AdminManageAppointments(Frame):
             interval=self.time_interval.get(),
             isTimeSlotFmt=False
         )
-        self.create_app_custom_end_time = self.controller.timeMenuButtonCreator(
+        self.update_app_custom_end_time = self.controller.timeMenuButtonCreator(
             x=520, y=420, width=340, height=80, root=R, classname=CUSTOMEND,
             variable=self.custom_end_time,
             command=lambda: [
@@ -942,7 +1033,7 @@ class AdminManageAppointments(Frame):
                 initialvalue=30,
                 minvalue=30,
                 maxvalue=1440,
-                parent=self.create_app_set_time_interval_button
+                parent=self.update_app_set_time_interval_button
             )))
         except:
             messagebox.showerror(
