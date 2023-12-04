@@ -300,6 +300,8 @@ class PatientViewAppointments(Frame):
                 hasVbar=False,
             )
 
+            COORDS = (COORDS[0], COORDS[1] + 220)
+
     def cancelRequest(self, req: AppointmentRequest):
         print(req.id)
 
