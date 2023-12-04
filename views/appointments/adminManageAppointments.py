@@ -663,7 +663,7 @@ class AdminManageAppointments(Frame):
                 f"{req.appointments}"],
             variable=self.currApp,
             command=lambda: [
-                self.update_app_set_appointment(self.currDoc.get())
+                self.update_app_set_appointment(self.currApp.get())
             ],
             text="Select Appointment",
         )
@@ -674,10 +674,10 @@ class AdminManageAppointments(Frame):
         )
         self.update_app_set_appointment(self.currDoc.get())
 
-    def update_app_set_appointment(self, option: str, req: AppointmentRequest):
+    def update_app_set_appointment(self, option: str, req:AppointmentRequest):
         self.appointment = list(
             filter(
-                lambda req: f"{req.appointments}" == option,
+                lambda req: f"{req.appointments}"== option,
                 self.appointments
             )
         )[0]
