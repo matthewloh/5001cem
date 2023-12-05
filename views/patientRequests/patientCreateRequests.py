@@ -180,6 +180,14 @@ class PatientCreateRequests(Frame):
         )
         if len(appt.prescription) == 0:
             toast.show_toast()
+            try:
+                self.presc_title.place_forget()
+            except:
+                pass
+            try:
+                self.presc_description.place_forget()
+            except:
+                pass
         height = len(appt.prescription) * 220
         R = self
         self.appRequestScrolledFrame = self.controller.scrolledFrameCreator(
@@ -195,12 +203,31 @@ class PatientCreateRequests(Frame):
         R = self.appRequestScrolledFrame
         X = COORDS[0]
         Y = COORDS[1]
-        self.controller.labelCreator(
+        self.controller.buttonCreator(
             ipath="assets/Prescriptions/Patient/PrescriptionBG.png",
             x=X, y=Y, classname=f"{prescription.id}_requestbg", root=R,
             isPlaced=True,
-            # buttonFunction=lambda req=req: self.loadSingleAppointment(
-            #     req),
+            buttonFunction=lambda: self.render_prescription_details(
+                prescription)
         )
 
-        
+    def render_prescription_details(self, prescription: Prescription):
+        R = self
+        BG = WHITE
+        FONT = ("Inter Bold", 16)
+        self.presc_title = self.controller.scrolledTextCreator(
+            x=900, y=280, width=740, height=120, root=R,
+            classname="view_prescription_title",
+            bg=BG, hasBorder=True, borderColor=BLACK,
+            text=prescription.title, font=FONT, fg=BLACK,
+            isDisabled=True, isJustified=True,
+            hasVbar=False,
+        )
+        self.presc_description = self.controller.scrolledTextCreator(
+            x=900, y=460, width=740, height=580, root=R,
+            classname="view_prescription_description",
+            bg=BG, hasBorder=True, borderColor=BLACK,
+            text=prescription.desc, font=FONT, fg=BLACK,
+            isDisabled=True, isJustified=True, justification="left",
+            hasVbar=False,
+        )
